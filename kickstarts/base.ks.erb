@@ -9,20 +9,16 @@ install
 # these repos are used to install the initial packages
 
 # repo to install the OS
-url --url=http://mirror.centos.org/centos/6/os/x86_64/
-repo --name=updates --baseurl=http://mirror.centos.org/centos/6/updates/x86_64/
+url  --url=http://mirror.centos.org/centos/7/os/x86_64/
+repo --name=updates --baseurl=http://mirror.centos.org/centos/7/updates/x86_64/
 
 # repos to install packages in %packages section
-repo --name=extras --baseurl=http://mirror.centos.org/centos/6/extras/x86_64/
-repo --name=epel --baseurl=http://dl.fedoraproject.org/pub/epel/6Server/x86_64/
-# http://wiki.centos.org/AdditionalResources/Repositories/SCL
-repo --name=SCL --baseurl=http://mirror.centos.org/centos/6/SCL/x86_64/
+repo --name=extras  --baseurl=http://mirror.centos.org/centos/7/extras/x86_64/
+repo --name=epel    --baseurl=http://dl.fedoraproject.org/pub/epel/7/x86_64/
 
 # repos to install packages not found in the os
-# Please also add to "post install repos" around line 210.
-repo --name=manageiq-scl --baseurl=http://copr-be.cloud.fedoraproject.org/results/jrafanie/manageiq-scl/epel-6-x86_64/
-repo --name=ipa --baseurl=http://copr-be.cloud.fedoraproject.org/results/adelton/identity_demo/epel-6-x86_64/
-repo --name=certmonger --baseurl=http://copr-be.cloud.fedoraproject.org/results/nalin/certmonger/epel-6-x86_64/
+# Please also add to "post install repos" around line 212.
+repo --name=manageiq-scl --baseurl=http://copr-be.cloud.fedoraproject.org/results/abellott/manageiq-scl/epel-7-x86_64/
 
 lang en_US.UTF-8
 keyboard us
@@ -60,8 +56,7 @@ reboot
 @server-policy --nodefaults
 @development tools
 
-centos-release-SCL # http://mirror.centos.org/centos/6/extras/x86_64/Packages/centos-release-SCL-6-5.el6.centos.x86_64.rpm
-epel-release       # http://dl.fedoraproject.org/pub/epel/6Server/x86_64/epel-release-6-8.noarch.rpm
+epel-release       # http://dl.fedoraproject.org/pub/epel/7/x86_64/epel-release-7-5.noarch.rpm
 
 createrepo
 freeipmi
@@ -91,14 +86,13 @@ net-snmp
 net-snmp-libs
 net-snmp-utils
 nfs-utils
-nodejs010-nodejs                 # used for asset pipeline asset compilation
+nodejs                           # used for asset pipeline asset compilation - From epel
 OpenIPMI
 openslp-devel                    # build requires
-portmap
-postgresql92-postgresql          # appliance section
-postgresql92-postgresql-devel    # for pg gem
-postgresql92-postgresql-server   # appliance section
-qpid-cpp-client-ssl              # Enable AMQP SSL connections: https://github.com/ManageIQ/cfme/pull/2150
+postgresql                       # appliance section
+postgresql-devel                 # for pg gem
+postgresql-server                # appliance section
+qpid-cpp-client-ssl              # Enable AMQP SSL connections - From epel
 scl-utils-build                  # build requires
 yum-utils
 zip                              # build requires
@@ -111,12 +105,10 @@ mod_intercept_form_submit
 mod_auth_kerb
 mod_authnz_pam
 mod_lookup_identity
-mod_lookup_identity-selinux      # Only needed for CentOS 6.5.  It will not be needed on CentOS 6.6 and later.
 
 # IPA RPMs for certificate support
 ipa-admintools
 certmonger
-sneakernet_ca
 
 <% if @target == "ovirt" %>
 ovirt-guest-agent
@@ -237,9 +229,7 @@ popd
 # Please also add to "build time repos" around line 20
 
 pushd /etc/yum.repos.d/
-  wget http://copr.fedoraproject.org/coprs/jrafanie/manageiq-scl/repo/epel-6-x86_64/jrafanie-manageiq-scl-epel-6-x86_64.repo
-  wget http://copr.fedoraproject.org/coprs/adelton/identity_demo/repo/epel-6/adelton-identity_demo-epel-6.repo
-  wget http://copr.fedoraproject.org/coprs/nalin/certmonger/repo/epel-6/nalin-certmonger-epel-6.repo
+  wget http://copr.fedoraproject.org/coprs/abellott/manageiq-scl/repo/epel-7/abellott-manageiq-scl-epel-7.repo
 popd
 
 wget -O ruby-install.tar.gz https://github.com/postmodern/ruby-install/archive/v0.5.0.tar.gz
