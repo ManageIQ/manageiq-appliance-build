@@ -156,6 +156,12 @@ Dir.chdir(IMGFAC_DIR) do
       end
     end
   end
+  $log.info "Generating image checksums"
+  Dir.chdir(destination_directory) do
+    $log.info `/usr/bin/sha256sum * > SHA256SUM`
+    $log.info `/usr/bin/gpg --batch --no-tty --passphrase-file /root/.gnupg/pass -b SHA256SUM`
+    FileUtils.cp("/root/.gnupg/cfme_public.key", destination_directory)
+  end
 end
 
 # Only update the symlink for a nightly
