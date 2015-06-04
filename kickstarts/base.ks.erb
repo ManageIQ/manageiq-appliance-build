@@ -157,13 +157,23 @@ open-vm-tools
 # Unset it so ruby_parser doesn't print LOTS of output.
 unset DEBUG
 
-# Drop packets for INPUT/FORWARD that aren't whitelisted in the firewall setup
-for IPT in /etc/sysconfig/iptables /etc/sysconfig/iptables.old ; do
-  if [ -f $IPT ] ; then
-     sed -i "s/INPUT ACCEPT/INPUT DROP/g" $IPT
-     sed -i "s/FORWARD ACCEPT/FORWARD DROP/g" $IPT
-  fi
-done
+###
+## Create the manageiq firewall zone
+###
+firewall-offline-cmd --new-zone=manageiq
+
+###
+# Set the manageiq firewall zone as default
+###
+firewall-offline-cmd --set-default-zone=manageiq
+
+###
+# Allow HTTP, HTTPS, SSH and postgresql in the manageiq firewall zone
+###
+firewall-offline-cmd --zone=manageiq --add-service=http
+firewall-offline-cmd --zone=manageiq --add-service=https
+firewall-offline-cmd --zone=manageiq --add-service=ssh
+firewall-offline-cmd --zone=manageiq --add-service=postgresql
 
 www_root="/var/www"
 app_root="$www_root/miq"
