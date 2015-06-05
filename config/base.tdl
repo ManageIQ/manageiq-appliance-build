@@ -5,8 +5,8 @@
     <name>CentOS-7</name>
     <version>1</version>
     <arch>x86_64</arch>
-    <install type="url">
-      <url>http://mirror.centos.org/centos/7/os/x86_64/</url>
+    <install type="iso">
+      <iso>file:///build/isos/CentOS-7-x86_64-DVD-1503-01.iso</iso>
     </install>
   </os>
   <description>CentOS71 TDL meant to be used with custom kickstart for manageiq.</description>
