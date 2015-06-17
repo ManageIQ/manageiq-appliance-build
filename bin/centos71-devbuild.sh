@@ -1,8 +1,9 @@
 #
 # Kick off a CentOS 7.1 development build
 #
-# repo:   abellotti/manageiq.git
-# branch: centos71
+# repo:      abellotti/manageiq.git
+# branch:    centos71
+# fileshare: true
 #
 
 CUR_BUILD="`virsh list | sed '1,2d'`"
@@ -19,7 +20,7 @@ DATE_STAMP=`date +"%Y%m%d_%T"`
 LOG_FILE="${LOG_DIR}/centos71_devbuild_${DATE_STAMP}.log"
 
 BUILD_OPTIONS="--type nightly --reference centos71"
-if [ "${1}" = "--config-repo" ]
+if [ "${1}" = "--repo" ]
 then
   shift
   if [ -z "#{1}" ]
@@ -27,7 +28,15 @@ then
     echo "Must specify the repo to use for the ManageIQ config and kickstart files"
     exit 1
   fi
-  BUILD_OPTIONS="$BUILD_OPTIONS --config-repo ${1}"
+  BUILD_OPTIONS="$BUILD_OPTIONS --repo ${1}"
+  shift
+else
+  BUILD_OPTIONS="$BUILD_OPTIONS --repo http://github.com/abellotti/manageiq.git"
+fi
+
+if [ "${1}" = "--fileshare" -o "${1}" = "--no-fileshare" -o "${1}" = "--local" ]
+then
+  BUILD_OPTIONS="$BUILD_OPTIONS ${1}"
   shift
 fi
 

@@ -35,9 +35,8 @@ FILE_SERVER         = ENV["BUILD_FILE_SERVER"]             # SSH Server to host 
 FILE_SERVER_ACCOUNT = ENV["BUILD_FILE_SERVER_ACCOUNT"]     # Account to SSH as
 FILE_SERVER_BASE    = ENV["BUILD_FILE_SERVER_BASE"] || "." # Subdirectory of Account where to store builds
 
-cfg_repo            = cli_options[:config_repo]
-
-if cfg_repo
+if !cli_options[:local] && cli_options[:repo]
+  cfg_repo = cli_options[:repo]
   cfg_base = "#{REFS_DIR}/#{cli_options[:reference]}"
   FileUtils.mkdir_p(cfg_base)
   Dir.chdir(cfg_base) do
@@ -144,7 +143,7 @@ Dir.chdir(IMGFAC_DIR) do
       $log.warn "Cannot find the target file #{destination}"
     else
       # Let's copy the file to the file server
-      if FILE_SERVER && File.size(destination)
+      if cli_options[:fileshare] && FILE_SERVER && File.size(destination)
         $log.info "Creating File server #{FILE_SERVER} directory #{file_rdu_dir} ..."
         $log.info `ssh #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER} mkdir -p #{file_rdu_dir}`
         $log.info "Copying file #{file_name} to #{FILE_SERVER}:#{file_rdu_dir}/ ..."
@@ -166,7 +165,7 @@ unless build_label == "test"
   result = FileUtils.ln_s(destination_directory, link, :verbose => true)
   $log.info("Created symlink: #{result}")
 
-  if FILE_SERVER
+  if cli_options[:fileshare] && FILE_SERVER
     $log.info "Updating latest symlink on #{FILE_SERVER} ..."
     ssh_cmd = "cd #{file_rdu_dir_base}; rm -f latest; ln -s #{directory_name} latest"
     $log.info `ssh #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER} "#{ssh_cmd}"`
