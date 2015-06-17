@@ -302,5 +302,9 @@ rm -f /var/www/miq/vmdb/certs/v2_key
 # Not yet, PostGreSQL & such
 # appliance_console_cli --region 0 --internal --password smartvm
 
+# Enable top(1) and vmstat(1) data logging
+systemctl enable miqtop
+systemctl enable miqvmstat
+
 chvt 1
 %end
