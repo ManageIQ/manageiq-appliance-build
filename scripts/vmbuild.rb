@@ -45,9 +45,10 @@ if !cli_options[:local] && cli_options[:repo]
       `git clone #{cfg_repo} .` unless File.exist?(".git")
     end
     $log.info("Checking out reference #{cli_options[:reference]} from repo #{cfg_repo} ...")
-    `git reset --hard origin/#{cli_options[:reference]}`
-    `git fetch origin`
-    `git checkout #{cli_options[:reference]}`
+    `git reset --hard`                                    # Drop any local changes
+    `git checkout #{cli_options[:reference]}`             # Checkout existing branch
+    `git fetch origin`                                    # Get origin updates
+    `git reset --hard origin/#{cli_options[:reference]}`  # Reset the branch to the origin
   end
   cfg_base = "#{cfg_base}/build"
   unless File.exist?(cfg_base)
