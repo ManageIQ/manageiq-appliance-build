@@ -240,6 +240,8 @@ pushd $appliance_root
   cp -vr COPY/etc /
   #copy var dir from COPY
   cp -vr COPY/var /
+  # copy usr dir from COPY
+  cp -vr COPY/usr /
 popd
 
 # post install repos
