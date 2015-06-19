@@ -1,0 +1,313 @@
+
+________________________________________________________________________________
+******** INSTALLING ********
+
+Fresh Install on CentOS 7.1 build 1503, using DVD iso.
+
+  CentOS-7-x86_64-DVD-1503-01.iso
+
+  Configured:
+    8GB Ram
+    80GB HD - Minimum
+    NAT or Bridged
+  
+  Enable Intel Hardware Virtualization VT-x/EPT
+  Time Sync with Host
+
+  Make sure to also create a personal userid with admin privileges.
+
+Enable Network in UI.
+
+  Also, default enable network upon boot.
+
+  /etc/sysconfig/network-scripts/ifcfg-eno* equiv eth0 file, ONBOOT=yes
+
+Add Repos:
+
+  Add the EPEL Repo:
+
+    /etc/yum.repos.d/epel.repo
+
+      [epel]
+      name=CentOS-$releasever - Epel
+      baseurl=http://dl.fedoraproject.org/pub/epel/$releasever/$basearch/
+      enabled=1
+      gpgcheck=0
+
+  Add a Yum repository to add support for building openstack images
+
+    /etc/yum.repos.d/openstack-kilo.repo
+
+      [openstack-kilo]
+      name=CentOS-$releasever - openstack-kilo
+      baseurl=http://centos.mirror.constant.com/7/cloud/x86_64/openstack-kilo/
+      enabled=1
+      gpgcheck=0
+
+
+Add /root/.ssh/authorized_key with id_rsa.pub if desired to ssh to root without password.
+
+Install Updates from UI
+Reboot
+
+yum install git
+
+As personal user-id:
+
+  Create ssh-keygen for Github.
+
+  Add ssh-key to personal user-id on Github settings.
+
+
+As root:
+
+Create /build
+  /bin
+  /config
+  /fileshare
+  /imagefactory
+  /images
+  /isos
+  /kickstarts
+  /logs
+  /references
+  /scripts
+  /storage
+
+___________________________________________________________________________________________
+Imagefactory:
+
+Clone imagefactory as /build/imagefactory
+
+  cd /build
+  git clone git@github.com:redhat-imaging/imagefactory.git
+
+as root:
+
+  yum install libguestfs
+  yum install pycurl
+  yum install python-zope-interface
+  yum install libxml2
+  yum install python-httplib2
+  yum install python-paste-deploy
+  yum install python-oauth2
+  yum install python-pygments
+  yum install oz
+
+  
+for Imagefactory:
+
+  Use /build/bin/setup_imagefactory.sh or manually create with the following and run:
+
+  # cd /build/imagefactory
+  # python ./setup.py sdist install
+  # cd imagefactory-plugins
+  # python ./setup.py sdist install
+  
+  # mkdir /etc/imagefactory/plugins.d
+  # cd /etc/imagefactory/plugins.d
+  # for PLUGIN in `ls /usr/lib/python2.7/site-packages/imagefactory_plugins |grep -v .py`
+  do
+    ln -s -v /usr/lib/python2.7/site-packages/imagefactory_plugins/$PLUGIN/$PLUGIN.info ./$PLUGIN.info
+  done
+
+  # cd /build/imagefactory
+  # scripts/imagefactory_dev_setup.sh
+
+For vSphere plugin.
+
+  For vsphere
+  yum install python-psphere
+  yum install VMDKstream
+
+  Create /root/.psphere/config.yaml
+    general:
+        server: 127.0.0.1
+        username: foo
+        password: bar
+        template_dir: ~/.psphere/templates/
+    logging:
+        destination: ~/.psphere/psphere.log
+        level: DEBUG # DEBUG, INFO, etc
+
+For oVirt plugin.
+
+  yum install ovirt-engine-sdk-python
+
+For OpenStack images.
+
+  yum install python-glanceclient
+
+___________________________________________________________________________________________
+KVM/Virt
+
+As root:
+
+  yum install kvm qemu-kvm qemu-kvm-tools libvirt libvirt-python libguestfs-tools virt-install
+    qemu-kvm        =  QEMU emulator
+    qemu-img        = QEMU disk image manager
+    virt-install    =  Command line tool to create virtual machines.
+    libvirt         = Provides libvirtd daemon that manages virtual machines and controls hypervisor.
+    libvirt-client  = provides client side API’s for accessing servers and also provides virsh utility
+                      which provides command line tool to manage virtual machines.
+    virt-viewer     = Graphical console
+
+  systemctl enable libvirtd
+  systemctl start libvirtd
+
+  yum install virt-manager virt-viewer
+
+
+___________________________________________________________________________________________
+RHEVM
+
+  When running as RHEVM VM
+
+  yum install rhevm-guest-agent
+
+___________________________________________________________________________________________
+Virtualization hardware
+
+  in hosting's VM's .vmx file:
+
+    monitor.virtual_mmu = "hardware"
+    monitor.virtual_exec = "hardware"
+    vhv.enable = "TRUE"
+
+  egrep '(vmx|svm)' /proc/cpuinfo
+
+  virsh nodeinfo
+
+  lsmod | grep kvm
+
+  to load:  modprobe kvm
+            modprobe kvm_intel
+
+  Note: kvm_intel must be started with nested enabled:
+
+  edit /etc/modprobe.d/dist.conf  (create file if not there)
+    append:
+      options kvm-intel nested=y
+
+___________________________________________________________________________________________
+Build env:
+
+  as root:
+
+  yum install ruby
+  gem install trollop
+  
+  For enabling coping to SSH file server, define the following in Root's .bashrc
+
+  export BUILD_FILE_SERVER="your.file.server.com"
+  export BUILD_FILE_SERVER_ACCOUNT="your_id"
+  export BUILD_FILE_SERVER_BASE="public_html"  # subdirectory off your_id's home where to scp files to
+
+  root will need password-less access to the accout listed above.
+
+___________________________________________________________________________________________
+VNC Server and Viewer
+
+  as root:
+
+  yum install tigervnc tigervnc-server*
+  cp /lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@:1.service
+  vi /etc/systemd/system/vncserver@:1.service
+    replace: <USER> in ExecStart and PIDFile lines with user to allow vnc server
+
+  systemctl daemon-reload
+  
+  as <USER>
+  vncpasswd
+
+  as root again:
+  systemctl enable vncserver@:1.service
+  systemctl start vncserver@:1.service
+  firewall-cmd --permanent --add-service vnc-server
+  systemctl restart firewalld.service
+  
+___________________________________________________________________________________________
+Apache
+
+  as root
+
+  # yum install httpd
+  # firewall-cmd --permanent --add-port=80/tcp
+  # firewall-cmd --permanent --add-port=443/tcp
+  # firewall-cmd --reload
+
+  # mv /etc/httpd/conf.d/welcome.conf /etc/httpd/conf.d/welcome.conf.orig   (Ok not to have index.html)
+  # systemctl start httpd
+  # systemctl enable httpd
+
+  # cd /var/www/html
+  # ln -s /build/fileshare builds
+  # ln -s /build/isos      isos
+
+  For Apache to be able to see the directories above:  (SELinux)
+  # chmod -R a+rx /build/fileshare
+  # chcon -R -t httpd_sys_content_t /build/fileshare
+  # chmod -R a+rx /build/isos
+  # chcon -R -t httpd_sys_content_t /build/isos
+
+  At each update, or simply disable SELinux
+
+  # vi /etc/sysconfig/selinux
+    SELINUX=disabled
+  
+___________________________________________________________________________________________
+File Share
+
+  Optionally copying artifacts to a file serve
+
+  # vi /etc/hosts
+  a.b.c.d   your.file.share.com
+  
+  Make sure root can ssh/scp to personal account on your.file.share.com
+  # su -
+  # ssh-keygen
+  (Press Enter key till you get the prompt)
+  # ssh-copy-id -i your_id@your.file.share.com
+  (It will once ask for the password of the host system)
+
+  # ssh your_id@your.file.share.com
+
+
+________________________________________________________________________________
+******** USING ********
+
+
+With installs, vnc is not directly available, but can be accessed via local vncviewer
+installed on the VM hosting imagefactory.
+
+# virsh list
+
+to determine which VM ID is doing the install and then
+# virsh domdisplay <id_of_domain>
+
+You'll get a local VNC display number for the actual VM doing the install.
+(As opposed to a VNC server being run inside of Anaconda on the VM.
+And you can use that display to get to a debug shell and do other installer-like things.
+
+
+So ...
+
+system# sudo virsh list
+ Id    Name                           State
+----------------------------------------------------
+ 4     factory-build-4cc03248-2ae3-4614-989e-5982e6850a8c running
+ 
+system# sudo virsh domdisplay 4
+vnc://127.0.0.1:0
+
+system# vncviewer :0
+
+
+Assuming, running in Graphical/X mode.
+
+Above is provided with the /build/bin/vncviewer_build.sh [--wait]
+
+Note:
+vncviewer has an "F8" menu we need to use if we want to send an "alt" keypress to the VM.
+On t540p thinkpad, with the function lock key on, pressing F8 actually disables WIFI.
+
