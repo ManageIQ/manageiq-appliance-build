@@ -7,7 +7,7 @@ module Build
     ALLOWED_TYPES = %w(nightly test)
     DEFAULT_TYPE  = "nightly"
     DEFAULT_REF   = "master"
-    DEFAULT_REPO  = "http://github.com/ManageIQ/manageiq.git"
+    DEFAULT_REPO  = "http://github.com/ManageIQ/manageiq-appliance.git"
 
     def parse
       git_ref_desc  = "provide a git reference such as a branch or tag"

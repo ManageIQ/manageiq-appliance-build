@@ -10,14 +10,15 @@ module Build
     KS_DIR     = "kickstarts"
     KS_GEN_DIR = "#{KS_DIR}/generated"
 
-    attr_reader :targets, :puddle, :git_checkout
+    attr_reader :targets, :puddle, :appliance_checkout, :code_checkout
 
-    def initialize(build_base, targets, puddle, git_checkout)
-      @build_base   = Pathname.new(build_base)
-      @ks_gen_base  = @build_base.join(KS_GEN_DIR)
-      @targets      = targets
-      @puddle       = puddle # used during ERB evaluation
-      @git_checkout = git_checkout
+    def initialize(build_base, targets, puddle, code_checkout, appliance_checkout)
+      @build_base         = Pathname.new(build_base)
+      @ks_gen_base        = @build_base.join(KS_GEN_DIR)
+      @targets            = targets
+      @puddle             = puddle # used during ERB evaluation
+      @appliance_checkout = appliance_checkout
+      @code_checkout      = code_checkout
     end
 
     def run(task = :all)
