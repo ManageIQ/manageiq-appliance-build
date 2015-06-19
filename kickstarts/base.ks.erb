@@ -13,6 +13,8 @@ repo --name=extras  --baseurl=http://mirror.centos.org/centos/7/extras/x86_64/
 repo --name=epel    --baseurl=http://dl.fedoraproject.org/pub/epel/7/x86_64/
 
 # repos to install packages not found in the os
+repo --name=postgresql92 --baseurl=http://www.softwarecollections.org/repos/rhscl/postgresql92/epel-7-x86_64/
+
 # Please also add to "post install repos" around line 212.
 repo --name=manageiq-scl --baseurl=http://copr-be.cloud.fedoraproject.org/results/abellott/manageiq-scl/epel-7-x86_64/
 
@@ -90,10 +92,11 @@ nfs-utils
 nodejs                           # used for asset pipeline asset compilation - From epel
 OpenIPMI
 openslp-devel                    # build requires
-postgresql                       # appliance section
-postgresql-devel                 # for pg gem
-postgresql-server                # appliance section
+postgresql92-postgresql          # appliance section
+postgresql92-postgresql-devel    # for pg gem
+postgresql92-postgresql-server   # appliance section
 qpid-cpp-client-ssl              # Enable AMQP SSL connections - From epel
+scl-utils
 scl-utils-build                  # build requires
 yum-utils
 zip                              # build requires
@@ -298,9 +301,7 @@ sysctl -p "/etc/sysctl.conf"
 rm -f /var/www/miq/vmdb/certs/v2_key
 
 [[ -s /etc/default/evm ]] && source /etc/default/evm
-
-# Not yet, PostGreSQL & such
-# appliance_console_cli --region 0 --internal --password smartvm
+appliance_console_cli --region 0 --internal --password smartvm
 
 # Enable top(1) and vmstat(1) data logging
 systemctl enable miqtop
