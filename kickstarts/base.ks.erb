@@ -309,6 +309,8 @@ appliance_console_cli --region 0 --internal --password smartvm
 systemctl enable miqtop
 systemctl enable miqvmstat
 
+systemctl enable evminit
+
 # Let's rebuild the ramfs with with base scsi drivers we need
 kversion=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
 ramfsfile="/boot/initramfs-$kversion.img"
