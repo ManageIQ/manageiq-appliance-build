@@ -310,6 +310,7 @@ systemctl enable miqtop
 systemctl enable miqvmstat
 
 systemctl enable evminit
+systemctl enable evmserverd
 
 # Let's rebuild the ramfs with with base scsi drivers we need
 kversion=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
