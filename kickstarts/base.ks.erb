@@ -302,15 +302,37 @@ sysctl -p "/etc/sysctl.conf"
 # Remove the key from the source code, we'll generate on first boot
 rm -f /var/www/miq/vmdb/certs/v2_key
 
-[[ -s /etc/default/evm ]] && source /etc/default/evm
-appliance_console_cli --region 0 --internal --password smartvm
-
 # Enable top(1) and vmstat(1) data logging
 systemctl enable miqtop
 systemctl enable miqvmstat
 
 systemctl enable evminit
 systemctl enable evmserverd
+
+# Create a script to initialize appliance on first boot
+cat > /bin/appliance-initialize.sh <<EOF
+#!/bin/sh
+[[ -d /opt/rh/postgresql92/root/var/lib/pgsql/data/base ]] && exit 0
+[[ -s /etc/default/evm ]] && source /etc/default/evm
+appliance_console_cli --region 0 --internal --password smartvm
+EOF
+chmod 755 /bin/appliance-initialize.sh
+
+# Create a systemd service to run it on first boot
+cat > /usr/lib/systemd/system/appliance-initialize.service <<EOF
+[Unit]
+Description=Initialize Appliance Database
+ConditionPathExists=!/opt/rh/postgresql92/root/var/lib/pgsql/data/base
+[Service]
+Type=oneshot
+ExecStart=/bin/appliance-initialize.sh
+ExecStartPost=/usr/bin/systemctl disable appliance-initialize
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Finally, enable the service
+systemctl enable appliance-initialize
 
 # Let's rebuild the ramfs with with base scsi drivers we need
 kversion=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
