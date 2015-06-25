@@ -83,16 +83,16 @@ directory_name    = "#{year_month_day}_#{hour_minute}"
 timestamp         = "#{year_month_day}#{hour_minute}"
 
 targets_config    = YAML.load_file(targets_file)
-name, directory, code, appliance, targets =
-  targets_config.values_at("name", "directory", "code", "appliance", "targets")
+name, directory, manageiq_git_url, appliance_git_url, targets =
+  targets_config.values_at("name", "directory", "manageiq_git_url", "appliance_git_url", "targets")
 
-code_checkout      = Build::GitCheckout.new(:remote => code, :ref => cli_options[:reference])
-appliance_checkout = Build::GitCheckout.new(:remote => appliance, :ref => cli_options[:reference])
+manageiq_checkout  = Build::GitCheckout.new(:remote => manageiq_git_url, :ref => cli_options[:reference])
+appliance_checkout = Build::GitCheckout.new(:remote => appliance_git_url, :ref => cli_options[:reference])
 
 file_rdu_dir_base = "#{FILE_SERVER_BASE}/#{directory}"
 file_rdu_dir      = "#{file_rdu_dir_base}/#{directory_name}"
 
-ks_gen            = Build::KickstartGenerator.new(cfg_base, targets.keys, puddle, code_checkout, appliance_checkout)
+ks_gen            = Build::KickstartGenerator.new(cfg_base, targets.keys, puddle, manageiq_checkout, appliance_checkout)
 ks_gen.run
 
 FILE_TYPE = {
@@ -139,7 +139,7 @@ Dir.chdir(IMGFAC_DIR) do
     source      = "#{STORAGE_DIR}/#{uuid}.body"
 
     FileUtils.mkdir_p(destination_directory)
-    file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{code_checkout.commit_sha}.#{FILE_TYPE[imgfac_target]}"
+    file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{FILE_TYPE[imgfac_target]}"
     destination = destination_directory.join(file_name)
     $log.info `mv #{source} #{destination}`
 

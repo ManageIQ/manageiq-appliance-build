@@ -181,10 +181,10 @@ pushd $appliance_root
   git reset --hard <%= @appliance_checkout.commit_sha %>
 popd
 
-git clone <%= @code_checkout.remote %> $app_root
+git clone <%= @manageiq_checkout.remote %> $app_root
 pushd $app_root
-git checkout <%= @code_checkout.branch %>
-git reset --hard <%= @code_checkout.commit_sha %>
+git checkout <%= @manageiq_checkout.branch %>
+git reset --hard <%= @manageiq_checkout.commit_sha %>
 
 # Symlink extracted repo (manageiq-appliance) to old /var/www/miq/system location.
 # this will change when we move system up a directory
