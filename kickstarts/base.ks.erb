@@ -186,6 +186,10 @@ pushd $app_root
 git checkout <%= @code_checkout.branch %>
 git reset --hard <%= @code_checkout.commit_sha %>
 
+# Symlink extracted repo (manageiq-appliance) to old /var/www/miq/system location.
+# this will change when we move system up a directory
+ln -vs $appliance_root/system $app_root/system
+
 #### TODO: Refactor this so the cfme rpm and the upstream share much of this code.
 
 mkdir -p $app_root/vmdb/log/apache
