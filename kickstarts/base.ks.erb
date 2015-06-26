@@ -187,8 +187,7 @@ git checkout <%= @manageiq_checkout.branch %>
 git reset --hard <%= @manageiq_checkout.commit_sha %>
 
 # Symlink extracted repo (manageiq-appliance) to old /var/www/miq/system location.
-# this will change when we move system up a directory
-ln -vs $appliance_root/system $app_root/system
+ln -vs $appliance_root $app_root/system
 
 #### TODO: Refactor this so the cfme rpm and the upstream share much of this code.
 
@@ -198,32 +197,32 @@ mkdir -p /etc/httpd/conf.d
 pushd $appliance_root
   #symlink some executables
   mkdir -p /bin
-  pushd ./system/LINK/bin
+  pushd ./LINK/bin
     for filename in `ls`; do
-      ln -vs $appliance_root/system/LINK/bin/$filename /bin/$filename
+      ln -vs $appliance_root/LINK/bin/$filename /bin/$filename
     done
   popd
 
   #symlink some configuration files
-  pushd ./system/LINK/etc
+  pushd ./LINK/etc
     for dirname in `ls`; do
       pushd ./$dirname
         mkdir -p /etc/$dirname
         for filename in `ls`; do
-          ln -vs $appliance_root/system/LINK/etc/$dirname/$filename /etc/$dirname/$filename
+          ln -vs $appliance_root/LINK/etc/$dirname/$filename /etc/$dirname/$filename
         done
       popd
     done
   popd
 
-  pushd ./system/LINK
-    ln -vs $appliance_root/system/LINK/.toprc /.toprc
+  pushd ./LINK
+    ln -vs $appliance_root/LINK/.toprc /.toprc
   popd
 
   #copy etc dir from COPY
-  cp -vr system/COPY/etc /
+  cp -vr COPY/etc /
   #copy var dir from COPY
-  cp -vr system/COPY/var /
+  cp -vr COPY/var /
 popd
 
 # post install repos
