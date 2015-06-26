@@ -62,8 +62,6 @@ As personal user-id:
 As root:
 
 Create /build
-  /bin
-  /config
   /fileshare
   /imagefactory
   /images
@@ -71,8 +69,14 @@ Create /build
   /kickstarts
   /logs
   /references
-  /scripts
   /storage
+
+Clone the build scripts
+
+  cd /build
+  git clone git@github.com:manageiq/manageiq-appliance-build manageiq
+  ln -s manageiq/bin bin
+  ln -s manageiq/scripts scripts
 
 ___________________________________________________________________________________________
 Imagefactory:

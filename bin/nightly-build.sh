@@ -30,9 +30,9 @@ if [ "${1}" = "--fg" ]
 then
   echo "Nightly Build kicked off, Log being saved in ${LOG_FILE} ..."
 
-  time ruby /build/scripts/vmbuild.rb $BUILD_OPTIONS 2>&1 | tee ${LOG_FILE}
+  time ruby /build/manageiq/scripts/vmbuild.rb $BUILD_OPTIONS 2>&1 | tee ${LOG_FILE}
 else
-  nohup time ruby /build/scripts/vmbuild.rb $BUILD_OPTIONS >${LOG_FILE} 2>&1 &
+  nohup time ruby /build/manageiq/scripts/vmbuild.rb $BUILD_OPTIONS >${LOG_FILE} 2>&1 &
 
   echo "Nightly Build kicked off, Log @ ${LOG_FILE} ..."
 fi
