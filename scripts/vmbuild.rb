@@ -50,7 +50,7 @@ if !cli_options[:local] && cli_options[:build_url]
     `git fetch origin`                                    # Get origin updates
     `git reset --hard origin/#{cli_options[:reference]}`  # Reset the branch to the origin
   end
-  cfg_base = "#{cfg_base}/build"
+
   unless File.exist?(cfg_base)
     $log.error("Could not checkout repo #{build_repo} for reference #{cli_options[:reference]}")
     exit 1
