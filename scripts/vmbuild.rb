@@ -35,17 +35,16 @@ FILE_SERVER         = ENV["BUILD_FILE_SERVER"]             # SSH Server to host 
 FILE_SERVER_ACCOUNT = ENV["BUILD_FILE_SERVER_ACCOUNT"]     # Account to SSH as
 FILE_SERVER_BASE    = ENV["BUILD_FILE_SERVER_BASE"] || "." # Subdirectory of Account where to store builds
 
-if !cli_options[:local] && cli_options[:appliance_url]
-  # TODO: Split up appliance repo into appliance and appliance-build
-  appliance_repo = cli_options[:appliance_url]
+if !cli_options[:local] && cli_options[:build_url]
+  build_repo = cli_options[:build_url]
   cfg_base = "#{REFS_DIR}/#{cli_options[:reference]}"
   FileUtils.mkdir_p(cfg_base)
   Dir.chdir(cfg_base) do
     unless File.exist?(".git")
-      $log.info("Cloning Repo #{appliance_repo} to #{cfg_base} ...")
-      `git clone #{appliance_repo} .` unless File.exist?(".git")
+      $log.info("Cloning Repo #{build_repo} to #{cfg_base} ...")
+      `git clone #{build_repo} .` unless File.exist?(".git")
     end
-    $log.info("Checking out reference #{cli_options[:reference]} from repo #{appliance_repo} ...")
+    $log.info("Checking out reference #{cli_options[:reference]} from repo #{build_repo} ...")
     `git reset --hard`                                    # Drop any local changes
     `git checkout #{cli_options[:reference]}`             # Checkout existing branch
     `git fetch origin`                                    # Get origin updates
@@ -53,7 +52,7 @@ if !cli_options[:local] && cli_options[:appliance_url]
   end
   cfg_base = "#{cfg_base}/build"
   unless File.exist?(cfg_base)
-    $log.error("Could not checkout repo #{appliance_repo} for reference #{cli_options[:reference]}")
+    $log.error("Could not checkout repo #{build_repo} for reference #{cli_options[:reference]}")
     exit 1
   end
 else
