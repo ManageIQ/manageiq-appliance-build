@@ -54,7 +54,7 @@ yum install git
 
 As personal user-id:
 
-  Create ssh-keygen for Github.
+  Create ssh-keygen for Github (optional).
 
   Add ssh-key to personal user-id on Github settings.
 
@@ -62,8 +62,6 @@ As personal user-id:
 As root:
 
 Create /build
-  /bin
-  /config
   /fileshare
   /imagefactory
   /images
@@ -71,8 +69,15 @@ Create /build
   /kickstarts
   /logs
   /references
-  /scripts
   /storage
+
+Clone the build scripts
+
+  cd /build
+  git clone https://www.github.com/ManageIQ/manageiq-appliance-build.git
+  ln -s manageiq-appliance-build/bin     bin
+  ln -s manageiq-appliance-build/scripts scripts
+  ln -s manageiq-appliance-build/config  config
 
 ___________________________________________________________________________________________
 Imagefactory:
@@ -80,7 +85,7 @@ Imagefactory:
 Clone imagefactory as /build/imagefactory
 
   cd /build
-  git clone git@github.com:redhat-imaging/imagefactory.git
+  git clone https://www.github.com/redhat-imaging/imagefactory.git
 
 as root:
 
