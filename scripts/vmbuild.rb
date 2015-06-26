@@ -35,24 +35,24 @@ FILE_SERVER         = ENV["BUILD_FILE_SERVER"]             # SSH Server to host 
 FILE_SERVER_ACCOUNT = ENV["BUILD_FILE_SERVER_ACCOUNT"]     # Account to SSH as
 FILE_SERVER_BASE    = ENV["BUILD_FILE_SERVER_BASE"] || "." # Subdirectory of Account where to store builds
 
-if !cli_options[:local] && cli_options[:repo]
-  cfg_repo = cli_options[:repo]
+if !cli_options[:local] && cli_options[:build_url]
+  build_repo = cli_options[:build_url]
   cfg_base = "#{REFS_DIR}/#{cli_options[:reference]}"
   FileUtils.mkdir_p(cfg_base)
   Dir.chdir(cfg_base) do
     unless File.exist?(".git")
-      $log.info("Cloning Repo #{cfg_repo} to #{cfg_base} ...")
-      `git clone #{cfg_repo} .` unless File.exist?(".git")
+      $log.info("Cloning Repo #{build_repo} to #{cfg_base} ...")
+      `git clone #{build_repo} .` unless File.exist?(".git")
     end
-    $log.info("Checking out reference #{cli_options[:reference]} from repo #{cfg_repo} ...")
+    $log.info("Checking out reference #{cli_options[:reference]} from repo #{build_repo} ...")
     `git reset --hard`                                    # Drop any local changes
     `git checkout #{cli_options[:reference]}`             # Checkout existing branch
     `git fetch origin`                                    # Get origin updates
     `git reset --hard origin/#{cli_options[:reference]}`  # Reset the branch to the origin
   end
-  cfg_base = "#{cfg_base}/build"
+
   unless File.exist?(cfg_base)
-    $log.error("Could not checkout repo #{cfg_repo} for reference #{cli_options[:reference]}")
+    $log.error("Could not checkout repo #{build_repo} for reference #{cli_options[:reference]}")
     exit 1
   end
 else
@@ -83,13 +83,17 @@ directory_name    = "#{year_month_day}_#{hour_minute}"
 timestamp         = "#{year_month_day}#{hour_minute}"
 
 targets_config    = YAML.load_file(targets_file)
-name, directory, repo, targets = targets_config.values_at("name", "directory", "repository", "targets")
-git_checkout      = Build::GitCheckout.new(:remote => repo, :ref => cli_options[:reference])
+name, directory, targets = targets_config.values_at("name", "directory", "targets")
+
+appliance_git_url, manageiq_git_url = cli_options.values_at(:appliance_url, :manageiq_url)
+
+manageiq_checkout  = Build::GitCheckout.new(:remote => manageiq_git_url, :ref => cli_options[:reference])
+appliance_checkout = Build::GitCheckout.new(:remote => appliance_git_url, :ref => cli_options[:reference])
 
 file_rdu_dir_base = "#{FILE_SERVER_BASE}/#{directory}"
 file_rdu_dir      = "#{file_rdu_dir_base}/#{directory_name}"
 
-ks_gen            = Build::KickstartGenerator.new(cfg_base, targets.keys, puddle, git_checkout)
+ks_gen            = Build::KickstartGenerator.new(cfg_base, targets.keys, puddle, appliance_checkout, manageiq_checkout)
 ks_gen.run
 
 FILE_TYPE = {
@@ -136,7 +140,7 @@ Dir.chdir(IMGFAC_DIR) do
     source      = "#{STORAGE_DIR}/#{uuid}.body"
 
     FileUtils.mkdir_p(destination_directory)
-    file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{git_checkout.commit_sha}.#{FILE_TYPE[imgfac_target]}"
+    file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{FILE_TYPE[imgfac_target]}"
     destination = destination_directory.join(file_name)
     $log.info `mv #{source} #{destination}`
 

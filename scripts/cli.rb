@@ -7,14 +7,18 @@ module Build
     ALLOWED_TYPES = %w(nightly test)
     DEFAULT_TYPE  = "nightly"
     DEFAULT_REF   = "master"
-    DEFAULT_REPO  = "http://github.com/ManageIQ/manageiq.git"
+    APPLIANCE_URL = "https://github.com/ManageIQ/manageiq-appliance.git"
+    BUILD_URL     = "https://github.com/ManageIQ/manageiq-appliance-build.git"
+    MANAGEIQ_URL  = "https://github.com/ManageIQ/manageiq.git"
 
     def parse
       git_ref_desc  = "provide a git reference such as a branch or tag"
       type_desc     = "build type: nightly, test, a named yum repository"
       local_desc    = "Use local config and kickstart for build"
       share_desc    = "Copy builds to file share"
-      repo_desc     = "repository to use for build config and kickstart"
+      appliance_desc = "Repo URL containing appliance scripts and configs(COPY/LINK/TEMPLATE)"
+      build_desc     = "Repo URL containing the build config and kickstart"
+      manageiq_desc  = "Repo URL containing the main manageiq code"
 
       @options = Trollop.options do
         banner "Usage: build.rb [options]"
@@ -23,7 +27,9 @@ module Build
         opt :reference,   git_ref_desc,  :type => :string,  :default => DEFAULT_REF,  :short => "r"
         opt :local,       local_desc,    :type => :boolean, :default => false,        :short => "l"
         opt :fileshare,   share_desc,    :type => :boolean, :default => true,         :short => "s"
-        opt :repo,        repo_desc,     :type => :string,  :default => DEFAULT_REPO, :short => "R"
+        opt :appliance_url, appliance_desc,  :type => :string,  :default => APPLIANCE_URL, :short => "A"
+        opt :build_url, build_desc, :type => :string,  :default => BUILD_URL, :short => "B"
+        opt :manageiq_url, manageiq_desc, :type => :string,  :default => MANAGEIQ_URL, :short => "M"
       end
 
       options[:type] &&= options[:type].strip
