@@ -93,7 +93,7 @@ appliance_checkout = Build::GitCheckout.new(:remote => appliance_git_url, :ref =
 file_rdu_dir_base = "#{FILE_SERVER_BASE}/#{directory}"
 file_rdu_dir      = "#{file_rdu_dir_base}/#{directory_name}"
 
-ks_gen            = Build::KickstartGenerator.new(cfg_base, targets.keys, puddle, manageiq_checkout, appliance_checkout)
+ks_gen            = Build::KickstartGenerator.new(cfg_base, targets.keys, puddle, appliance_checkout, manageiq_checkout)
 ks_gen.run
 
 FILE_TYPE = {

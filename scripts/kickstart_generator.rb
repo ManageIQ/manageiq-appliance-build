@@ -12,7 +12,7 @@ module Build
 
     attr_reader :targets, :puddle, :appliance_checkout, :manageiq_checkout
 
-    def initialize(build_base, targets, puddle, manageiq_checkout, appliance_checkout)
+    def initialize(build_base, targets, puddle, appliance_checkout, manageiq_checkout)
       @build_base         = Pathname.new(build_base)
       @ks_gen_base        = @build_base.join(KS_GEN_DIR)
       @targets            = targets
