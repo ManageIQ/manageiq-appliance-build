@@ -74,9 +74,10 @@ Create /build
 Clone the build scripts
 
   cd /build
-  git clone git@github.com:manageiq/manageiq-appliance-build manageiq
-  ln -s manageiq/bin bin
-  ln -s manageiq/scripts scripts
+  git clone git@github.com:manageiq/manageiq-appliance-build.git
+  ln -s manageiq-appliance-build/bin     bin
+  ln -s manageiq-appliance-build/scripts scripts
+  ln -s manageiq-appliance-build/config  config
 
 ___________________________________________________________________________________________
 Imagefactory:
