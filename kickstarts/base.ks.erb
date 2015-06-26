@@ -305,6 +305,9 @@ rm -f /var/www/miq/vmdb/certs/v2_key
 # Enable top(1) and vmstat(1) data logging
 systemctl enable miqtop
 systemctl enable miqvmstat
+
+# Disable the default getty on tty1 so we can run the console there
+systemctl disable getty@tty1
 systemctl enable miqconsole
 
 systemctl enable evminit
