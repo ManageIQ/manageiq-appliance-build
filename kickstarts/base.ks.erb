@@ -215,9 +215,7 @@ pushd $appliance_root
     done
   popd
 
-  pushd ./LINK
-    ln -vs $appliance_root/LINK/.toprc /.toprc
-  popd
+  ln -vs $appliance_root/LINK/.toprc /.toprc
 
   #copy etc dir from COPY
   cp -vr COPY/etc /
