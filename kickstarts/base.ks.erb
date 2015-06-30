@@ -317,6 +317,10 @@ systemctl enable evm-watchdog
 # Link ctrl-alt-del.override to /dev/null to prevent reboot from console
 ln -sf /dev/null /etc/systemd/system/ctrl-alt-del.target
 
+# Create the journal directory to enable persistant logging
+mkdir /var/log/journal
+systemctl restart systemd-journald
+
 # Create a script to initialize appliance on first boot
 cat > /bin/appliance-initialize.sh <<EOF
 #!/bin/sh
