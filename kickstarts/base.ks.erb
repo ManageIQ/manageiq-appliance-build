@@ -336,7 +336,7 @@ cat > /usr/lib/systemd/system/appliance-initialize.service <<EOF
 Description=Initialize Appliance Database
 ConditionPathExists=!/opt/rh/postgresql92/root/var/lib/pgsql/data/base
 After=evminit.service
-Before=evmserverd.service
+Before=evmserverd.service miqconsole.service
 [Service]
 Type=oneshot
 ExecStart=/bin/appliance-initialize.sh
