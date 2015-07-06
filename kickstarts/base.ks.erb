@@ -189,6 +189,9 @@ git reset --hard <%= @manageiq_checkout.commit_sha %>
 # Symlink extracted repo (manageiq-appliance) to old /var/www/miq/system location.
 ln -vs $appliance_root $app_root/system
 
+# Symlink old lib directory to gems/pending.
+ln -vs $app_root/vmdb/gems/pending $app_root/lib
+
 #### TODO: Refactor this so the cfme rpm and the upstream share much of this code.
 
 mkdir -p $app_root/vmdb/log/apache
