@@ -161,6 +161,10 @@ open-vm-tools
 
 %post --log=/root/anaconda-post.log
 
+# For some reason, DEBUG is set but empty in the kickstart.
+# Unset it so ruby_parser doesn't print LOTS of output.
+unset DEBUG
+
 # Drop packets for INPUT/FORWARD that aren't whitelisted in the firewall setup
 for IPT in /etc/sysconfig/iptables /etc/sysconfig/iptables.old ; do
   if [ -f $IPT ] ; then
@@ -181,10 +185,12 @@ pushd $appliance_root
   git reset --hard <%= @appliance_checkout.commit_sha %>
 popd
 
-git clone <%= @manageiq_checkout.remote %> $app_root
-pushd $app_root
-git checkout <%= @manageiq_checkout.branch %>
-git reset --hard <%= @manageiq_checkout.commit_sha %>
+mkdir -p $app_root
+git clone <%= @manageiq_checkout.remote %> $app_root/vmdb
+pushd $app_root/vmdb
+  git checkout <%= @manageiq_checkout.branch %>
+  git reset --hard <%= @manageiq_checkout.commit_sha %>
+popd
 
 # Symlink extracted repo (manageiq-appliance) to old /var/www/miq/system location.
 ln -vs $appliance_root $app_root/system
