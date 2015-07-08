@@ -24,6 +24,7 @@ else
 end
 
 BUILD_BASE          = "/build"
+GPG_DIR             = "/root/.gnupg"
 CFG_DIR             = "#{BUILD_BASE}/config"
 FILESHARE_DIR       = "#{BUILD_BASE}/fileshare"
 REFS_DIR            = "#{BUILD_BASE}/references"
@@ -156,11 +157,15 @@ Dir.chdir(IMGFAC_DIR) do
       end
     end
   end
-  $log.info "Generating image checksums"
-  Dir.chdir(destination_directory) do
-    $log.info `/usr/bin/sha256sum * > SHA256SUM`
-    $log.info `/usr/bin/gpg --batch --no-tty --passphrase-file /root/.gnupg/pass -b SHA256SUM`
-    FileUtils.cp("/root/.gnupg/cfme_public.key", destination_directory)
+  passphrase_file = "#{GPG_DIR}/pass"
+  public_key_file = "#{GPG_DIR}/manageiq_public.key"
+  if File.exist?(passphrase_file) && File.exist?(public_key_file)
+    $log.info "Generating Image Checksums in #{destination_directory} ..."
+    Dir.chdir(destination_directory) do
+      $log.info `/usr/bin/sha256sum * > SHA256SUM`
+      $log.info `/usr/bin/gpg --batch --no-tty --passphrase-file #{passphrase_file} -b SHA256SUM`
+      FileUtils.cp(public_key_file, destination_directory)
+    end
   end
 end
 
