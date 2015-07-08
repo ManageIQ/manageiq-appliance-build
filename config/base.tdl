@@ -1,15 +1,15 @@
 <template>
-  <name>CentOS-6.5</name>
+  <name>CentOS-7.1</name>
   <os>
     <rootpw>ozrootpw</rootpw>
-    <name>CentOS-6</name>
-    <version>5</version>
+    <name>CentOS-7</name>
+    <version>1</version>
     <arch>x86_64</arch>
-    <install type="url">
-      <url>http://mirror.centos.org/centos/6/os/x86_64/</url>
+    <install type="iso">
+      <iso>file:///build/isos/CentOS-7-x86_64-DVD-1503-01.iso</iso>
     </install>
   </os>
-  <description>CentOS65 TDL meant to be used with custom kickstart for manageiq.</description>
+  <description>CentOS71 TDL meant to be used with custom kickstart for manageiq.</description>
   <disk>
     <size>40G</size>
   </disk>
