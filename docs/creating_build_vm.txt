@@ -316,3 +316,9 @@ Note:
 vncviewer has an "F8" menu we need to use if we want to send an "alt" keypress to the VM.
 On t540p thinkpad, with the function lock key on, pressing F8 actually disables WIFI.
 
+________________________________________________________________________________
+To setup a daily build:
+
+We'll symlink the nightly-build to the cron.daily directory:
+
+ln -s /build/bin/nightly-build.sh /etc/cron.daily
