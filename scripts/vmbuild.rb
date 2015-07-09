@@ -47,6 +47,7 @@ if !cli_options[:local] && cli_options[:build_url]
     end
     $log.info("Checking out reference #{cli_options[:reference]} from repo #{build_repo} ...")
     `git reset --hard`                                    # Drop any local changes
+    `git clean -dxf`                                      # Clean up any local untracked changes
     `git checkout #{cli_options[:reference]}`             # Checkout existing branch
     `git fetch origin`                                    # Get origin updates
     `git reset --hard origin/#{cli_options[:reference]}`  # Reset the branch to the origin
