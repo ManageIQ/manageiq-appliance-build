@@ -259,6 +259,16 @@ Apache
 
   # vi /etc/sysconfig/selinux
     SELINUX=disabled
+
+___________________________________________________________________________________________
+Cleanup imagefactory temp storage
+
+  To avoid imagefactory filling up the disk with in flight .meta and .body files,
+  we'll create a daily cron job to clean this up:
+
+  chmod +x /build/bin/clean_imagefactory_storage.sh
+  ln -s /build/bin/clean_imagefactory_storage.sh /etc/cron.daily
+
   
 ___________________________________________________________________________________________
 File Share
