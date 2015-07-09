@@ -319,6 +319,12 @@ On t540p thinkpad, with the function lock key on, pressing F8 actually disables 
 ________________________________________________________________________________
 To setup a daily build:
 
-We'll symlink the nightly-build to the cron.daily directory:
+To make the build run every weekday at 8pm local time:
+
+crontab -e
+# run the appliance build week nights at 8 pm
+0 20 * * 1-5 /build/bin/nightly-build.sh
+
+Or, we can just run via cron.daily (sometime in the early morning)
 
 ln -s /build/bin/nightly-build.sh /etc/cron.daily
