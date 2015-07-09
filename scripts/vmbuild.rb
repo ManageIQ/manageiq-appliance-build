@@ -170,21 +170,24 @@ Dir.chdir(IMGFAC_DIR) do
   end
 end
 
-# Only update the symlink for a nightly
+# Only update the latest symlink for a nightly
 unless build_label == "test"
-  link = stream_directory.join("latest")
+  symlink_name = "latest"
+  link = stream_directory.join(symlink_name)
   if File.exist?(link)
     raise "#{link} is not a symlink!" unless File.symlink?(link)
     result = FileUtils.rm(link, :verbose => true)
     $log.info("Deleted symlink: #{result}")
   end
 
-  result = FileUtils.ln_s(destination_directory, link, :verbose => true)
-  $log.info("Created symlink: #{result}")
+  Dir.chdir(stream_directory) do
+    result = FileUtils.ln_s(directory_name, symlink_name, :verbose => true)
+    $log.info("Created symlink: #{result}")
+  end
 
   if cli_options[:fileshare] && FILE_SERVER
-    $log.info "Updating latest symlink on #{FILE_SERVER} ..."
-    ssh_cmd = "cd #{file_rdu_dir_base}; rm -f latest; ln -s #{directory_name} latest"
+    $log.info "Updating #{symlink_name} symlink on #{FILE_SERVER} ..."
+    ssh_cmd = "cd #{file_rdu_dir_base}; rm -f #{symlink_name}; ln -s #{directory_name} #{symlink_name}"
     $log.info `ssh #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER} "#{ssh_cmd}"`
   end
 end
