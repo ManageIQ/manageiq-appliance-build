@@ -306,10 +306,6 @@ rm -f /var/www/miq/vmdb/certs/v2_key
 systemctl enable miqtop
 systemctl enable miqvmstat
 
-# Disable the default getty on tty1 so we can run the console there
-systemctl disable getty@tty1
-systemctl enable miqconsole
-
 systemctl enable evminit
 systemctl enable evmserverd
 systemctl enable evm-watchdog
@@ -337,7 +333,7 @@ cat > /usr/lib/systemd/system/appliance-initialize.service <<EOF
 Description=Initialize Appliance Database
 ConditionPathExists=!/opt/rh/postgresql92/root/var/lib/pgsql/data/base
 After=evminit.service
-Before=evmserverd.service miqconsole.service
+Before=evmserverd.service
 [Service]
 Type=oneshot
 ExecStart=/bin/appliance-initialize.sh
