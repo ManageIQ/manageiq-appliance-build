@@ -317,6 +317,22 @@
     ssh your_id@your.file.share.com
     ```
 
+## To setup a daily build:
+
+* To make the build run every weekday at 8pm local time:
+
+  ```
+  # crontab -e
+
+  # run the appliance build week nights at 8 pm
+  0 20 * * 1-5 /build/bin/nightly-build.sh
+  ```
+
+* Or, we can just run via cron.daily (sometime in the early morning)
+
+  ```
+  ln -s /build/bin/nightly-build.sh /etc/cron.daily
+  ```
 
 # Usage
 
@@ -356,20 +372,3 @@ Above is provided with the `/build/bin/vncviewer_build.sh [--wait]`
 Note:
 vncviewer has an "F8" menu we need to use if we want to send an "alt" keypress to the VM.
 On t540p thinkpad, with the function lock key on, pressing F8 actually disables WIFI.
-
-## To setup a daily build:
-
-* To make the build run every weekday at 8pm local time:
-
-  ```
-  # crontab -e
-
-  # run the appliance build week nights at 8 pm
-  0 20 * * 1-5 /build/bin/nightly-build.sh
-  ```
-
-* Or, we can just run via cron.daily (sometime in the early morning)
-
-  ```
-  ln -s /build/bin/nightly-build.sh /etc/cron.daily
-  ```
