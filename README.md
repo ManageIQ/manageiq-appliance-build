@@ -1,131 +1,142 @@
 
-________________________________________________________________________________
-******** INSTALLING ********
+# Installation
 
-Fresh Install on CentOS 7.1 build 1503, using DVD iso.
+  **Note: All instructions are as root unless specified**
 
-  CentOS-7-x86_64-DVD-1503-01.iso
+## Setup CentOS 7.1 in a new virtual machine
 
-  Configured:
-    8GB Ram
-    80GB HD - Minimum
-    NAT or Bridged
-  
-  Enable Intel Hardware Virtualization VT-x/EPT
-  Time Sync with Host
+  * CentOS-7-x86_64-DVD-1503-01.iso (attached to vm)
+  * Vm configuration:
+    * 8GB Ram
+    * 80GB HD - Minimum
+    * NAT or Bridged
+    * Enable Intel Hardware Virtualization VT-x/EPT
+    * Time Sync with Host
 
-  Make sure to also create a personal userid with admin privileges.
+  * Create a personal userid with admin privileges.
+  * Enable Network in UI.
+  * Default enable network upon boot.
 
-Enable Network in UI.
+  `/etc/sysconfig/network-scripts/ifcfg-eno* equiv eth0 file, ONBOOT=yes`
 
-  Also, default enable network upon boot.
+  * Add /root/.ssh/authorized_key with id_rsa.pub if desired to ssh to root without password.
 
-  /etc/sysconfig/network-scripts/ifcfg-eno* equiv eth0 file, ONBOOT=yes
+## Add yum repositories
 
-Add Repos:
+  * Add EPEL repo
 
-  Add the EPEL Repo:
+    * Create: `/etc/yum.repos.d/epel.repo`
 
-    /etc/yum.repos.d/epel.repo
-
+      ```
       [epel]
       name=CentOS-$releasever - Epel
       baseurl=http://dl.fedoraproject.org/pub/epel/$releasever/$basearch/
       enabled=1
       gpgcheck=0
+      ```
+  * Add repo to support building openstack images
 
-  Add a Yum repository to add support for building openstack images
+    * Create: `/etc/yum.repos.d/openstack-kilo.repo`
 
-    /etc/yum.repos.d/openstack-kilo.repo
-
+      ```
       [openstack-kilo]
       name=CentOS-$releasever - openstack-kilo
       baseurl=http://centos.mirror.constant.com/7/cloud/x86_64/openstack-kilo/
       enabled=1
       gpgcheck=0
+      ```
 
+## Install yum packages and updates
 
-Add /root/.ssh/authorized_key with id_rsa.pub if desired to ssh to root without password.
+  * Install Updates from UI
+  * Reboot
+  * `yum install git`
+  * As personal user-id (NOT NEEEDED?  We use https to clone, pull)
+    * Create ssh-keygen for Github (optional).
+    * Add ssh-key to personal user-id on Github settings.
 
-Install Updates from UI
-Reboot
+## Setup the /build directory
 
-yum install git
+  * Create the directories:
 
-As personal user-id:
+    ```
+    /build
+      /fileshare
+      /imagefactory
+      /images
+      /isos
+      /kickstarts
+      /logs
+      /references
+      /storage
+    ```
 
-  Create ssh-keygen for Github (optional).
+  * Clone the build scripts and setup symlinks
 
-  Add ssh-key to personal user-id on Github settings.
+    ```
+    cd /build
+    git clone https://www.github.com/ManageIQ/manageiq-appliance-build.git
+    ln -s manageiq-appliance-build/bin     bin
+    ln -s manageiq-appliance-build/scripts scripts
+    ln -s manageiq-appliance-build/config  config
+      ```
 
+## Setup Imagefactory:
 
-As root:
+  * Clone imagefactory as /build/imagefactory
 
-Create /build
-  /fileshare
-  /imagefactory
-  /images
-  /isos
-  /kickstarts
-  /logs
-  /references
-  /storage
+    ```
+    cd /build
+    git clone https://www.github.com/redhat-imaging/imagefactory.git
+    ```
 
-Clone the build scripts
+  * Install dependencies:
 
-  cd /build
-  git clone https://www.github.com/ManageIQ/manageiq-appliance-build.git
-  ln -s manageiq-appliance-build/bin     bin
-  ln -s manageiq-appliance-build/scripts scripts
-  ln -s manageiq-appliance-build/config  config
-
-___________________________________________________________________________________________
-Imagefactory:
-
-Clone imagefactory as /build/imagefactory
-
-  cd /build
-  git clone https://www.github.com/redhat-imaging/imagefactory.git
-
-as root:
-
-  yum install libguestfs
-  yum install pycurl
-  yum install python-zope-interface
-  yum install libxml2
-  yum install python-httplib2
-  yum install python-paste-deploy
-  yum install python-oauth2
-  yum install python-pygments
-  yum install oz
-
+    ```
+    yum install libguestfs
+    yum install pycurl
+    yum install python-zope-interface
+    yum install libxml2
+    yum install python-httplib2
+    yum install python-paste-deploy
+    yum install python-oauth2
+    yum install python-pygments
+    yum install oz
+    ```
   
-for Imagefactory:
+## Run imagefactory_dev_setup.sh
 
-  Use /build/bin/setup_imagefactory.sh or manually create with the following and run:
+  * Use /build/bin/setup_imagefactory.sh or manually create with the following and run:
 
-  # cd /build/imagefactory
-  # python ./setup.py sdist install
-  # cd imagefactory-plugins
-  # python ./setup.py sdist install
-  
-  # mkdir /etc/imagefactory/plugins.d
-  # cd /etc/imagefactory/plugins.d
-  # for PLUGIN in `ls /usr/lib/python2.7/site-packages/imagefactory_plugins |grep -v .py`
-  do
-    ln -s -v /usr/lib/python2.7/site-packages/imagefactory_plugins/$PLUGIN/$PLUGIN.info ./$PLUGIN.info
-  done
+    ```
+    # cd /build/imagefactory
+    # python ./setup.py sdist install
+    # cd imagefactory-plugins
+    # python ./setup.py sdist install
 
-  # cd /build/imagefactory
-  # scripts/imagefactory_dev_setup.sh
+    # mkdir /etc/imagefactory/plugins.d
+    # cd /etc/imagefactory/plugins.d
+    # for PLUGIN in `ls /usr/lib/python2.7/site-packages/imagefactory_plugins |grep -v .py`
+    do
+      ln -s -v /usr/lib/python2.7/site-packages/imagefactory_plugins/$PLUGIN/$PLUGIN.info ./$PLUGIN.info
+    done
 
-For vSphere plugin.
+    # cd /build/imagefactory
+    # scripts/imagefactory_dev_setup.sh
+    ```
 
-  For vsphere
-  yum install python-psphere
-  yum install VMDKstream
+## Setup for vSphere plugin.
 
-  Create /root/.psphere/config.yaml
+  * Install dependencies:
+
+    ```
+    yum install python-psphere
+    yum install VMDKstream
+    ```
+
+  * Create /root/.psphere/config.yaml
+
+    ```
     general:
         server: 127.0.0.1
         username: foo
@@ -134,171 +145,189 @@ For vSphere plugin.
     logging:
         destination: ~/.psphere/psphere.log
         level: DEBUG # DEBUG, INFO, etc
+    ```
 
-For oVirt plugin.
+## Setup for oVirt plugin.
 
-  yum install ovirt-engine-sdk-python
+  `yum install ovirt-engine-sdk-python`
 
-For OpenStack images.
+## Setup for OpenStack images
 
-  yum install python-glanceclient
+  `yum install python-glanceclient`
 
-___________________________________________________________________________________________
-KVM/Virt
+## Setup KVM/Virt
 
-As root:
+  * Install packages
 
-  yum install kvm qemu-kvm qemu-kvm-tools libvirt libvirt-python libguestfs-tools virt-install
-    qemu-kvm        =  QEMU emulator
+    ```
+    yum install kvm qemu-kvm qemu-kvm-tools libvirt libvirt-python libguestfs-tools virt-install
+    yum install virt-manager virt-viewer
+    ```
+  * Enable libvirtd
+
+    ```
+    systemctl enable libvirtd
+    systemctl start libvirtd
+    ```
+
+  * Package information:
+
+    ```
+    qemu-kvm        = QEMU emulator
     qemu-img        = QEMU disk image manager
-    virt-install    =  Command line tool to create virtual machines.
+    virt-install    = Command line tool to create virtual machines.
     libvirt         = Provides libvirtd daemon that manages virtual machines and controls hypervisor.
     libvirt-client  = provides client side API’s for accessing servers and also provides virsh utility
                       which provides command line tool to manage virtual machines.
     virt-viewer     = Graphical console
+    ```
 
-  systemctl enable libvirtd
-  systemctl start libvirtd
+## Install guest-agent if running as a RHEVM vm
 
-  yum install virt-manager virt-viewer
+  `yum install rhevm-guest-agent`
 
+## Configure virtualization hardware
 
-___________________________________________________________________________________________
-RHEVM
-
-  When running as RHEVM VM
-
-  yum install rhevm-guest-agent
-
-___________________________________________________________________________________________
-Virtualization hardware
-
-  in hosting's VM's .vmx file:
-
+  * In hosting's VM's .vmx file:
+    ```
     monitor.virtual_mmu = "hardware"
     monitor.virtual_exec = "hardware"
     vhv.enable = "TRUE"
+    ```
 
-  egrep '(vmx|svm)' /proc/cpuinfo
+  * Start imagefactory vm and verify hardware:
 
-  virsh nodeinfo
+    ```
+    egrep '(vmx|svm)' /proc/cpuinfo
 
-  lsmod | grep kvm
+    virsh nodeinfo
 
-  to load:  modprobe kvm
-            modprobe kvm_intel
+    lsmod | grep kvm
+    ```
 
-  Note: kvm_intel must be started with nested enabled:
+  * To manually load kernel modules:
 
-  edit /etc/modprobe.d/dist.conf  (create file if not there)
-    append:
-      options kvm-intel nested=y
+    ```
+    modprobe kvm
+    modprobe kvm_intel
+    ```
 
-___________________________________________________________________________________________
-Build env:
+  * Start kvm_intel with nested enabled:
+    * Append options in /etc/modprobe.d/dist.conf (create file if not there)
+      `options kvm-intel nested=y`
 
-  as root:
+## Setup build environment
 
+  ```
   yum install ruby
   gem install trollop
-  
-  For enabling coping to SSH file server, define the following in Root's .bashrc
+  ```
 
-  export BUILD_FILE_SERVER="your.file.server.com"
-  export BUILD_FILE_SERVER_ACCOUNT="your_id"
-  export BUILD_FILE_SERVER_BASE="public_html"  # subdirectory off your_id's home where to scp files to
+  * For enabling copying to SSH file server, define the following in Root's .bashrc (optional)
 
-  root will need password-less access to the accout listed above.
+    ```
+    export BUILD_FILE_SERVER="your.file.server.com"
+    export BUILD_FILE_SERVER_ACCOUNT="your_id"
+    export BUILD_FILE_SERVER_BASE="public_html"  # subdirectory off your_id's home where to scp files to
+    ```
 
-___________________________________________________________________________________________
-VNC Server and Viewer
+    * Note: root will need password-less access to the account listed above.
 
-  as root:
 
+## Setup VNC Server and Viewer
+
+  ```
   yum install tigervnc tigervnc-server*
   cp /lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@:1.service
   vi /etc/systemd/system/vncserver@:1.service
     replace: <USER> in ExecStart and PIDFile lines with user to allow vnc server
 
   systemctl daemon-reload
+  ```
+
+  * as `<USER>`
+    * `vncpasswd`
+
+  * as root again
+
+    ```
+    systemctl enable vncserver@:1.service
+    systemctl start vncserver@:1.service
+    firewall-cmd --permanent --add-service vnc-server
+    systemctl restart firewalld.service
+    ```
   
-  as <USER>
-  vncpasswd
+## Setup Apache for sharing built images
 
-  as root again:
-  systemctl enable vncserver@:1.service
-  systemctl start vncserver@:1.service
-  firewall-cmd --permanent --add-service vnc-server
-  systemctl restart firewalld.service
-  
-___________________________________________________________________________________________
-Apache
+  ```
+  yum install httpd
+  firewall-cmd --permanent --add-port=80/tcp
+  firewall-cmd --permanent --add-port=443/tcp
+  firewall-cmd --reload
 
-  as root
+  mv /etc/httpd/conf.d/welcome.conf /etc/httpd/conf.d/welcome.conf.orig   (Ok not to have index.html)
+  systemctl start httpd
+  systemctl enable httpd
 
-  # yum install httpd
-  # firewall-cmd --permanent --add-port=80/tcp
-  # firewall-cmd --permanent --add-port=443/tcp
-  # firewall-cmd --reload
+  cd /var/www/html
+  ln -s /build/fileshare builds
+  ln -s /build/isos      isos
+  ```
 
-  # mv /etc/httpd/conf.d/welcome.conf /etc/httpd/conf.d/welcome.conf.orig   (Ok not to have index.html)
-  # systemctl start httpd
-  # systemctl enable httpd
+  * For Apache to be able to see the directories above:  (SELinux)
 
-  # cd /var/www/html
-  # ln -s /build/fileshare builds
-  # ln -s /build/isos      isos
+    ```
+    chmod -R a+rx /build/fileshare
+    chcon -R -t httpd_sys_content_t /build/fileshare
+    chmod -R a+rx /build/isos
+    chcon -R -t httpd_sys_content_t /build/isos
+    ```
 
-  For Apache to be able to see the directories above:  (SELinux)
-  # chmod -R a+rx /build/fileshare
-  # chcon -R -t httpd_sys_content_t /build/fileshare
-  # chmod -R a+rx /build/isos
-  # chcon -R -t httpd_sys_content_t /build/isos
+  * At each update, or simply disable SELinux
 
-  At each update, or simply disable SELinux
-
-  # vi /etc/sysconfig/selinux
+    ```
+    vi /etc/sysconfig/selinux
     SELINUX=disabled
+    ```
 
-___________________________________________________________________________________________
-Cleanup imagefactory temp storage
+## Cleanup imagefactory temp storage
 
-  To avoid imagefactory filling up the disk with in flight .meta and .body files,
+  * To avoid imagefactory filling up the disk with in flight .meta and .body files,
   we'll create a daily cron job to clean this up:
 
+  ```
   chmod +x /build/bin/clean_imagefactory_storage.sh
   ln -s /build/bin/clean_imagefactory_storage.sh /etc/cron.daily
-
+  ```
   
-___________________________________________________________________________________________
-File Share
+## File Share (optional)
 
-  Optionally copying artifacts to a file serve
-
-  # vi /etc/hosts
-  a.b.c.d   your.file.share.com
+  * `vi /etc/hosts`
+    `a.b.c.d   your.file.share.com`
   
-  Make sure root can ssh/scp to personal account on your.file.share.com
-  # su -
-  # ssh-keygen
-  (Press Enter key till you get the prompt)
-  # ssh-copy-id -i your_id@your.file.share.com
-  (It will once ask for the password of the host system)
+  * Make sure root can ssh/scp to personal account on your.file.share.com
+    ```
+    su -
+    ssh-keygen
+    # Press Enter key till you get the prompt
 
-  # ssh your_id@your.file.share.com
+    ssh-copy-id -i your_id@your.file.share.com
+    # It will once ask for the password of the host system
+
+    ssh your_id@your.file.share.com
+    ```
 
 
-________________________________________________________________________________
-******** USING ********
-
+# Usage
 
 With installs, vnc is not directly available, but can be accessed via local vncviewer
 installed on the VM hosting imagefactory.
 
-# virsh list
+`virsh list`
 
 to determine which VM ID is doing the install and then
-# virsh domdisplay <id_of_domain>
+
+`virsh domdisplay <id_of_domain>`
 
 You'll get a local VNC display number for the actual VM doing the install.
 (As opposed to a VNC server being run inside of Anaconda on the VM.
@@ -307,34 +336,40 @@ And you can use that display to get to a debug shell and do other installer-like
 
 So ...
 
-system# sudo virsh list
- Id    Name                           State
-----------------------------------------------------
- 4     factory-build-4cc03248-2ae3-4614-989e-5982e6850a8c running
- 
-system# sudo virsh domdisplay 4
-vnc://127.0.0.1:0
+  ```
+  # sudo virsh list
+   Id    Name                           State
+  ----------------------------------------------------
+   4     factory-build-4cc03248-2ae3-4614-989e-5982e6850a8c running
 
-system# vncviewer :0
+  # sudo virsh domdisplay 4
+  vnc://127.0.0.1:0
+
+  # vncviewer :0
+  ```
 
 
 Assuming, running in Graphical/X mode.
 
-Above is provided with the /build/bin/vncviewer_build.sh [--wait]
+Above is provided with the `/build/bin/vncviewer_build.sh [--wait]`
 
 Note:
 vncviewer has an "F8" menu we need to use if we want to send an "alt" keypress to the VM.
 On t540p thinkpad, with the function lock key on, pressing F8 actually disables WIFI.
 
-________________________________________________________________________________
-To setup a daily build:
+## To setup a daily build:
 
-To make the build run every weekday at 8pm local time:
+* To make the build run every weekday at 8pm local time:
 
-crontab -e
-# run the appliance build week nights at 8 pm
-0 20 * * 1-5 /build/bin/nightly-build.sh
+  ```
+  # crontab -e
 
-Or, we can just run via cron.daily (sometime in the early morning)
+  # run the appliance build week nights at 8 pm
+  0 20 * * 1-5 /build/bin/nightly-build.sh
+  ```
 
-ln -s /build/bin/nightly-build.sh /etc/cron.daily
+* Or, we can just run via cron.daily (sometime in the early morning)
+
+  ```
+  ln -s /build/bin/nightly-build.sh /etc/cron.daily
+  ```
