@@ -180,10 +180,8 @@ unless build_label == "test"
     $log.info("Deleted symlink: #{result}")
   end
 
-  Dir.chdir(stream_directory) do
-    result = FileUtils.ln_s(directory_name, symlink_name, :verbose => true)
-    $log.info("Created symlink: #{result}")
-  end
+  result = FileUtils.ln_s(directory_name, link, :verbose => true)
+  $log.info("Created symlink: #{result}")
 
   if cli_options[:fileshare] && FILE_SERVER
     $log.info "Updating #{symlink_name} symlink on #{FILE_SERVER} ..."
