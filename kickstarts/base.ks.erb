@@ -328,7 +328,7 @@ mkdir /var/log/journal
 systemctl restart systemd-journald
 
 # Alter cloud-init config to allow root ssh access to the appliance
-[[ -s /etc/cloud/cloud.cfg ]] && sed -i "s/^ssh_pwauth:.*$/ssh_pwauth: \"unchanged\"/g" /etc/cloud/cloud.cfg
+[[ -s /etc/cloud/cloud.cfg ]] && sed -i "s/^ssh_pwauth:.*$/ssh_pwauth: True/g" /etc/cloud/cloud.cfg
 [[ -s /etc/cloud/cloud.cfg ]] && sed -i "s/^disable_root:.*$/disable_root: false/g" /etc/cloud/cloud.cfg
 
 # Alter cloud-init logging config to prevent logging to the console
