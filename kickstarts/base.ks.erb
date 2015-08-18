@@ -327,6 +327,10 @@ ln -sf /dev/null /etc/systemd/system/ctrl-alt-del.target
 mkdir /var/log/journal
 systemctl restart systemd-journald
 
+# Alter clout-init config to allow root ssh access to the appliance
+[[ -s /etc/cloud/cloud.cfg ]] && sed -i "s/^ssh_pwauth:.*$/ssh_pwauth: \"unchanged\"/g" /etc/cloud/cloud.cfg
+[[ -s /etc/cloud/cloud.cfg ]] && sed -i "s/^disable_root:.*$/disable_root: false/g" /etc/cloud/cloud.cfg
+
 # Create a script to initialize appliance on first boot
 cat > /bin/appliance-initialize.sh <<EOF
 #!/bin/sh
