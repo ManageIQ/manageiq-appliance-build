@@ -50,7 +50,7 @@ logvol /              --name=lv_os   --vgname=vg_system --size=10240 --fstype=xf
 logvol swap           --name=lv_swap --vgname=vg_system --size=4096  --grow
 
 volgroup vg_data      --pesize=4096 pv.2
-logvol /opt/rh/rh-postgresql94/root/var/lib/pgsql/data --name=lv_pg --vgname=vg_data --size=8192 --grow --fstype=xfs
+logvol /var/opt/rh/rh-postgresql94/lib/pgsql/data --name=lv_pg --vgname=vg_data --size=8192 --grow --fstype=xfs
 
 reboot
 
@@ -328,7 +328,7 @@ systemctl restart systemd-journald
 # Create a script to initialize appliance on first boot
 cat > /bin/appliance-initialize.sh <<EOF
 #!/bin/sh
-[[ -d /opt/rh/rh-postgresql94/root/var/lib/pgsql/data/base ]] && exit 0
+[[ -d /var/opt/rh/rh-postgresql94/lib/pgsql/data/base ]] && exit 0
 [[ -s /etc/default/evm ]] && source /etc/default/evm
 echo "Initializing Appliance, please wait ..." > /dev/tty1
 appliance_console_cli --region 0 --internal --password smartvm
@@ -339,7 +339,7 @@ chmod 755 /bin/appliance-initialize.sh
 cat > /usr/lib/systemd/system/appliance-initialize.service <<EOF
 [Unit]
 Description=Initialize Appliance Database
-ConditionPathExists=!/opt/rh/rh-postgresql94/root/var/lib/pgsql/data/base
+ConditionPathExists=!/var/opt/rh/rh-postgresql94/lib/pgsql/data/base
 After=evminit.service
 Before=evmserverd.service
 [Service]
