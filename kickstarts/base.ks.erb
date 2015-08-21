@@ -246,12 +246,8 @@ pushd $appliance_root
 
   ln -vs $appliance_root/LINK/.toprc /.toprc
 
-  #copy etc dir from COPY
-  cp -vr COPY/etc /
-  #copy var dir from COPY
-  cp -vr COPY/var /
-  # copy usr dir from COPY
-  cp -vr COPY/usr /
+  #copy all files/directories below COPY
+  cp -vr COPY/* /
 popd
 
 # post install repos
