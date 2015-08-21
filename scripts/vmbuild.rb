@@ -87,13 +87,14 @@ timestamp         = "#{year_month_day}#{hour_minute}"
 
 directory       = "upstream"
 name            = "manageiq"
-targets_mapping = {
+
+targets = {
   "vsphere"   => "vsphere",
   "ovirt"     => "rhevm",
   "openstack" => "openstack-kvm"
 }
 
-targets = targets.values
+targets = targets.select {|k, _| k == "vsphere "}  if cli_options[:vsphere_only]
 
 appliance_git_url, manageiq_git_url = cli_options.values_at(:appliance_url, :manageiq_url)
 

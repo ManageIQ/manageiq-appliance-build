@@ -20,6 +20,7 @@ module Build
       build_desc     = "Repo URL containing the build config and kickstart"
       manageiq_desc  = "Repo URL containing the main manageiq code"
       upload_desc    = "Upload appliance builds to the website"
+      vsphere_desc   = "Build only the vsphere image.  Defaults to false and builds all images."
 
       @options = Trollop.options do
         banner "Usage: build.rb [options]"
@@ -32,6 +33,7 @@ module Build
         opt :build_url,     build_desc,     :type => :string,  :default => BUILD_URL,     :short => "B"
         opt :manageiq_url,  manageiq_desc,  :type => :string,  :default => MANAGEIQ_URL,  :short => "M"
         opt :upload,        upload_desc,    :type => :boolean, :default => false,         :short => "u"
+        opt :vsphere_only, vsphere_desc,    :type => :boolean, :default => false,         :short => "V"
       end
 
       options[:type] &&= options[:type].strip
