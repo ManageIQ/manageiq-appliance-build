@@ -25,15 +25,15 @@ module Build
       @options = Trollop.options do
         banner "Usage: build.rb [options]"
 
-        opt :type,          type_desc,      :type => :string,  :default => DEFAULT_TYPE,  :short => "t"
-        opt :reference,     git_ref_desc,   :type => :string,  :default => DEFAULT_REF,   :short => "r"
-        opt :local,         local_desc,     :type => :boolean, :default => false,         :short => "l"
-        opt :fileshare,     share_desc,     :type => :boolean, :default => true,          :short => "s"
-        opt :appliance_url, appliance_desc, :type => :string,  :default => APPLIANCE_URL, :short => "A"
-        opt :build_url,     build_desc,     :type => :string,  :default => BUILD_URL,     :short => "B"
-        opt :manageiq_url,  manageiq_desc,  :type => :string,  :default => MANAGEIQ_URL,  :short => "M"
-        opt :upload,        upload_desc,    :type => :boolean, :default => false,         :short => "u"
-        opt :vsphere_only, vsphere_desc,    :type => :boolean, :default => false,         :short => "V"
+        opt :type,          type_desc,      :type => :string,  :short => "t", :default => DEFAULT_TYPE
+        opt :reference,     git_ref_desc,   :type => :string,  :short => "r", :default => DEFAULT_REF
+        opt :local,         local_desc,     :type => :boolean, :short => "l", :default => false
+        opt :fileshare,     share_desc,     :type => :boolean, :short => "s", :default => true
+        opt :appliance_url, appliance_desc, :type => :string,  :short => "A", :default => APPLIANCE_URL
+        opt :build_url,     build_desc,     :type => :string,  :short => "B", :default => BUILD_URL
+        opt :manageiq_url,  manageiq_desc,  :type => :string,  :short => "M", :default => MANAGEIQ_URL
+        opt :upload,        upload_desc,    :type => :boolean, :short => "u", :default => false
+        opt :vsphere_only,  vsphere_desc,   :type => :boolean, :short => "V", :default => false
       end
 
       options[:type] &&= options[:type].strip
