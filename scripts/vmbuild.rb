@@ -4,7 +4,6 @@ require 'logger'
 require 'pathname'
 require 'yaml'
 
-require_relative 'productization'
 require_relative 'kickstart_generator'
 require_relative 'git_checkout'
 require_relative 'cli'
@@ -65,9 +64,8 @@ end
 
 $log.info "Using Configuration base directory: #{cfg_base}"
 
-targets_file      = Build::Productization.file_for(cfg_base, "config/targets.yml")
-tdl_file          = Build::Productization.file_for(cfg_base, "config/base.tdl")
-ova_file          = Build::Productization.file_for(cfg_base, "config/ova.json")
+tdl_file = Pathname.new(BUILD_BASE).join("config/base.tdl")
+ova_file = Pathname.new(BUILD_BASE).join("config/ova.json")
 
 $log.info "Using inputs: puddle: #{puddle}, build_label: #{build_label}, targets_file: #{targets_file}"
 $log.info "              tdl_file: #{tdl_file}, ova_file: #{ova_file}."
@@ -86,8 +84,16 @@ hour_minute       = Time.now.strftime("%H%M")
 directory_name    = "#{year_month_day}_#{hour_minute}"
 timestamp         = "#{year_month_day}#{hour_minute}"
 
-targets_config    = YAML.load_file(targets_file)
-name, directory, targets = targets_config.values_at("name", "directory", "targets")
+
+directory       = "upstream"
+name            = "manageiq"
+targets_mapping = {
+  "vsphere"   => "vsphere",
+  "ovirt"     => "rhevm",
+  "openstack" => "openstack-kvm"
+}
+
+targets = targets.values
 
 appliance_git_url, manageiq_git_url = cli_options.values_at(:appliance_url, :manageiq_url)
 
