@@ -13,7 +13,7 @@ repo --name=extras  --baseurl=http://mirror.centos.org/centos/7/extras/x86_64/
 repo --name=epel    --baseurl=http://dl.fedoraproject.org/pub/epel/7/x86_64/
 
 # repos to install packages not found in the os
-repo --name=postgresql92 --baseurl=http://www.softwarecollections.org/repos/rhscl/postgresql92/epel-7-x86_64/
+repo --name=rh-postgresql94 --baseurl=http://www.softwarecollections.org/repos/rhscl/rh-postgresql94/epel-7-x86_64/
 
 # Please also add to "post install repos" around line 212.
 repo --name=manageiq-scl --baseurl=http://copr-be.cloud.fedoraproject.org/results/abellott/manageiq-scl/epel-7-x86_64/
@@ -50,7 +50,7 @@ logvol /              --name=lv_os   --vgname=vg_system --size=10240 --fstype=xf
 logvol swap           --name=lv_swap --vgname=vg_system --size=4096  --grow
 
 volgroup vg_data      --pesize=4096 pv.2
-logvol /opt/rh/postgresql92/root/var/lib/pgsql/data --name=lv_pg --vgname=vg_data --size=8192 --grow --fstype=xfs
+logvol /var/opt/rh/rh-postgresql94/lib/pgsql/data --name=lv_pg --vgname=vg_data --size=8192 --grow --fstype=xfs
 
 reboot
 
@@ -92,9 +92,9 @@ nfs-utils
 nodejs                           # used for asset pipeline asset compilation - From epel
 OpenIPMI
 openslp-devel                    # build requires
-postgresql92-postgresql          # appliance section
-postgresql92-postgresql-devel    # for pg gem
-postgresql92-postgresql-server   # appliance section
+rh-postgresql94-postgresql          # appliance section
+rh-postgresql94-postgresql-devel    # for pg gem
+rh-postgresql94-postgresql-server   # appliance section
 qpid-cpp-client-ssl              # Enable AMQP SSL connections - From epel
 scl-utils
 scl-utils-build                  # build requires
@@ -339,7 +339,7 @@ systemctl restart systemd-journald
 # Create a script to initialize appliance on first boot
 cat > /bin/appliance-initialize.sh <<EOF
 #!/bin/sh
-[[ -d /opt/rh/postgresql92/root/var/lib/pgsql/data/base ]] && exit 0
+[[ -d /var/opt/rh/rh-postgresql94/lib/pgsql/data/base ]] && exit 0
 [[ -s /etc/default/evm ]] && source /etc/default/evm
 echo "Initializing Appliance, please wait ..." > /dev/tty1
 appliance_console_cli --region 0 --internal --password smartvm
@@ -350,7 +350,7 @@ chmod 755 /bin/appliance-initialize.sh
 cat > /usr/lib/systemd/system/appliance-initialize.service <<EOF
 [Unit]
 Description=Initialize Appliance Database
-ConditionPathExists=!/opt/rh/postgresql92/root/var/lib/pgsql/data/base
+ConditionPathExists=!/var/opt/rh/rh-postgresql94/lib/pgsql/data/base
 After=evminit.service
 Before=evmserverd.service
 [Service]
