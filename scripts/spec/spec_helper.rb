@@ -94,3 +94,6 @@ RSpec.configure do |config|
   Kernel.srand config.seed
 =end
 end
+
+require 'pathname'
+$LOAD_PATH << Pathname.new(__dir__).join("..")
