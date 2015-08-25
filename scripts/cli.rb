@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'trollop'
+require_relative 'target'
 
 module Build
   class Cli
@@ -11,7 +12,7 @@ module Build
     BUILD_URL     = "https://github.com/ManageIQ/manageiq-appliance-build.git"
     MANAGEIQ_URL  = "https://github.com/ManageIQ/manageiq.git"
 
-    def parse
+    def parse(args = ARGV)
       git_ref_desc   = "provide a git reference such as a branch or tag"
       type_desc      = "build type: nightly, test, a named yum repository"
       local_desc     = "Use local config and kickstart for build"
@@ -20,9 +21,9 @@ module Build
       build_desc     = "Repo URL containing the build config and kickstart"
       manageiq_desc  = "Repo URL containing the main manageiq code"
       upload_desc    = "Upload appliance builds to the website"
-      vsphere_desc   = "Build only the vsphere image.  Defaults to false and builds all images."
+      only_desc      = "Build only specific image types.  Example: --only ovirt openstack.  Defaults to all images."
 
-      @options = Trollop.options do
+      @options = Trollop.options(args) do
         banner "Usage: build.rb [options]"
 
         opt :type,          type_desc,      :type => :string,  :short => "t", :default => DEFAULT_TYPE
@@ -33,7 +34,7 @@ module Build
         opt :build_url,     build_desc,     :type => :string,  :short => "B", :default => BUILD_URL
         opt :manageiq_url,  manageiq_desc,  :type => :string,  :short => "M", :default => MANAGEIQ_URL
         opt :upload,        upload_desc,    :type => :boolean, :short => "u", :default => false
-        opt :vsphere_only,  vsphere_desc,   :type => :boolean, :short => "V", :default => false
+        opt :only,          only_desc,      :type => :strings, :short => "o", :default => Target.supported_types
       end
 
       options[:type] &&= options[:type].strip
