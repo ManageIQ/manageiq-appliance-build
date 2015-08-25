@@ -28,4 +28,8 @@ describe Build::Target do
   it ".supported_types" do
     expect(described_class.supported_types).to match_array %w(openstack ovirt vsphere)
   end
+
+  it "#to_s" do
+    expect(described_class.new("vsphere").to_s).to eql "vsphere"
+  end
 end

@@ -34,5 +34,9 @@ module Build
     def <=>(other)
       name <=> other.name
     end
+
+    def to_s
+      name
+    end
   end
 end
