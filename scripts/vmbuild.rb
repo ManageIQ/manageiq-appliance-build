@@ -86,13 +86,7 @@ timestamp         = "#{year_month_day}#{hour_minute}"
 directory       = "upstream"
 name            = "manageiq"
 
-targets = {
-  "vsphere"   => "vsphere",
-  "ovirt"     => "rhevm",
-  "openstack" => "openstack-kvm"
-}
-
-targets = targets.select {|k, _| k == "vsphere "}  if cli_options[:vsphere_only]
+targets = cli_options[:only].collect {|only| Target.new(only)}
 
 appliance_git_url, manageiq_git_url = cli_options.values_at(:appliance_url, :manageiq_url)
 
@@ -102,14 +96,8 @@ appliance_checkout = Build::GitCheckout.new(:remote => appliance_git_url, :ref =
 file_rdu_dir_base = FILE_SERVER_BASE.join(directory)
 file_rdu_dir      = file_rdu_dir_base.join(directory_name)
 
-ks_gen            = Build::KickstartGenerator.new(cfg_base, targets.keys, puddle, appliance_checkout, manageiq_checkout)
+ks_gen            = Build::KickstartGenerator.new(cfg_base, cli_options[:only], puddle, appliance_checkout, manageiq_checkout)
 ks_gen.run
-
-FILE_TYPE = {
-  'vsphere'       => 'ova',
-  'rhevm'         => 'ova',
-  'openstack-kvm' => 'qc2'
-}
 
 fileshare_dir         = BUILD_BASE.join("fileshare")
 stream_directory      = fileshare_dir.join(directory)
@@ -119,7 +107,8 @@ $log.info "Creating Fileshare Directory: #{destination_directory}"
 FileUtils.mkdir_p(destination_directory)
 
 Dir.chdir(IMGFAC_DIR) do
-  targets.sort.reverse.each do |target, imgfac_target|
+  targets.sort.reverse.each do |target|
+    imgfac_target = target.imagefactory_type
     $log.info "Building for #{target}:"
 
     input_file  = ks_gen.gen_file_path("base-#{target}.json")
@@ -149,7 +138,7 @@ Dir.chdir(IMGFAC_DIR) do
     source = STORAGE_DIR.join("#{uuid}.body")
 
     FileUtils.mkdir_p(destination_directory)
-    file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{FILE_TYPE[imgfac_target]}"
+    file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{target.file_extension}"
     destination = destination_directory.join(file_name)
     $log.info `mv #{source} #{destination}`
 
