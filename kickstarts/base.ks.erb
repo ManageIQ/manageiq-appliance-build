@@ -299,15 +299,6 @@ popd
 
 /var/www/miq/system/cfme-setup.sh
 
-# Kickstart doesn't load sysctl's kernel runtime memory parameters found in
-# /etc/sysctl.conf, hence there is not enough shared memory available to start
-# PostgreSQL in the appliance_console_cli step below:
-# kernel.shmmax = 33554432 # 32 MB
-# kernel.shmall = 2097152  #  2 MB
-#
-# Since the normal /etc/sysctl.conf provides enough shared memory, load it.
-sysctl -p "/etc/sysctl.conf"
-
 # Remove the key from the source code, we'll generate on first boot
 rm -f /var/www/miq/vmdb/certs/v2_key
 
