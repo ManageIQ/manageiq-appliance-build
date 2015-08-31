@@ -319,15 +319,6 @@ ln -sf /dev/null /etc/systemd/system/ctrl-alt-del.target
 mkdir /var/log/journal
 systemctl restart systemd-journald
 
-# Alter cloud-init config to allow root ssh access to the appliance
-[[ -s /etc/cloud/cloud.cfg ]] && sed -i "s/^ssh_pwauth:.*$/ssh_pwauth: True/g" /etc/cloud/cloud.cfg
-[[ -s /etc/cloud/cloud.cfg ]] && sed -i "s/^disable_root:.*$/disable_root: false/g" /etc/cloud/cloud.cfg
-
-# Alter cloud-init logging config to prevent logging to the console
-[[ -s /etc/cloud/cloud.cfg.d/05_logging.cfg ]] && sed -i "s/handlers=consoleHandler,cloudLogHandler/handlers=cloudLogHandler/g" /etc/cloud/cloud.cfg.d/05_logging.cfg
-[[ -s /etc/cloud/cloud.cfg.d/05_logging.cfg ]] && sed -i "/^ - \[ \*log_base, \*log_syslog \]/d" /etc/cloud/cloud.cfg.d/05_logging.cfg
-[[ -s /etc/cloud/cloud.cfg.d/05_logging.cfg ]] && sed -i "s/^output:.*$/output: {all: '| tee -a \/var\/log\/cloud-init-output\.log \&> \/dev\/null'}/g" /etc/cloud/cloud.cfg.d/05_logging.cfg
-
 # Create a script to initialize appliance on first boot
 cat > /bin/appliance-initialize.sh <<EOF
 #!/bin/sh
