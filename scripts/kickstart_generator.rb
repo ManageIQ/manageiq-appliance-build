@@ -7,8 +7,9 @@ require 'pathname'
 
 module Build
   class KickstartGenerator
-    KS_DIR     = "kickstarts"
-    KS_GEN_DIR = "#{KS_DIR}/generated"
+    KS_DIR      = "kickstarts"
+    KS_GEN_DIR  = "#{KS_DIR}/generated"
+    KS_PART_DIR = "#{KS_DIR}/partials"
 
     attr_reader :targets, :puddle, :appliance_checkout, :manageiq_checkout
 
@@ -61,6 +62,11 @@ module Build
     def evaluate_erb
       ks_file = Productization.file_for(@build_base, "#{KS_DIR}/base.ks.erb")
       ERB.new(File.read(ks_file)).result(binding)
+    end
+
+    def render_partial(filename)
+      file = Productization.file_for(@build_base, "#{KS_PART_DIR}/#{filename}.ks.erb")
+      ERB.new(File.read(file)).result(binding)
     end
   end
 end
