@@ -301,9 +301,6 @@ popd
 
 /var/www/miq/system/cfme-setup.sh
 
-# Remove the key from the source code, we'll generate on first boot
-rm -f /var/www/miq/vmdb/certs/v2_key
-
 # Enable top(1) and vmstat(1) data logging
 systemctl enable miqtop
 systemctl enable miqvmstat
