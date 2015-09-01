@@ -4,6 +4,7 @@ require 'logger'
 require 'pathname'
 require 'yaml'
 
+require_relative 'productization'
 require_relative 'kickstart_generator'
 require_relative 'git_checkout'
 require_relative 'cli'
@@ -83,7 +84,6 @@ year_month_day    = Time.now.strftime("%Y%m%d")
 hour_minute       = Time.now.strftime("%H%M")
 directory_name    = "#{year_month_day}_#{hour_minute}"
 timestamp         = "#{year_month_day}#{hour_minute}"
-
 
 directory       = "upstream"
 name            = "manageiq"

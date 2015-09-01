@@ -1,3 +1,5 @@
+require_relative 'productization'
+
 require 'erb'
 require 'json'
 require 'fileutils'
@@ -12,7 +14,7 @@ module Build
     attr_reader :targets, :puddle, :appliance_checkout, :manageiq_checkout
 
     def initialize(build_base, targets, puddle, appliance_checkout, manageiq_checkout)
-      @build_base         = build_base
+      @build_base         = Pathname.new(build_base)
       @ks_gen_base        = @build_base.join(KS_GEN_DIR)
       @targets            = targets
       @puddle             = puddle # used during ERB evaluation
@@ -58,7 +60,7 @@ module Build
     end
 
     def evaluate_erb
-      ks_file = @build_base.join("#{KS_DIR}/base.ks.erb")
+      ks_file = Productization.file_for(@build_base, "#{KS_DIR}/base.ks.erb")
       ERB.new(File.read(ks_file)).result(binding)
     end
 
