@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'trollop'
+require_relative 'target'
 
 module Build
   class Cli
@@ -11,7 +12,7 @@ module Build
     BUILD_URL     = "https://github.com/ManageIQ/manageiq-appliance-build.git"
     MANAGEIQ_URL  = "https://github.com/ManageIQ/manageiq.git"
 
-    def parse
+    def parse(args = ARGV)
       git_ref_desc  = "provide a git reference such as a branch or tag"
       type_desc     = "build type: nightly, test, a named yum repository"
       local_desc    = "Use local config and kickstart for build"
@@ -19,17 +20,19 @@ module Build
       appliance_desc = "Repo URL containing appliance scripts and configs(COPY/LINK/TEMPLATE)"
       build_desc     = "Repo URL containing the build config and kickstart"
       manageiq_desc  = "Repo URL containing the main manageiq code"
+      only_desc      = "Build only specific image types.  Example: --only ovirt openstack.  Defaults to all images."
 
-      @options = Trollop.options do
+      @options = Trollop.options(args) do
         banner "Usage: build.rb [options]"
 
-        opt :type,        type_desc,     :type => :string,  :default => DEFAULT_TYPE, :short => "t"
-        opt :reference,   git_ref_desc,  :type => :string,  :default => DEFAULT_REF,  :short => "r"
-        opt :local,       local_desc,    :type => :boolean, :default => false,        :short => "l"
-        opt :fileshare,   share_desc,    :type => :boolean, :default => true,         :short => "s"
-        opt :appliance_url, appliance_desc,  :type => :string,  :default => APPLIANCE_URL, :short => "A"
-        opt :build_url, build_desc, :type => :string,  :default => BUILD_URL, :short => "B"
-        opt :manageiq_url, manageiq_desc, :type => :string,  :default => MANAGEIQ_URL, :short => "M"
+        opt :type,          type_desc,      :type => :string,  :short => "t", :default => DEFAULT_TYPE
+        opt :reference,     git_ref_desc,   :type => :string,  :short => "r", :default => DEFAULT_REF
+        opt :local,         local_desc,     :type => :boolean, :short => "l", :default => false
+        opt :fileshare,     share_desc,     :type => :boolean, :short => "s", :default => true
+        opt :appliance_url, appliance_desc, :type => :string,  :short => "A", :default => APPLIANCE_URL
+        opt :build_url,     build_desc,     :type => :string,  :short => "B", :default => BUILD_URL
+        opt :manageiq_url,  manageiq_desc,  :type => :string,  :short => "M", :default => MANAGEIQ_URL
+        opt :only,          only_desc,      :type => :strings, :short => "o", :default => Target.supported_types
       end
 
       options[:type] &&= options[:type].strip
