@@ -1,0 +1,12 @@
+# disk layout
+zerombr
+clearpart       --all --drives=vda
+
+part pv.1             --ondrive=vda                     --size=16384
+part /boot            --ondrive=vda                     --size=512   --fstype=xfs
+part /var/www/miq_tmp --ondrive=vda                     --size=10240 --fstype=xfs --fsoptions="rw,noatime,nobarrier"
+part pv.2             --ondrive=vda                     --size=10240 --grow
+
+volgroup vg_system    --pesize=4096 pv.1
+logvol /              --name=lv_os   --vgname=vg_system --size=10240 --fstype=xfs
+logvol swap           --name=lv_swap --vgname=vg_system --size=4096  --grow

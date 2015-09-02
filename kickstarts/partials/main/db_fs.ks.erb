@@ -1,0 +1,2 @@
+volgroup vg_data      --pesize=4096 pv.2
+logvol /var/opt/rh/rh-postgresql94/lib/pgsql/data --name=lv_pg --vgname=vg_data --size=8192 --grow --fstype=xfs

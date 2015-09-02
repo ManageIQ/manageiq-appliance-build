@@ -36,21 +36,8 @@ device mptspi
 
 bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet net.ifnames=0 biosdevname=0"
 
-# disk layout
-zerombr
-clearpart       --all --drives=vda
-
-part pv.1             --ondrive=vda                     --size=16384
-part /boot            --ondrive=vda                     --size=512   --fstype=xfs
-part /var/www/miq_tmp --ondrive=vda                     --size=10240 --fstype=xfs --fsoptions="rw,noatime,nobarrier"
-part pv.2             --ondrive=vda                     --size=10240 --grow
-
-volgroup vg_system    --pesize=4096 pv.1
-logvol /              --name=lv_os   --vgname=vg_system --size=10240 --fstype=xfs
-logvol swap           --name=lv_swap --vgname=vg_system --size=4096  --grow
-
-volgroup vg_data      --pesize=4096 pv.2
-logvol /var/opt/rh/rh-postgresql94/lib/pgsql/data --name=lv_pg --vgname=vg_data --size=8192 --grow --fstype=xfs
+<%= render_partial "main/disk_layout" %>
+<%= render_partial "main/db_fs" %>
 
 reboot
 
