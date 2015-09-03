@@ -8,6 +8,8 @@ require_relative 'productization'
 require_relative 'kickstart_generator'
 require_relative 'git_checkout'
 require_relative 'cli'
+require_relative 'uploader'
+
 $log = Logger.new(STDOUT)
 
 cli_options = Build::Cli.parse.options
@@ -171,7 +173,7 @@ Dir.chdir(IMGFAC_DIR) do
 end
 
 # Only update the latest symlink for a nightly
-unless build_label == "test"
+if cli_options[:type] == "nightly"
   symlink_name = "latest"
   link = stream_directory.join(symlink_name)
   if File.exist?(link)
@@ -188,4 +190,6 @@ unless build_label == "test"
     ssh_cmd = "cd #{file_rdu_dir_base}; rm -f #{symlink_name}; ln -s #{directory_name} #{symlink_name}"
     $log.info `ssh #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER} "#{ssh_cmd}"`
   end
+
+  Build::Uploader.upload(destination_directory)
 end
