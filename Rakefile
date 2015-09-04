@@ -1,10 +1,11 @@
-require_relative 'productization'
+require_relative 'scripts/productization'
+require 'pathname'
 
 namespace :build do
 
   module FilePaths
-    BUILD        = Pathname.new(File.dirname(__FILE__)).join("../vmdb/BUILD")
-    VERSION      = Pathname.new(File.dirname(__FILE__)).join("../vmdb/VERSION")
+    BUILD        = Pathname.new(__dir__).join("../manageiq/BUILD")
+    VERSION      = Pathname.new(__dir__).join("../manageiq/VERSION")
   end
 
   class ConfigOptions
@@ -35,16 +36,16 @@ namespace :build do
   end
 
   task :precompile_assets do
-    Dir.chdir(File.expand_path(File.join(File.dirname(__FILE__), '..', 'vmdb')))
+    Dir.chdir(File.join(__dir__, '..', 'manageiq'))
     puts `bundle exec rake evm:compile_assets`
-    Dir.chdir(File.dirname(__FILE__))
+    Dir.chdir(__dir__)
   end
 
   desc "Builds a tarball."
   task :tar => [:version_files, :build_file, :precompile_assets] do
     include_file = Build::Productization.file_for("config/tarball/include")
     exclude_file = Build::Productization.file_for("config/tarball/exclude")
-    pkg_path     = Pathname.new(File.dirname(__FILE__)).join("pkg")
+    pkg_path     = Pathname.new(__dir__).join("pkg")
     FileUtils.mkdir_p(pkg_path)
 
     tar_basename = "#{ConfigOptions.prefix}-#{ConfigOptions.version}"
