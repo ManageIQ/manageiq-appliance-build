@@ -1,3 +1,5 @@
+Dir.glob(File.expand_path("lib/tasks/*", __dir__)).sort.each { |f| require f }
+
 require_relative 'scripts/productization'
 require 'pathname'
 
