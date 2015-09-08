@@ -191,5 +191,5 @@ if cli_options[:type] == "nightly"
     $log.info `ssh #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER} "#{ssh_cmd}"`
   end
 
-  Build::Uploader.upload(destination_directory)
+  Build::Uploader.upload(destination_directory) if cli_options[:upload]
 end
