@@ -12,7 +12,7 @@ namespace :build do
     require "yaml"
     include FilePaths
     def self.options
-      @options ||= YAML.load_file(Build::Productization.file_for("config/tarball/options.yml"))
+      @options ||= YAML.load_file(Build::Productization.file_for((__dir__), "config/tarball/options.yml"))
     end
 
     def self.version
@@ -43,8 +43,7 @@ namespace :build do
 
   desc "Builds a tarball."
   task :tar => [:version_files, :build_file, :precompile_assets] do
-    include_file = Build::Productization.file_for("config/tarball/include")
-    exclude_file = Build::Productization.file_for("config/tarball/exclude")
+    exclude_file = Build::Productization.file_for((__dir__), "config/tarball/exclude")
     pkg_path     = Pathname.new(__dir__).join("pkg")
     FileUtils.mkdir_p(pkg_path)
 
@@ -56,7 +55,7 @@ namespace :build do
     transform = RUBY_PLATFORM =~ /darwin/ ? "-s " : "--transform s"
     transform << "',^,#{tar_basename}/,'"
 
-    `tar -C .. #{transform} -T #{include_file} -X #{exclude_file} -hcvzf #{tarball}`
+    `tar -C ../manageiq #{transform} -X #{exclude_file} -hcvzf #{tarball} .`
     puts "Built tarball at:\n #{File.expand_path(tarball)}"
   end
 end
