@@ -1,34 +1,30 @@
 module Build
   class Target
-    TARGET_MAPPING = {
-      'vsphere'   => 'vsphere',
-      'ovirt'     => 'rhevm',
-      'openstack' => 'openstack-kvm'
-    }
+    ImagefactoryMetadata = Struct.new(:imagefactory_type, :file_extension)
 
-    FILE_EXTENSION = {
-      'vsphere'       => 'ova',
-      'rhevm'         => 'ova',
-      'openstack-kvm' => 'qc2'
+    TYPES = {
+      'vsphere'   => ImagefactoryMetadata.new('vsphere', 'ova'),
+      'ovirt'     => ImagefactoryMetadata.new('rhevm', 'ova'),
+      'openstack' => ImagefactoryMetadata.new('openstack-kvm', 'qc2')
     }
 
     attr_reader :name
 
     def self.supported_types
-      TARGET_MAPPING.keys
+      TYPES.keys
     end
 
     def initialize(name)
       @name = name = name.to_s
-      raise ArgumentError, "Unsupported name: #{name}" unless TARGET_MAPPING.key?(name)
+      raise ArgumentError, "Unsupported name: #{name}" unless TYPES.key?(name)
     end
 
     def imagefactory_type
-      TARGET_MAPPING.fetch(name)
+      TYPES.fetch(name).imagefactory_type
     end
 
     def file_extension
-      FILE_EXTENSION.fetch(imagefactory_type)
+      TYPES.fetch(name).file_extension
     end
 
     def <=>(other)
