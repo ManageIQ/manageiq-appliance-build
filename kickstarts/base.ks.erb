@@ -50,167 +50,21 @@ set -x
 # Unset it so ruby_parser doesn't print LOTS of output.
 unset DEBUG
 
-###
-## Create the manageiq firewall zone
-###
-firewall-offline-cmd --new-zone=manageiq
+<%= render_partial "post/firewalld" %>
 
-###
-# Set the manageiq firewall zone as default
-###
-firewall-offline-cmd --set-default-zone=manageiq
+<%= render_partial "post/source_setup" %>
 
-###
-# Allow HTTP, HTTPS, SSH and postgresql in the manageiq firewall zone
-###
-firewall-offline-cmd --zone=manageiq --add-service=http
-firewall-offline-cmd --zone=manageiq --add-service=https
-firewall-offline-cmd --zone=manageiq --add-service=ssh
-firewall-offline-cmd --zone=manageiq --add-service=postgresql
+<%= render_partial "post/repos" %>
 
-www_root="/var/www"
-app_root="$www_root/miq"
-appliance_root="/opt/manageiq/manageiq-appliance"
+<%= render_partial "post/ruby_install" %>
 
-rm -rf $app_root
-
-git clone <%= @appliance_checkout.remote %> $appliance_root
-pushd $appliance_root
-  git checkout <%= @appliance_checkout.branch %>
-  git reset --hard <%= @appliance_checkout.commit_sha %>
-popd
-
-mkdir -p $app_root
-git clone <%= @manageiq_checkout.remote %> $app_root/vmdb
-pushd $app_root/vmdb
-  git checkout <%= @manageiq_checkout.branch %>
-  git reset --hard <%= @manageiq_checkout.commit_sha %>
-popd
-
-# Symlink extracted repo (manageiq-appliance) to old /var/www/miq/system location.
-ln -vs $appliance_root $app_root/system
-
-# Symlink old lib directory to gems/pending.
-ln -vs $app_root/vmdb/gems/pending $app_root/lib
-
-#### TODO: Refactor this so the cfme rpm and the upstream share much of this code.
-
-mkdir -p $app_root/vmdb/log/apache
-mkdir -p /etc/httpd/conf.d
-
-pushd $appliance_root
-  #symlink some executables
-  mkdir -p /bin
-  pushd ./LINK/bin
-    for filename in `ls`; do
-      ln -vs $appliance_root/LINK/bin/$filename /bin/$filename
-    done
-  popd
-
-  #symlink some configuration files
-  pushd ./LINK/etc
-    for dirname in `ls`; do
-      pushd ./$dirname
-        mkdir -p /etc/$dirname
-        for filename in `ls`; do
-          ln -vs $appliance_root/LINK/etc/$dirname/$filename /etc/$dirname/$filename
-        done
-      popd
-    done
-  popd
-
-  ln -vs $appliance_root/LINK/.toprc /.toprc
-
-  #copy all files/directories below COPY
-  cp -vr COPY/* /
-popd
-
-# post install repos
-# yum update uses these repos to update and reinstall packages.
-# Please also add to "build time repos" around line 20
-
-pushd /etc/yum.repos.d/
-  wget http://copr.fedoraproject.org/coprs/abellott/manageiq-scl/repo/epel-7/abellott-manageiq-scl-epel-7.repo
-popd
-
-wget -O ruby-install.tar.gz https://github.com/postmodern/ruby-install/archive/v0.5.0.tar.gz
-tar -xzvf ruby-install.tar.gz
-rm -f ruby-install.tar.gz
-cd ruby-install*/
-make install
-
-# Note, we hardcode the ruby patch level for now.
-# Once the --update option is available, we could ask
-# ruby-install to "learn" what new rubies are available
-# See: https://github.com/postmodern/ruby-install/issues/175
-/usr/local/bin/ruby-install ruby 2.2.3 -- --disable-install-doc --enable-shared
-
-# Add the ruby binaries path to the PATH so we can find bundle and friends:
-ruby_bin_path=(/opt/rubies/ruby-2.2.3/bin)
-echo "export PATH=\$PATH:$ruby_bin_path" >> /etc/default/evm
-
-cat /etc/default/evm
-
-echo "gem: --no-ri --no-rdoc --no-document" > /root/.gemrc
-
-# https://github.com/plataformatec/devise/issues/909
-# Verify this is needed to fix bundle install issue: ArgumentError: invalid byte sequence in US-ASCII
-# Perhaps during kickstart the locale/lang is not set and defaults to US-ASCII.
-export LANGUAGE=en_US.UTF-8
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
-
-[[ -s /etc/default/evm ]] && source /etc/default/evm
-gem install bundler -v ">=1.8.4"
-
-pushd /var/www/miq/vmdb
-  bundle install
-popd
+<%= render_partial "post/bundler" %>
 
 /var/www/miq/system/cfme-setup.sh
 
-# Enable top(1) and vmstat(1) data logging
-systemctl enable miqtop
-systemctl enable miqvmstat
+<%= render_partial "post/systemd" %>
 
-systemctl enable evminit
-systemctl enable evmserverd
-systemctl enable evm-watchdog
-
-# Link ctrl-alt-del.target to /dev/null to prevent reboot from console
-ln -sf /dev/null /etc/systemd/system/ctrl-alt-del.target
-
-# Create the journal directory to enable persistant logging
-mkdir /var/log/journal
-systemctl restart systemd-journald
-
-# Create a script to initialize appliance on first boot
-cat > /bin/appliance-initialize.sh <<EOF
-#!/bin/sh
-[[ -d /var/opt/rh/rh-postgresql94/lib/pgsql/data/base ]] && exit 0
-[[ -s /etc/default/evm ]] && source /etc/default/evm
-echo "Initializing Appliance, please wait ..." > /dev/tty1
-appliance_console_cli --region 0 --internal --password smartvm
-EOF
-chmod 755 /bin/appliance-initialize.sh
-
-# Create a systemd service to run it on first boot
-cat > /usr/lib/systemd/system/appliance-initialize.service <<EOF
-[Unit]
-Description=Initialize Appliance Database
-ConditionPathExists=!/var/opt/rh/rh-postgresql94/lib/pgsql/data/base
-After=evminit.service
-Before=evmserverd.service
-[Service]
-Type=oneshot
-ExecStart=/bin/appliance-initialize.sh
-ExecStartPost=/usr/bin/systemctl disable appliance-initialize
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Finally, enable the service
-systemctl enable appliance-initialize
+<%= render_partial "post/db_init" %>
 
 # Let's rebuild the ramfs with with base scsi drivers we need
 kversion=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
