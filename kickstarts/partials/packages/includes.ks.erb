@@ -1,0 +1,74 @@
+epel-release       # http://dl.fedoraproject.org/pub/epel/7/x86_64/epel-release-7-5.noarch.rpm
+
+createrepo
+freeipmi
+fuse-libs
+httpd
+ipmitool
+
+# ruby dependencies auto-installed by ruby-install
+# prefer to have these dependencies explicitly required in the kickstart
+# https://github.com/postmodern/ruby-install/blob/8957e0d1a52d59b45cf48cef8f15a1d8ed921cd4/share/ruby-install/ruby/dependencies.txt
+automake
+gcc
+gdbm-devel
+libffi-devel
+libyaml-devel
+ncurses-devel
+openssl-devel
+readline-devel
+zlib-devel
+
+libxml2-devel                    # For nokogiri gem
+libxslt-devel                    # For nokogiri gem
+lshw                             # From epel
+memcached
+mod_ssl
+net-snmp
+net-snmp-libs
+net-snmp-utils
+nfs-utils
+nodejs                           # used for asset pipeline asset compilation - From epel
+OpenIPMI
+openslp-devel                    # build requires
+rh-postgresql94-postgresql          # appliance section
+rh-postgresql94-postgresql-devel    # for pg gem
+rh-postgresql94-postgresql-server   # appliance section
+scl-utils
+scl-utils-build                  # build requires
+yum-utils
+zip                              # build requires
+
+# IPA Identity RPMs for External Authentication
+c-ares
+ipa-client
+sssd-dbus
+mod_intercept_form_submit
+mod_auth_kerb
+mod_authnz_pam
+mod_lookup_identity
+realmd
+
+# IPA RPMs for certificate support
+ipa-admintools
+certmonger
+
+# External Authentication - Adding Support for Active Directory
+oddjob
+oddjob-mkhomedir
+sssd
+adcli
+samba-common
+
+# External Authentication - LDAP
+openldap-clients
+
+cloud-init
+
+wmi
+
+<% if @target == "ovirt" %>
+ovirt-guest-agent
+<% elsif @target == "vsphere" %>
+open-vm-tools
+<% end %>
