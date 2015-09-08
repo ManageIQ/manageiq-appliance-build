@@ -19,7 +19,7 @@ module Build
       appliance_desc = "Repo URL containing appliance scripts and configs(COPY/LINK/TEMPLATE)"
       build_desc     = "Repo URL containing the build config and kickstart"
       manageiq_desc  = "Repo URL containing the main manageiq code"
-      upload_desc    = "Upload nightly build to release builds"
+      upload_desc    = "Upload appliance builds to the website"
 
       @options = Trollop.options do
         banner "Usage: build.rb [options]"
