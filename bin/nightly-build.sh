@@ -18,7 +18,7 @@ mkdir -p ${LOG_DIR}
 
 DATE_STAMP=`date +"%Y%m%d_%T"`
 LOG_FILE="${LOG_DIR}/upstream_${DATE_STAMP}.log"
-BUILD_OPTIONS="--type nightly"
+BUILD_OPTIONS="--type nightly --upload"
 
 if [ "${1}" = "--fileshare" -o "${1}" = "--no-fileshare" -o "${1}" = "--local" ]
 then

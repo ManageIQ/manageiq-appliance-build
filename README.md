@@ -220,7 +220,11 @@
 
   ```
   yum install ruby
+  yum install ruby-devel
+  yum install zlib-devel
+
   gem install trollop
+  gem install fog
   ```
 
   * For enabling copying to SSH file server, define the following in Root's .bashrc (optional)
