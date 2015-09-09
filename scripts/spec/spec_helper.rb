@@ -99,5 +99,5 @@ require 'pathname'
 $LOAD_PATH << Pathname.new(__dir__).join("..")
 
 def data_file_path(to)
-  File.expand_path(to, File.join(File.dirname(__FILE__), "data"))
+  File.expand_path(to, File.join(__dir__, "data"))
 end
