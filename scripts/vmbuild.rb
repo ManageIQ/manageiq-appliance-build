@@ -25,22 +25,22 @@ else
   build_label = "#{cli_options[:type]}-#{cli_options[:reference]}"
 end
 
-BUILD_BASE          = "/build"
-GPG_DIR             = "/root/.gnupg"
-CFG_DIR             = "#{BUILD_BASE}/config"
-FILESHARE_DIR       = "#{BUILD_BASE}/fileshare"
-REFS_DIR            = "#{BUILD_BASE}/references"
-IMGFAC_DIR          = "#{BUILD_BASE}/imagefactory"
-IMGFAC_CONF         = "#{CFG_DIR}/imagefactory.conf"
-STORAGE_DIR         = "#{BUILD_BASE}/storage"
+BUILD_BASE          = Pathname.new("/build")
+GPG_DIR             = Pathname.new("/root/.gnupg")
+CFG_DIR             = BUILD_BASE.join("config")
+FILESHARE_DIR       = BUILD_BASE.join("fileshare")
+REFS_DIR            = BUILD_BASE.join("references")
+IMGFAC_DIR          = BUILD_BASE.join("imagefactory")
+IMGFAC_CONF         = CFG_DIR.join("imagefactory.conf")
+STORAGE_DIR         = BUILD_BASE.join("storage")
 
 FILE_SERVER         = ENV["BUILD_FILE_SERVER"]             # SSH Server to host files
 FILE_SERVER_ACCOUNT = ENV["BUILD_FILE_SERVER_ACCOUNT"]     # Account to SSH as
-FILE_SERVER_BASE    = ENV["BUILD_FILE_SERVER_BASE"] || "." # Subdirectory of Account where to store builds
+FILE_SERVER_BASE    = Pathname.new(ENV["BUILD_FILE_SERVER_BASE"] || ".") # Subdirectory of Account where to store builds
 
 if !cli_options[:local] && cli_options[:build_url]
   build_repo = cli_options[:build_url]
-  cfg_base = "#{REFS_DIR}/#{cli_options[:reference]}"
+  cfg_base = REFS_DIR.join(cli_options[:reference])
   FileUtils.mkdir_p(cfg_base)
   Dir.chdir(cfg_base) do
     unless File.exist?(".git")
@@ -65,9 +65,8 @@ end
 
 $log.info "Using Configuration base directory: #{cfg_base}"
 
-targets_file      = Build::Productization.file_for(cfg_base, "config/targets.yml")
-tdl_file          = Build::Productization.file_for(cfg_base, "config/base.tdl")
-ova_file          = Build::Productization.file_for(cfg_base, "config/ova.json")
+tdl_file = BUILD_BASE.join("config/base.tdl")
+ova_file = BUILD_BASE.join("config/ova.json")
 
 $log.info "Using inputs: puddle: #{puddle}, build_label: #{build_label}, targets_file: #{targets_file}"
 $log.info "              tdl_file: #{tdl_file}, ova_file: #{ova_file}."
@@ -86,27 +85,23 @@ hour_minute       = Time.now.strftime("%H%M")
 directory_name    = "#{year_month_day}_#{hour_minute}"
 timestamp         = "#{year_month_day}#{hour_minute}"
 
-targets_config    = YAML.load_file(targets_file)
-name, directory, targets = targets_config.values_at("name", "directory", "targets")
+directory       = "upstream"
+name            = "manageiq"
+
+targets = cli_options[:only].collect {|only| Target.new(only)}
 
 appliance_git_url, manageiq_git_url = cli_options.values_at(:appliance_url, :manageiq_url)
 
 manageiq_checkout  = Build::GitCheckout.new(:remote => manageiq_git_url, :ref => cli_options[:reference])
 appliance_checkout = Build::GitCheckout.new(:remote => appliance_git_url, :ref => cli_options[:reference])
 
-file_rdu_dir_base = "#{FILE_SERVER_BASE}/#{directory}"
-file_rdu_dir      = "#{file_rdu_dir_base}/#{directory_name}"
+file_rdu_dir_base = FILE_SERVER_BASE.join(directory)
+file_rdu_dir      = file_rdu_dir_base.join(directory_name)
 
-ks_gen            = Build::KickstartGenerator.new(cfg_base, targets.keys, puddle, appliance_checkout, manageiq_checkout)
+ks_gen            = Build::KickstartGenerator.new(cfg_base, cli_options[:only], puddle, appliance_checkout, manageiq_checkout)
 ks_gen.run
 
-FILE_TYPE = {
-  'vsphere'       => 'ova',
-  'rhevm'         => 'ova',
-  'openstack-kvm' => 'qc2'
-}
-
-fileshare_dir         = Pathname.new("#{BUILD_BASE}/fileshare")
+fileshare_dir         = BUILD_BASE.join("fileshare")
 stream_directory      = fileshare_dir.join(directory)
 destination_directory = stream_directory.join(build_label == "test" ? "test" : directory_name)
 
@@ -114,7 +109,8 @@ $log.info "Creating Fileshare Directory: #{destination_directory}"
 FileUtils.mkdir_p(destination_directory)
 
 Dir.chdir(IMGFAC_DIR) do
-  targets.sort.reverse.each do |target, imgfac_target|
+  targets.sort.reverse.each do |target|
+    imgfac_target = target.imagefactory_type
     $log.info "Building for #{target}:"
 
     input_file  = ks_gen.gen_file_path("base-#{target}.json")
@@ -141,10 +137,10 @@ Dir.chdir(IMGFAC_DIR) do
       $log.info "#{target} target_image ova with uuid: #{uuid} complete"
     end
     $log.info "Built #{target} with final UUID: #{uuid}"
-    source      = "#{STORAGE_DIR}/#{uuid}.body"
+    source = STORAGE_DIR.join("#{uuid}.body")
 
     FileUtils.mkdir_p(destination_directory)
-    file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{FILE_TYPE[imgfac_target]}"
+    file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{target.file_extension}"
     destination = destination_directory.join(file_name)
     $log.info `mv #{source} #{destination}`
 
@@ -156,12 +152,12 @@ Dir.chdir(IMGFAC_DIR) do
         $log.info "Creating File server #{FILE_SERVER} directory #{file_rdu_dir} ..."
         $log.info `ssh #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER} mkdir -p #{file_rdu_dir}`
         $log.info "Copying file #{file_name} to #{FILE_SERVER}:#{file_rdu_dir}/ ..."
-        $log.info `scp #{destination} #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER}:#{file_rdu_dir}/#{file_name}`
+        $log.info `scp #{destination} #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER}:#{file_rdu_dir.join(file_name)}`
       end
     end
   end
-  passphrase_file = "#{GPG_DIR}/pass"
-  public_key_file = "#{GPG_DIR}/manageiq_public.key"
+  passphrase_file = GPG_DIR.join("pass")
+  public_key_file = GPG_DIR.join("manageiq_public.key")
   if File.exist?(passphrase_file) && File.exist?(public_key_file)
     $log.info "Generating Image Checksums in #{destination_directory} ..."
     Dir.chdir(destination_directory) do
