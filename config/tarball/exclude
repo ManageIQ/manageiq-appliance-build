@@ -8,6 +8,6 @@
 *.git
 Gemfile.lock*
 .bundle
-bin
+./bin
 certs/v2_key.dev
 log/*
