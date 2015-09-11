@@ -1,3 +1,17 @@
+# ManageIQ Appliance Build
+
+[![Build Status](https://api.travis-ci.org/ManageIQ/manageiq-appliance-build.svg)](https://travis-ci.org/ManageIQ/manageiq-appliance-build)
+
+# Introduction
+
+This repository contains code to build ManageIQ appliances in the various virtualization formats.
+
+It depends on the following git repositories:
+
+* [ManageIQ](https://github.com/ManageIQ/manageiq) - ManageIQ application code
+* [ManageIQ-Appliance](https://github.com/ManageIQ/manageiq-appliance) - System files for ManageIQ appliances
+
+Below are instructions on installing and configuring a virtual machine to generate appliance images.
 
 # Installation
 

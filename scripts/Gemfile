@@ -1,4 +1,8 @@
 source 'https://rubygems.org'
 
-gem "rspec",   :require => false
 gem "trollop"
+
+group :development, :test do
+  gem "rake"
+  gem "rspec", :require => false
+end
