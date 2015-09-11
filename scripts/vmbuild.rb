@@ -68,7 +68,7 @@ $log.info "Using Configuration base directory: #{cfg_base}"
 tdl_file = BUILD_BASE.join("config/base.tdl")
 ova_file = BUILD_BASE.join("config/ova.json")
 
-$log.info "Using inputs: puddle: #{puddle}, build_label: #{build_label}, targets_file: #{targets_file}"
+$log.info "Using inputs: puddle: #{puddle}, build_label: #{build_label}"
 $log.info "              tdl_file: #{tdl_file}, ova_file: #{ova_file}."
 
 def verify_run(output)
