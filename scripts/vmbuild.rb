@@ -9,6 +9,7 @@ require_relative 'kickstart_generator'
 require_relative 'git_checkout'
 require_relative 'cli'
 require_relative 'uploader'
+require_relative 'target'
 
 $log = Logger.new(STDOUT)
 
@@ -88,7 +89,7 @@ timestamp         = "#{year_month_day}#{hour_minute}"
 directory       = "upstream"
 name            = "manageiq"
 
-targets = cli_options[:only].collect {|only| Target.new(only)}
+targets = cli_options[:only].collect { |only| Build::Target.new(only) }
 
 appliance_git_url, manageiq_git_url = cli_options.values_at(:appliance_url, :manageiq_url)
 
