@@ -1,0 +1,7 @@
+# post install repos
+# yum update uses these repos to update and reinstall packages.
+# Please also add to "build time repos" main/repos partial
+
+pushd /etc/yum.repos.d/
+  wget http://copr.fedoraproject.org/coprs/abellott/manageiq-scl/repo/epel-7/abellott-manageiq-scl-epel-7.repo
+popd

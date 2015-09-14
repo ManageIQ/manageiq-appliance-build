@@ -1,0 +1,14 @@
+# Enable top(1) and vmstat(1) data logging
+systemctl enable miqtop
+systemctl enable miqvmstat
+
+systemctl enable evminit
+systemctl enable evmserverd
+systemctl enable evm-watchdog
+
+# Link ctrl-alt-del.target to /dev/null to prevent reboot from console
+ln -sf /dev/null /etc/systemd/system/ctrl-alt-del.target
+
+# Create the journal directory to enable persistant logging
+mkdir /var/log/journal
+systemctl restart systemd-journald

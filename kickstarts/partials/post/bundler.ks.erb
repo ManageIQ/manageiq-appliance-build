@@ -1,0 +1,13 @@
+# https://github.com/plataformatec/devise/issues/909
+# Verify this is needed to fix bundle install issue: ArgumentError: invalid byte sequence in US-ASCII
+# Perhaps during kickstart the locale/lang is not set and defaults to US-ASCII.
+export LANGUAGE=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+[[ -s /etc/default/evm ]] && source /etc/default/evm
+gem install bundler -v ">=1.8.4"
+
+pushd /var/www/miq/vmdb
+  bundle install
+popd

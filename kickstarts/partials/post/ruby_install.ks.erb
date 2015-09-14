@@ -1,0 +1,19 @@
+wget -O ruby-install.tar.gz https://github.com/postmodern/ruby-install/archive/v0.5.0.tar.gz
+tar -xzvf ruby-install.tar.gz
+rm -f ruby-install.tar.gz
+cd ruby-install*/
+make install
+
+# Note, we hardcode the ruby patch level for now.
+# Once the --update option is available, we could ask
+# ruby-install to "learn" what new rubies are available
+# See: https://github.com/postmodern/ruby-install/issues/175
+/usr/local/bin/ruby-install ruby 2.2.3 -- --disable-install-doc --enable-shared
+
+# Add the ruby binaries path to the PATH so we can find bundle and friends:
+ruby_bin_path=(/opt/rubies/ruby-2.2.3/bin)
+echo "export PATH=\$PATH:$ruby_bin_path" >> /etc/default/evm
+
+cat /etc/default/evm
+
+echo "gem: --no-ri --no-rdoc --no-document" > /root/.gemrc
