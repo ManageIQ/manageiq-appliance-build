@@ -96,7 +96,9 @@ RSpec.configure do |config|
 end
 
 require 'pathname'
-$LOAD_PATH << Pathname.new(__dir__).join("..")
+SCRIPTS_ROOT = Pathname.new(__dir__).join("..")
+REPO_ROOT    = SCRIPTS_ROOT.join("..")
+$LOAD_PATH << SCRIPTS_ROOT
 
 def data_file_path(to)
   File.expand_path(to, File.join(__dir__, "data"))
