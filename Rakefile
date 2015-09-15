@@ -49,7 +49,8 @@ namespace :build do
     pkg_path     = Pathname.new(__dir__).join("pkg")
     FileUtils.mkdir_p(pkg_path)
 
-    tar_basename = "#{ConfigOptions.prefix}-#{ConfigOptions.version}"
+    tar_version = ConfigOptions.version.split("-").first
+    tar_basename = "#{ConfigOptions.prefix}-#{tar_version}"
     tarball = "pkg/#{tar_basename}.tar.gz"
 
     # Add a prefix-version directory to the top of the files added to the tar.
