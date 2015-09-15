@@ -8,10 +8,10 @@ part /var/www/miq_tmp --ondrive=vda                     --size=10240 --fstype=xf
 part pv.2             --ondrive=vda                     --size=10240 --grow
 
 volgroup vg_system    --pesize=4096 pv.1
+logvol /              --name=lv_os             --vgname=vg_system --size=4680 --fstype=xfs
+logvol /var           --name=lv_var            --vgname=vg_system --size=2048 --fstype=xfs
+logvol /var/log       --name=lv_var_log        --vgname=vg_system --size=1024 --fstype=xfs
+logvol /var/log/audit --name=lv_var_log_audit  --vgname=vg_system --size=512  --fstype=xfs
 logvol /tmp           --name=lv_tmp            --vgname=vg_system --size=1024 --fstype=xfs
 logvol /home          --name=lv_home           --vgname=vg_system --size=1024 --fstype=xfs
-logvol /var/log/audit --name=lv_var_log_audit  --vgname=vg_system --size=512  --fstype=xfs
-logvol /var/log       --name=lv_var_log        --vgname=vg_system --size=1024 --fstype=xfs
-logvol /var           --name=lv_var            --vgname=vg_system --size=2048 --fstype=xfs
-logvol /              --name=lv_os             --vgname=vg_system --size=4680 --fstype=xfs
 logvol swap           --name=lv_swap           --vgname=vg_system --size=4096 --grow
