@@ -6,12 +6,8 @@
 # fileshare: true
 #
 
-CUR_BUILD="`virsh list | sed '1,2d'`"
-if [ -n "${CUR_BUILD}" ]
-then
-  echo "Current ImageFactory Build ongoing, cannot kick-off nightly build"
-  exit 1
-fi
+source '/build/bin/shared_functions.sh'
+stop_on_existing_build
 
 LOG_DIR=/build/logs
 mkdir -p ${LOG_DIR}
