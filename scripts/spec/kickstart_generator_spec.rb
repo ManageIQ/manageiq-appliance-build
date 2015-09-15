@@ -3,40 +3,33 @@ require 'kickstart_generator'
 
 describe Build::KickstartGenerator do
   describe "#run" do
-    def build_base
-      data_file_path("kickstart_generator")
-    end
+    let(:build_base) { data_file_path("kickstart_generator") }
+    let(:generated)  { "#{build_base}/kickstarts/generated" }
+    let(:ks_text)    { File.read("#{generated}/base.ks") }
 
-    def generated
-      "#{build_base}/kickstarts/generated"
-    end
+    subject { described_class.new(build_base, ["target"], "puddle", "app_checkout", "miq_checkout") }
 
-    def ks_text
-      File.read("#{generated}/base.ks")
-    end
-
-    after(:each) do
-      FileUtils.rm_f(Dir.glob("#{generated}/*"))
-    end
-
-    before(:each) do
-      @generator = described_class.new(build_base, ["target"], "puddle", "app_checkout", "miq_checkout")
-      @generator.run(nil)
+    after do
+      FileUtils.rm_rf(generated)
     end
 
     it "writes ks file" do
+      subject.run(nil)
       expect(ks_text).to include("base file text")
     end
 
     it "renders partial files" do
+      subject.run(nil)
       expect(ks_text).to include("first partial file text")
     end
 
     it "renders partials in partial files" do
+      subject.run(nil)
       expect(ks_text).to include("second partial file text")
     end
 
     it "renders partial files in subdirectories" do
+      subject.run(nil)
       expect(ks_text).to include("subdir partial text")
     end
   end
