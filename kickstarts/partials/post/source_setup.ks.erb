@@ -17,7 +17,7 @@ pushd $app_root/vmdb
   git reset --hard <%= @manageiq_checkout.commit_sha %>
 popd
 
-$appliance_root/enable
+$appliance_root/setup
 mkdir -p $app_root/vmdb/log/apache
 
 # Legacy directory symlinks
