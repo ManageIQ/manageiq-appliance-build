@@ -43,8 +43,15 @@ namespace :build do
     Dir.chdir(__dir__)
   end
 
+  task :build_selfservice_ui do
+    Dir.chdir(File.join(__dir__, '../manageiq/spa_ui/self_service'))
+    puts `npm install`
+    puts `git clean -xdf`  # cleanup temp files
+    Dir.chdir(__dir__)
+  end
+
   desc "Builds a tarball."
-  task :tar => [:version_files, :build_file, :precompile_assets] do
+  task :tar => [:version_files, :build_file, :precompile_assets, :build_selfservice_ui] do
     exclude_file = Build::Productization.file_for((__dir__), "config/tarball/exclude")
     pkg_path     = Pathname.new(__dir__).join("pkg")
     FileUtils.mkdir_p(pkg_path)
