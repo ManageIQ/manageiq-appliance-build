@@ -60,7 +60,8 @@ unset DEBUG
 
 <%= render_partial "post/bundler" %>
 
-/var/www/miq/system/cfme-setup.sh
+# appliance_root="/opt/manageiq/manageiq-appliance" -- in post/source_setup partial
+$appliance_root/cfme-setup.sh
 
 <%= render_partial "post/systemd" %>
 
