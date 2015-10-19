@@ -13,11 +13,11 @@ describe Build::Target do
   end
 
   it "#imagefactory_type" do
-    expect(described_class.new("openstack").imagefactory_type).to eql "openstack-kvm"
+    expect(described_class.new("vhd").imagefactory_type).to eql "vpc"
   end
 
   it "#file_extension" do
-    expect(described_class.new("openstack").file_extension).to eql "qc2"
+    expect(described_class.new("vhd").file_extension).to eql "vpc"
   end
 
   it "#sort" do
@@ -26,7 +26,7 @@ describe Build::Target do
   end
 
   it ".supported_types" do
-    expect(described_class.supported_types).to match_array %w(openstack ovirt vsphere)
+    expect(described_class.supported_types).to match_array %w(openstack ovirt vsphere vhd)
   end
 
   it "#to_s" do
