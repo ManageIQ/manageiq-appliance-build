@@ -1,7 +1,6 @@
 *.DS_Store
 */spec
 */test
-*/tmp/*
 */VMwareWebService/**/*.wsdl
 *dos_mbr.img
 *test.rb

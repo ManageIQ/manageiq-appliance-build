@@ -38,16 +38,21 @@ namespace :build do
   end
 
   task :precompile_assets do
-    Dir.chdir(File.join(__dir__, '..', 'manageiq'))
-    puts `bundle exec rake evm:compile_assets`
-    Dir.chdir(__dir__)
+    Dir.chdir(File.join(__dir__, '..', 'manageiq')) do
+      puts `bundle exec rake evm:compile_assets`
+
+      # compile_sti_loader fails without database.yml - copy as temporary solution
+      FileUtils.cp("config/database.pg.yml", "config/database.yml")
+      puts `bundle exec rake evm:compile_sti_loader`
+      FileUtils.rm("config/database.yml")
+    end
   end
 
   task :build_selfservice_ui do
-    Dir.chdir(File.join(__dir__, '../manageiq/spa_ui/self_service'))
-    puts `npm install`
-    puts `git clean -xdf`  # cleanup temp files
-    Dir.chdir(__dir__)
+    Dir.chdir(File.join(__dir__, '../manageiq/spa_ui/self_service')) do
+      puts `npm install`
+      puts `git clean -xdf`  # cleanup temp files
+    end
   end
 
   desc "Builds a tarball."
@@ -65,7 +70,8 @@ namespace :build do
     transform = RUBY_PLATFORM =~ /darwin/ ? "-s " : "--transform s"
     transform << "',^,#{tar_basename}/,'"
 
-    `tar -C ../manageiq #{transform} -X #{exclude_file} -hcvzf #{tarball} .`
+    # Everything from */tmp/* should be excluded, except for tmp/cache/sti_loader.yml
+    `tar -C ../manageiq #{transform} --exclude-tag='cache/sti_loader.yml' -X #{exclude_file} -hcvzf #{tarball} .`
     puts "Built tarball at:\n #{File.expand_path(tarball)}"
   end
 end
