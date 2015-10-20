@@ -13,11 +13,11 @@ describe Build::Target do
   end
 
   it "#imagefactory_type" do
-    expect(described_class.new("vhd").imagefactory_type).to eql "vpc"
+    expect(described_class.new("vpc").imagefactory_type).to eql "vpc"
   end
 
   it "#file_extension" do
-    expect(described_class.new("vhd").file_extension).to eql "vpc"
+    expect(described_class.new("vpc").file_extension).to eql "vpc"
   end
 
   it "#sort" do
