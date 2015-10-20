@@ -40,7 +40,11 @@ namespace :build do
   task :precompile_assets do
     Dir.chdir(File.join(__dir__, '..', 'manageiq')) do
       puts `bundle exec rake evm:compile_assets`
+    end
+  end
 
+  task :precompile_sti_loader do
+    Dir.chdir(File.join(__dir__, '..', 'manageiq')) do
       # compile_sti_loader fails without database.yml - copy as temporary solution
       FileUtils.cp("config/database.pg.yml", "config/database.yml")
       puts `bundle exec rake evm:compile_sti_loader`
@@ -56,7 +60,7 @@ namespace :build do
   end
 
   desc "Builds a tarball."
-  task :tar => [:version_files, :build_file, :precompile_assets, :build_selfservice_ui] do
+  task :tar => [:version_files, :build_file, :precompile_assets, :precompile_sti_loader, :build_selfservice_ui] do
     exclude_file = Build::Productization.file_for((__dir__), "config/tarball/exclude")
     pkg_path     = Pathname.new(__dir__).join("pkg")
     FileUtils.mkdir_p(pkg_path)
