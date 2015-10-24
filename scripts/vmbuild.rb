@@ -126,19 +126,28 @@ Dir.chdir(IMGFAC_DIR) do
     uuid   = verify_run(output)
     $log.info "#{target} base_image complete, uuid: #{uuid}"
 
-    $log.info "Running #{target} target_image with #{imgfac_target} and uuid: #{uuid}"
-    output = `./imagefactory --config #{IMGFAC_CONF} target_image --id #{uuid} #{imgfac_target}`
-    uuid   = verify_run(output)
-    $log.info "#{target} target_image with imgfac_target: #{imgfac_target} and uuid #{uuid} complete"
-
-    unless imgfac_target == "openstack-kvm"
-      $log.info "Running #{target} target_image ova with ova file: #{ova_file} and uuid: #{uuid}"
-      output = `./imagefactory --config #{IMGFAC_CONF} target_image ova --parameters #{ova_file} --id #{uuid}`
+    unless imgfac_target == "hyperv"
+      $log.info "Running #{target} target_image with #{imgfac_target} and uuid: #{uuid}"
+      output = `./imagefactory --config #{IMGFAC_CONF} target_image --id #{uuid} #{imgfac_target}`
       uuid   = verify_run(output)
-      $log.info "#{target} target_image ova with uuid: #{uuid} complete"
+      $log.info "#{target} target_image with imgfac_target: #{imgfac_target} and uuid #{uuid} complete"
+
+      unless imgfac_target == "openstack-kvm"
+        $log.info "Running #{target} target_image ova with ova file: #{ova_file} and uuid: #{uuid}"
+        output = `./imagefactory --config #{IMGFAC_CONF} target_image ova --parameters #{ova_file} --id #{uuid}`
+        uuid   = verify_run(output)
+        $log.info "#{target} target_image ova with uuid: #{uuid} complete"
+      end
     end
     $log.info "Built #{target} with final UUID: #{uuid}"
     source = STORAGE_DIR.join("#{uuid}.body")
+
+    if imgfac_target == "hyperv"
+      $log.info "Running qemu-img to convert the raw image"
+      source_converted = STORAGE_DIR.join("#{uuid}.converted")
+      $log.info `qemu-img convert -f raw -O vpc #{source} #{source_converted}`
+      source = source_converted
+    end
 
     FileUtils.mkdir_p(destination_directory)
     file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{target.file_extension}"
