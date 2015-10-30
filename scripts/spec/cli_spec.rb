@@ -7,6 +7,10 @@ describe Build::Cli do
       expect(described_class.new.parse(%w()).options[:only]).to match_array %w(vsphere ovirt openstack)
     end
 
+    it "all" do
+      expect(described_class.new.parse(%w(-o all)).options[:only]).to match_array %w(vsphere ovirt openstack hyperv)
+    end
+
     it "only vsphere and ovirt" do
       expect(described_class.new.parse(%w(-o vsphere ovirt)).options[:only]).to match_array %w(vsphere ovirt)
     end

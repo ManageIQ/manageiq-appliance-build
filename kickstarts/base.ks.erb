@@ -78,7 +78,7 @@ done
 # Let's rebuild the ramfs with with base scsi drivers we need
 kversion=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
 ramfsfile="/boot/initramfs-$kversion.img"
-/sbin/dracut --force --add-drivers "mptbase mptscsih mptspi" $ramfsfile $kversion
+/sbin/dracut --force --add-drivers "mptbase mptscsih mptspi<%= " hv_storvsc hid_hyperv hv_netvsc hv_vmbus" if @target == "hyperv" %>" $ramfsfile $kversion
 
 chvt 1
 %end
