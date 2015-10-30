@@ -34,10 +34,14 @@ module Build
         opt :build_url,     build_desc,     :type => :string,  :short => "B", :default => BUILD_URL
         opt :manageiq_url,  manageiq_desc,  :type => :string,  :short => "M", :default => MANAGEIQ_URL
         opt :upload,        upload_desc,    :type => :boolean, :short => "u", :default => false
-        opt :only,          only_desc,      :type => :strings, :short => "o", :default => Target.supported_types
+        opt :only,          only_desc,      :type => :strings, :short => "o", :default => Target.default_types
       end
 
       options[:type] &&= options[:type].strip
+
+      if options[:only].include?('all')
+        options[:only] = Target.supported_types
+      end
 
       Trollop.die(:reference, git_ref_desc) if options[:reference].to_s.empty?
       options[:reference] = options[:reference].to_s.strip

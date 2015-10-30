@@ -15,6 +15,10 @@ module Build
       TYPES.keys
     end
 
+    def self.default_types
+      supported_types - ["hyperv"]
+    end
+
     def initialize(name)
       @name = name = name.to_s
       raise ArgumentError, "Unsupported name: #{name}" unless TYPES.key?(name)
