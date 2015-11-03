@@ -72,7 +72,7 @@ ls /etc/sysconfig/network-scripts/ifcfg-* | while read FILE
 do
   # parse the device name from FILE
   DEVICE=${FILE##*-}
-  grep -q 'DEVICE=' $FILE && echo "DEVICE=$DEVICE" >> $FILE
+  grep -q 'DEVICE=' $FILE || echo "DEVICE=$DEVICE" >> $FILE
 done
 
 # Let's rebuild the ramfs with with base scsi drivers we need
