@@ -1,5 +1,0 @@
-<%
-  # Note: Kickstart doesn't provide a way to specify a range, so be explicit :(
-  vnc_range = (5900..5999).to_a.map { |port| "#{port}:tcp" }.join(",")
-%>
-firewall --enabled --port=22:tcp,80:tcp,80:udp,443:tcp,443:udp,5432:tcp,<%= vnc_range %>
