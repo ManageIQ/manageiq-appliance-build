@@ -72,13 +72,52 @@ ova_file = BUILD_BASE.join("config/ova.json")
 $log.info "Using inputs: puddle: #{puddle}, build_label: #{build_label}"
 $log.info "              tdl_file: #{tdl_file}, ova_file: #{ova_file}."
 
-def verify_run(output)
+def check_uuid(output)
   if output =~ /UUID: (.*)/
     Regexp.last_match[1]
   else
-    $log.error("Could not find UUID.")
-    exit 1
+    $log.error("Could not find UUID.  Output from last command: #{output}")
+    false
   end
+end
+
+# TODO: Move these things to a class
+def clean_factory_build
+  domain_name, uuid_prefix = *(`virsh list --name`.match(/factory-build-([a-f0-9\-]+)/))
+  `virsh destroy #{domain_name}` if domain_name
+  files = [STORAGE_DIR.join("#{uuid_prefix}.#{body}"),
+           STORAGE_DIR.join("#{uuid_prefix}.#{meta}")].select { |f| File.exist?(f) }
+  $log.info("#{___method__} Deleted: #{FileUtils.rm(files, :verbose => true)}") unless files.empty?
+end
+
+def create_base_image(tdl_file, output_file)
+  `./imagefactory --config #{IMGFAC_CONF} base_image --parameters #{output_file} #{tdl_file}`
+end
+
+def pre_retry(attempt)
+  clean_factory_build
+  seconds = attempt * attempt * 60
+  $log.info("#{___method__} Sleeping #{seconds} before retry")
+  sleep seconds
+  $log.info("#{__method__} Retrying...")
+end
+
+def exhaust_attempts
+  $log.error("#{__method__} Exhausted all base_image attempts, quitting!")
+  clean_factory_build
+  exit 1
+end
+
+def create_base_image_with_retries(tdl_file, output_file, retries = 5)
+  uuid = (1..retries).detect do |attempt|
+    output = create_base_image(tdl_file, output_file)
+    id     = check_uuid(output)
+    pre_retry(attempt) unless id
+    id
+  end
+
+  exhaust_attempts unless uuid
+  uuid
 end
 
 year_month_day    = Time.now.strftime("%Y%m%d")
@@ -121,21 +160,21 @@ Dir.chdir(IMGFAC_DIR) do
 
     log_params = "kickstart: #{output_file} copied from #{input_file}. tdl: #{tdl_file}"
     $log.info "Running base_image using parameters: #{log_params}"
-
-    output = `./imagefactory --config #{IMGFAC_CONF} base_image --parameters #{output_file} #{tdl_file}`
-    uuid   = verify_run(output)
+    create_base_image_with_retries(tdl_file, output_file)
     $log.info "#{target} base_image complete, uuid: #{uuid}"
 
     unless imgfac_target == "hyperv"
       $log.info "Running #{target} target_image with #{imgfac_target} and uuid: #{uuid}"
       output = `./imagefactory --config #{IMGFAC_CONF} target_image --id #{uuid} #{imgfac_target}`
-      uuid   = verify_run(output)
+      uuid   = check_uuid(output)
+      exit 1 unless uuid
       $log.info "#{target} target_image with imgfac_target: #{imgfac_target} and uuid #{uuid} complete"
 
       unless imgfac_target == "openstack-kvm"
         $log.info "Running #{target} target_image ova with ova file: #{ova_file} and uuid: #{uuid}"
         output = `./imagefactory --config #{IMGFAC_CONF} target_image ova --parameters #{ova_file} --id #{uuid}`
-        uuid   = verify_run(output)
+        uuid   = check_uuid(output)
+        exit 1 unless uuid
         $log.info "#{target} target_image ova with uuid: #{uuid} complete"
       end
     end
