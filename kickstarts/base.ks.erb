@@ -13,8 +13,6 @@ keyboard us
 network --onboot yes --device eth0 --bootproto dhcp
 rootpw  --iscrypted $1$DZprqvCu$mhqFBjfLTH/PVvZIompVP/
 
-<%= render_partial "main/firewall" %>
-
 authconfig --enableshadow --passalgo=sha512
 selinux --enforcing
 timezone --utc America/New_York
