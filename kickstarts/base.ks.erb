@@ -73,6 +73,9 @@ do
   grep -q 'DEVICE=' $FILE || echo "DEVICE=$DEVICE" >> $FILE
 done
 
+# make sure there is a new line at the end of sshd_config
+echo "" >> /etc/ssh/sshd_config
+
 # Let's rebuild the ramfs with with base scsi drivers we need
 kversion=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
 ramfsfile="/boot/initramfs-$kversion.img"
