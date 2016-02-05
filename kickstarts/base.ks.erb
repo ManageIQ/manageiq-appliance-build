@@ -73,6 +73,12 @@ do
   grep -q 'DEVICE=' $FILE || echo "DEVICE=$DEVICE" >> $FILE
 done
 
+# Disable zeroconfig to allow access to meta-data service by cloud-init
+cat >> /etc/sysconfig/network << EOF
+NETWORKING=yes
+NOZEROCONF=yes
+EOF
+
 # make sure there is a new line at the end of sshd_config
 echo "" >> /etc/ssh/sshd_config
 
