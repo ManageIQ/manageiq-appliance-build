@@ -15,10 +15,15 @@ $log = Logger.new(STDOUT)
 
 cli_options = Build::Cli.parse.options
 
-puddle = nil
+puddle    = nil
+directory = "upstream"
+
 case cli_options[:type]
 when "nightly"
   build_label = cli_options[:reference]
+when "release"
+  build_label = cli_options[:reference]
+  directory   = "upstream_stable"
 when nil
   build_label = "test"
 else
@@ -86,7 +91,6 @@ hour_minute       = Time.now.strftime("%H%M")
 directory_name    = "#{year_month_day}_#{hour_minute}"
 timestamp         = "#{year_month_day}#{hour_minute}"
 
-directory       = "upstream"
 name            = "manageiq"
 
 targets = cli_options[:only].collect { |only| Build::Target.new(only) }
@@ -178,8 +182,8 @@ Dir.chdir(IMGFAC_DIR) do
   end
 end
 
-# Only update the latest symlink for a nightly
-if cli_options[:type] == "nightly"
+# Only update the latest symlink for a nightly/release
+if cli_options[:type] == "nightly" || cli_options[:type] == "release"
   symlink_name = "latest"
   link = stream_directory.join(symlink_name)
   if File.exist?(link)

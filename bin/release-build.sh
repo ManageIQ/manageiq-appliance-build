@@ -10,5 +10,5 @@ if [[ $# != 1 ]]; then
 fi
 
 log_file="/build/logs/${1}.log"
-nohup time ruby /build/scripts/vmbuild.rb --type nightly --upload --reference $1 > $log_file 2>&1 &
+nohup time ruby /build/scripts/vmbuild.rb --type release --upload --reference $1 > $log_file 2>&1 &
 echo "${1} release build kicked off, see log @ $log_file ..."
