@@ -5,7 +5,7 @@ require_relative 'target'
 module Build
   class Cli
     attr_reader :options
-    ALLOWED_TYPES = %w(nightly test)
+    ALLOWED_TYPES = %w(nightly release test)
     DEFAULT_TYPE  = "nightly"
     DEFAULT_REF   = "master"
     APPLIANCE_URL = "https://github.com/ManageIQ/manageiq-appliance.git"
@@ -13,8 +13,8 @@ module Build
     MANAGEIQ_URL  = "https://github.com/ManageIQ/manageiq.git"
 
     def parse(args = ARGV)
-      git_ref_desc   = "provide a git reference such as a branch or tag"
-      type_desc      = "build type: nightly, test, a named yum repository"
+      git_ref_desc   = "provide a git reference such as a branch or tag, non \"#{DEFAULT_REF}\" is required for 'release' type"
+      type_desc      = "build type: nightly, release, test, a named yum repository"
       local_desc     = "Use local config and kickstart for build"
       share_desc     = "Copy builds to file share"
       appliance_desc = "Repo URL containing appliance scripts and configs(COPY/LINK/TEMPLATE)"
@@ -45,6 +45,10 @@ module Build
 
       Trollop.die(:reference, git_ref_desc) if options[:reference].to_s.empty?
       options[:reference] = options[:reference].to_s.strip
+
+      # 'release' build requires non DEFAULT_REF reference
+      Trollop.die(:reference, git_ref_desc) if options[:type] == "release" && options[:reference] == DEFAULT_REF
+
       self
     end
 
