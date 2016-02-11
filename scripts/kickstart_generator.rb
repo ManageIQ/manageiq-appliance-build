@@ -11,15 +11,16 @@ module Build
     KS_GEN_DIR  = "#{KS_DIR}/generated"
     KS_PART_DIR = "#{KS_DIR}/partials"
 
-    attr_reader :targets, :puddle, :appliance_checkout, :manageiq_checkout
+    attr_reader :targets, :puddle, :manageiq_checkout, :appliance_checkout, :ssui_checkout
 
-    def initialize(build_base, targets, puddle, appliance_checkout, manageiq_checkout)
+    def initialize(build_base, targets, puddle, manageiq_checkout, appliance_checkout, ssui_checkout)
       @build_base         = Pathname.new(build_base)
       @ks_gen_base        = @build_base.join(KS_GEN_DIR)
       @targets            = targets
       @puddle             = puddle # used during ERB evaluation
-      @appliance_checkout = appliance_checkout
       @manageiq_checkout  = manageiq_checkout
+      @appliance_checkout = appliance_checkout
+      @ssui_checkout      = ssui_checkout
     end
 
     def run(task = :all)

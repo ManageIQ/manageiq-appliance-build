@@ -1,6 +1,11 @@
 www_root="/var/www"
 app_root="$www_root/miq"
-appliance_root="/opt/manageiq/manageiq-appliance"
+vmdb_root="$app_root/vmdb"
+
+repos_root="/opt/manageiq"
+manageiq_root="$repos_root/manageiq"
+appliance_root="$repos_root/manageiq-appliance"
+ssui_root="$repos_root/manageiq-ui-self_service"
 
 rm -rf $app_root
 
@@ -11,10 +16,18 @@ pushd $appliance_root
 popd
 
 mkdir -p $app_root
-git clone <%= @manageiq_checkout.remote %> $app_root/vmdb
-pushd $app_root/vmdb
+git clone <%= @manageiq_checkout.remote %> $vmdb_root
+pushd $vmdb_root
   git checkout <%= @manageiq_checkout.branch %>
   git reset --hard <%= @manageiq_checkout.commit_sha %>
+popd
+# Symlink manageiq to the vmdb root so that the SSUI can build into it
+ln -vs $vmdb_root $manageiq_root
+
+git clone <%= @ssui_checkout.remote %> $ssui_root
+pushd $ssui_root
+  git checkout <%= @ssui_checkout.branch %>
+  git reset --hard <%= @ssui_checkout.commit_sha %>
 popd
 
 $appliance_root/setup

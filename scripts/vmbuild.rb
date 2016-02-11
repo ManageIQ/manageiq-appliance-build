@@ -95,16 +95,14 @@ name            = "manageiq"
 
 targets = cli_options[:only].collect { |only| Build::Target.new(only) }
 
-appliance_git_url, manageiq_git_url = cli_options.values_at(:appliance_url, :manageiq_url)
-
-manageiq_checkout  = Build::GitCheckout.new(:remote => manageiq_git_url, :ref => cli_options[:reference])
-appliance_checkout = Build::GitCheckout.new(:remote => appliance_git_url, :ref => cli_options[:reference])
+manageiq_checkout  = Build::GitCheckout.new(:remote => cli_options[:manageiq_url],  :ref => cli_options[:reference])
+appliance_checkout = Build::GitCheckout.new(:remote => cli_options[:appliance_url], :ref => cli_options[:reference])
+ssui_checkout      = Build::GitCheckout.new(:remote => cli_options[:ssui_url],      :ref => cli_options[:reference])
+ks_gen = Build::KickstartGenerator.new(cfg_base, cli_options[:only], puddle, manageiq_checkout, appliance_checkout, ssui_checkout)
+ks_gen.run
 
 file_rdu_dir_base = FILE_SERVER_BASE.join(directory)
 file_rdu_dir      = file_rdu_dir_base.join(directory_name)
-
-ks_gen            = Build::KickstartGenerator.new(cfg_base, cli_options[:only], puddle, appliance_checkout, manageiq_checkout)
-ks_gen.run
 
 fileshare_dir         = BUILD_BASE.join("fileshare")
 stream_directory      = fileshare_dir.join(directory)

@@ -8,18 +8,20 @@ module Build
     ALLOWED_TYPES = %w(nightly release test)
     DEFAULT_TYPE  = "nightly"
     DEFAULT_REF   = "master"
+    MANAGEIQ_URL  = "https://github.com/ManageIQ/manageiq.git"
     APPLIANCE_URL = "https://github.com/ManageIQ/manageiq-appliance.git"
     BUILD_URL     = "https://github.com/ManageIQ/manageiq-appliance-build.git"
-    MANAGEIQ_URL  = "https://github.com/ManageIQ/manageiq.git"
+    SSUI_URL      = "https://github.com/ManageIQ/manageiq-ui-self_service.git"
 
     def parse(args = ARGV)
       git_ref_desc   = "provide a git reference such as a branch or tag, non \"#{DEFAULT_REF}\" is required for 'release' type"
       type_desc      = "build type: nightly, release, test, a named yum repository"
       local_desc     = "Use local config and kickstart for build"
       share_desc     = "Copy builds to file share"
+      manageiq_desc  = "Repo URL containing the ManageIQ code"
       appliance_desc = "Repo URL containing appliance scripts and configs(COPY/LINK/TEMPLATE)"
       build_desc     = "Repo URL containing the build config and kickstart"
-      manageiq_desc  = "Repo URL containing the main manageiq code"
+      ssui_desc      = "Repo URL containing the ManageIQ self service UI code"
       upload_desc    = "Upload appliance builds to the website"
       only_desc      = "Build only specific image types.  Example: --only ovirt openstack.  Defaults to all images."
 
@@ -30,9 +32,10 @@ module Build
         opt :reference,     git_ref_desc,   :type => :string,  :short => "r", :default => DEFAULT_REF
         opt :local,         local_desc,     :type => :boolean, :short => "l", :default => false
         opt :fileshare,     share_desc,     :type => :boolean, :short => "s", :default => true
+        opt :manageiq_url,  manageiq_desc,  :type => :string,  :short => "M", :default => MANAGEIQ_URL
         opt :appliance_url, appliance_desc, :type => :string,  :short => "A", :default => APPLIANCE_URL
         opt :build_url,     build_desc,     :type => :string,  :short => "B", :default => BUILD_URL
-        opt :manageiq_url,  manageiq_desc,  :type => :string,  :short => "M", :default => MANAGEIQ_URL
+        opt :ssui_url,      ssui_desc,      :type => :string,  :short => "S", :default => SSUI_URL
         opt :upload,        upload_desc,    :type => :boolean, :short => "u", :default => false
         opt :only,          only_desc,      :type => :strings, :short => "o", :default => Target.default_types
       end
