@@ -7,7 +7,7 @@ describe Build::KickstartGenerator do
     let(:generated)  { "#{build_base}/kickstarts/generated" }
     let(:ks_text)    { File.read("#{generated}/base.ks") }
 
-    subject { described_class.new(build_base, ["target"], "puddle", "app_checkout", "miq_checkout") }
+    subject { described_class.new(build_base, ["target"], "puddle", "miq_checkout", "app_checkout", "ssui_checkout") }
 
     after do
       FileUtils.rm_rf(generated)
