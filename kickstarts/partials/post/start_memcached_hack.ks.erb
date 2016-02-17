@@ -1,0 +1,9 @@
+# For rails 5, we switched to rails' MemCacheStore [1], a subclass of rack's
+# store that tries to connect to memcached when loading rails. The prior store,
+# DalliStore, did not connect on initialize. We need to start memcached here,
+# before anything loads Rails.  See also [2].
+#
+# [1] https://github.com/ManageIQ/manageiq/pull/6704
+# [2] https://github.com/petergoldstein/dalli/pull/423
+systemctl enable memcached
+systemctl start memcached
