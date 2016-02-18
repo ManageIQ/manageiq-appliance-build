@@ -48,6 +48,11 @@ set -x
 # Unset it so ruby_parser doesn't print LOTS of output.
 unset DEBUG
 
+# We don't need a session store in anaconda so force Rails to use memory store
+# since rails 5 mem_cache_store tries to connect to a not running memcached.
+# See: https://github.com/ManageIQ/manageiq/pull/6751
+export RAILS_USE_MEMORY_STORE="true"
+
 <%= render_partial "post/firewalld" %>
 
 <%= render_partial "post/source_setup" %>
