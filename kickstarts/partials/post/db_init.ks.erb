@@ -13,8 +13,9 @@ cat > /usr/lib/systemd/system/appliance-initialize.service <<EOF
 [Unit]
 Description=Initialize Appliance Database
 ConditionPathExists=!/var/opt/rh/rh-postgresql94/lib/pgsql/data/base
-After=evminit.service
+After=evminit.service memcached.service
 Before=evmserverd.service
+Requires=memcached.service
 [Service]
 Type=oneshot
 ExecStart=/bin/appliance-initialize.sh
