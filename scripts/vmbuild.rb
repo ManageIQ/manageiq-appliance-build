@@ -20,15 +20,15 @@ directory = "upstream"
 
 case cli_options[:type]
 when "nightly"
-  build_label = cli_options[:reference]
+  build_label = cli_options[:manageiq_ref]
 when "release"
-  build_label = cli_options[:reference]
+  build_label = cli_options[:manageiq_ref]
   directory   = "upstream_stable"
 when nil
   build_label = "test"
 else
   puddle = cli_options[:type]
-  build_label = "#{cli_options[:type]}-#{cli_options[:reference]}"
+  build_label = "#{cli_options[:type]}-#{cli_options[:manageiq_ref]}"
 end
 
 BUILD_BASE          = Pathname.new("/build")
@@ -46,23 +46,23 @@ FILE_SERVER_BASE    = Pathname.new(ENV["BUILD_FILE_SERVER_BASE"] || ".") # Subdi
 
 if !cli_options[:local] && cli_options[:build_url]
   build_repo = cli_options[:build_url]
-  cfg_base = REFS_DIR.join(cli_options[:reference])
+  cfg_base = REFS_DIR.join(cli_options[:build_ref])
   FileUtils.mkdir_p(cfg_base)
   Dir.chdir(cfg_base) do
     unless File.exist?(".git")
       $log.info("Cloning Repo #{build_repo} to #{cfg_base} ...")
       `git clone #{build_repo} .` unless File.exist?(".git")
     end
-    $log.info("Checking out reference #{cli_options[:reference]} from repo #{build_repo} ...")
+    $log.info("Checking out reference #{cli_options[:build_ref]} from repo #{build_repo} ...")
     `git reset --hard`                                    # Drop any local changes
     `git clean -dxf`                                      # Clean up any local untracked changes
-    `git checkout #{cli_options[:reference]}`             # Checkout existing branch
+    `git checkout #{cli_options[:build_ref]}`             # Checkout existing branch
     `git fetch origin`                                    # Get origin updates
-    `git reset --hard origin/#{cli_options[:reference]}`  # Reset the branch to the origin
+    `git reset --hard origin/#{cli_options[:build_ref]}`  # Reset the branch to the origin
   end
 
   unless File.exist?(cfg_base)
-    $log.error("Could not checkout repo #{build_repo} for reference #{cli_options[:reference]}")
+    $log.error("Could not checkout repo #{build_repo} for reference #{cli_options[:build_ref]}")
     exit 1
   end
 else
@@ -95,9 +95,9 @@ name            = "manageiq"
 
 targets = cli_options[:only].collect { |only| Build::Target.new(only) }
 
-manageiq_checkout  = Build::GitCheckout.new(:remote => cli_options[:manageiq_url],  :ref => cli_options[:reference])
-appliance_checkout = Build::GitCheckout.new(:remote => cli_options[:appliance_url], :ref => cli_options[:reference])
-ssui_checkout      = Build::GitCheckout.new(:remote => cli_options[:ssui_url],      :ref => cli_options[:reference])
+manageiq_checkout  = Build::GitCheckout.new(:remote => cli_options[:manageiq_url],  :ref => cli_options[:manageiq_ref])
+appliance_checkout = Build::GitCheckout.new(:remote => cli_options[:appliance_url], :ref => cli_options[:appliance_ref])
+ssui_checkout      = Build::GitCheckout.new(:remote => cli_options[:ssui_url],      :ref => cli_options[:ssui_ref])
 ks_gen = Build::KickstartGenerator.new(cfg_base, cli_options[:only], puddle, manageiq_checkout, appliance_checkout, ssui_checkout)
 ks_gen.run
 
