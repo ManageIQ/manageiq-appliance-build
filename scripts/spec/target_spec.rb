@@ -30,7 +30,7 @@ describe Build::Target do
   end
 
   it ".default_types" do
-    expect(described_class.default_types).to match_array %w(openstack ovirt vsphere)
+    expect(described_class.default_types).to match_array %w(openstack ovirt vsphere hyperv)
   end
 
   it "#to_s" do
