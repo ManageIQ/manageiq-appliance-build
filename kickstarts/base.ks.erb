@@ -21,8 +21,7 @@ device mptbase
 device mptscsih
 device mptspi
 
-bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet net.ifnames=0 biosdevname=0"
-
+<%= render_partial "main/bootloader" %>
 <%= render_partial "main/disk_layout" %>
 <%= render_partial "main/db_fs" %>
 
