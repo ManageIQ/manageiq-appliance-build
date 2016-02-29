@@ -16,7 +16,7 @@ module Build
     end
 
     def self.default_types
-      supported_types - ["hyperv"]
+      supported_types
     end
 
     def initialize(name)
