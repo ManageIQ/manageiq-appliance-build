@@ -17,12 +17,12 @@ Below are instructions on installing and configuring a virtual machine to genera
 
   **Note: All instructions are as root unless specified**
 
-## Setup CentOS 7.1 in a new virtual machine
+## Setup CentOS 7.2 in a new virtual machine
 
-  * CentOS-7-x86_64-DVD-1503-01.iso (attached to vm)
+  * CentOS-7-x86_64-DVD-1511-01.iso (attached to vm)
   * Vm configuration:
     * 8GB Ram
-    * 80GB HD - Minimum
+    * HD 80GB Minimum - 200GB Recommended
     * NAT or Bridged
     * Enable Intel Hardware Virtualization VT-x/EPT
     * Time Sync with Host
@@ -200,6 +200,24 @@ Below are instructions on installing and configuring a virtual machine to genera
 
   `yum install rhevm-guest-agent`
 
+## Setup for Hyper-V Image builds
+
+  * Add repo for installing newer kvm-common imaging packages:
+
+    * Create: `/etc/yum.repos.d/kvm-common.repo`
+
+      ```
+      [kvm-common]
+      name=CentOS-$releasever - kvm-common
+      baseurl=http://mirror.centos.org/centos/7/virt/x86_64/kvm-common/
+      enabled=1
+      gpgcheck=0
+      ```
+
+  * Update the following package:
+
+    * yum install qemu-img-ev
+
 ## Configure virtualization hardware
 
   * In hosting's VM's .vmx file:
@@ -241,15 +259,7 @@ Below are instructions on installing and configuring a virtual machine to genera
   gem install fog
   ```
 
-  * For enabling copying to SSH file server, define the following in Root's .bashrc (optional)
 
-    ```
-    export BUILD_FILE_SERVER="your.file.server.com"
-    export BUILD_FILE_SERVER_ACCOUNT="your_id"
-    export BUILD_FILE_SERVER_BASE="public_html"  # subdirectory off your_id's home where to scp files to
-    ```
-
-    * Note: root will need password-less access to the account listed above.
 
 
 ## Setup VNC Server and Viewer
@@ -317,23 +327,6 @@ Below are instructions on installing and configuring a virtual machine to genera
   chmod +x /build/bin/clean_imagefactory_storage.sh
   ln -s /build/bin/clean_imagefactory_storage.sh /etc/cron.daily
   ```
-  
-## File Share (optional)
-
-  * `vi /etc/hosts`
-    `a.b.c.d   your.file.share.com`
-  
-  * Make sure root can ssh/scp to personal account on your.file.share.com
-    ```
-    su -
-    ssh-keygen
-    # Press Enter key till you get the prompt
-
-    ssh-copy-id -i your_id@your.file.share.com
-    # It will once ask for the password of the host system
-
-    ssh your_id@your.file.share.com
-    ```
 
 ## To setup a daily build:
 
@@ -351,6 +344,34 @@ Below are instructions on installing and configuring a virtual machine to genera
   ```
   ln -s /build/bin/nightly-build.sh /etc/cron.daily
   ```
+
+## Optional: Copying builds to a File Share via SSH
+
+  * `vi /etc/hosts`
+    `a.b.c.d   your.file.server.com`
+
+  * Make sure root can ssh/scp to personal account on your.file.server.com
+
+    ```
+    su -
+    ssh-keygen
+    # Press Enter key till you get the prompt
+
+    ssh-copy-id -i your_id@your.file.server.com
+    # It will once ask for the password of the host system
+
+    ssh your_id@your.file.server.com
+    ```
+
+  * Define the following in Root's .bashrc
+
+    ```
+    export BUILD_FILE_SERVER="your.file.server.com"
+    export BUILD_FILE_SERVER_ACCOUNT="your_id"
+    export BUILD_FILE_SERVER_BASE="public_html"  # subdirectory off your_id's home where to scp files to
+    ```
+
+    * Note: root will need password-less access to the account listed above.
 
 # Usage
 
@@ -390,3 +411,4 @@ Above is provided with the `/build/bin/vncviewer_build.sh [--wait]`
 Note:
 vncviewer has an "F8" menu we need to use if we want to send an "alt" keypress to the VM.
 On t540p thinkpad, with the function lock key on, pressing F8 actually disables WIFI.
+
