@@ -38,8 +38,10 @@ reboot
 %end
 
 %post --log=/root/anaconda-post.log
+(
+# Redirect stdin to be /dev/tty3
+exec < /dev/tty3
 
-exec < /dev/tty3 > /dev/tty3
 chvt 3
 set -x
 
@@ -94,4 +96,5 @@ ramfsfile="/boot/initramfs-$kversion.img"
 <%= render_partial "post/azure" if @target == "azure" %>
 
 chvt 1
+) 2>&1 | tee /dev/tty3
 %end
