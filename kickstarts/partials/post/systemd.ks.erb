@@ -5,7 +5,9 @@ systemctl enable miqvmstat
 systemctl enable evminit
 systemctl enable evm-watchdog
 
+<% unless @target == "azure" %>
 systemctl enable cloud-ds-check
+<% end %>
 
 systemctl enable memcached
 

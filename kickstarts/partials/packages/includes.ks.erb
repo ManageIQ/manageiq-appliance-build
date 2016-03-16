@@ -72,7 +72,9 @@ openldap-clients
 # External Authentication - SAML
 mod_auth_mellon
 
+<% unless @target == "azure" %>
 cloud-init
+<% end %>
 
 wmi
 
@@ -83,4 +85,6 @@ npm
 ovirt-guest-agent
 <% elsif @target == "vsphere" %>
 open-vm-tools
+<% elsif @target == "azure" %>
+WALinuxAgent
 <% end %>

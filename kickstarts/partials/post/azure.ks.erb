@@ -1,0 +1,10 @@
+# Configure swap in WALinuxAgent
+sed -i 's/^\(ResourceDisk\.EnableSwap\)=[Nn]$/\1=y/g' /etc/waagent.conf
+sed -i 's/^\(ResourceDisk\.SwapSizeMB\)=[0-9]*$/\1=10240/g' /etc/waagent.conf
+
+# Enable SSH keepalive
+sed -i 's/^#\(ClientAliveInterval\).*$/\1 180/g' /etc/ssh/sshd_config
+
+systemctl enable waagent.service
+sed -i 's/Provisioning\.DeleteRootPassword=y/Provisioning\.DeleteRootPassword=n/' /etc/waagent.conf
+waagent -force -deprovision

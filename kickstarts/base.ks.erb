@@ -10,7 +10,7 @@ cdrom
 
 lang en_US.UTF-8
 keyboard us
-network --onboot yes --device eth0 --bootproto dhcp
+network --onboot yes --device eth0 --bootproto dhcp<%= " --noipv6" if @target == "azure" || @target == "openstack" %>
 rootpw  --iscrypted $1$DZprqvCu$mhqFBjfLTH/PVvZIompVP/
 
 authconfig --enableshadow --passalgo=sha512
@@ -89,7 +89,9 @@ echo "" >> /etc/ssh/sshd_config
 # Let's rebuild the ramfs with with base scsi drivers we need
 kversion=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
 ramfsfile="/boot/initramfs-$kversion.img"
-/sbin/dracut --force --add-drivers "mptbase mptscsih mptspi<%= " hv_storvsc hid_hyperv hv_netvsc hv_vmbus" if @target == "hyperv" %>" $ramfsfile $kversion
+/sbin/dracut --force --add-drivers "mptbase mptscsih mptspi<%= " hv_storvsc hid_hyperv hv_netvsc hv_vmbus" if @target == "hyperv" || @target == "azure" %>" $ramfsfile $kversion
+
+<%= render_partial "post/azure" if @target == "azure" %>
 
 chvt 1
 %end
