@@ -1,0 +1,7 @@
+<% if @target == "openstack" || @target == "azure" %>
+network --onboot yes --device eth0 --bootproto dhcp --noipv6
+<% elsif @target == "gce" %>
+network --onboot yes --device eth0 --bootproto dhcp --noipv6 --mtu=1460
+<% else %>
+network --onboot yes --device eth0 --bootproto dhcp
+<% end %>

@@ -10,7 +10,7 @@ cdrom
 
 lang en_US.UTF-8
 keyboard us
-network --onboot yes --device eth0 --bootproto dhcp<%= " --noipv6" if @target == "azure" || @target == "openstack" %>
+<%= render_partial "main/network" %>
 rootpw  --iscrypted $1$DZprqvCu$mhqFBjfLTH/PVvZIompVP/
 
 authconfig --enableshadow --passalgo=sha512
@@ -92,6 +92,7 @@ ramfsfile="/boot/initramfs-$kversion.img"
 /sbin/dracut --force --add-drivers "mptbase mptscsih mptspi<%= " hv_storvsc hid_hyperv hv_netvsc hv_vmbus" if @target == "hyperv" || @target == "azure" %>" $ramfsfile $kversion
 
 <%= render_partial "post/azure" if @target == "azure" %>
+<%= render_partial "post/gce" if @target == "gce" %>
 
 chvt 1
 %end
