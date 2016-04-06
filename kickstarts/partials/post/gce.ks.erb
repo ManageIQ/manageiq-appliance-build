@@ -1,0 +1,20 @@
+# GCE Kernel security settings
+cat >> /etc/sysctl.d/11-gce-network-security.conf << EOF
+net.ipv4.tcp_syncookies = 1
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv4.conf.all.secure_redirects = 1
+net.ipv4.conf.default.secure_redirects = 1
+net.ipv4.ip_forward = 0
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+net.ipv4.icmp_ignore_bogus_error_responses = 1
+net.ipv4.conf.all.log_martians = 1
+net.ipv4.conf.default.log_martians = 1
+net.ipv4.tcp_rfc1337 = 1
+kernel.randomize_va_space = 2
+EOF
+
+# Enable SSH keepalive
+sed -i 's/^#\(ClientAliveInterval\).*$/\1 420/g' /etc/ssh/sshd_config
