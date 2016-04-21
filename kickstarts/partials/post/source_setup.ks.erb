@@ -34,7 +34,3 @@ $appliance_root/setup
 mkdir -p $app_root/vmdb/log/apache
 
 cp /etc/motd.manageiq /etc/motd
-
-# Legacy directory symlinks
-ln -vs $appliance_root $app_root/system
-ln -vs $app_root/vmdb/gems/pending $app_root/lib
