@@ -2,7 +2,7 @@
 # Kick off a nightly upstream build
 #
 # repo:      ManageIQ/manageiq.git
-# branch:    master
+# branch:    darga
 # fileshare: true
 #
 
@@ -15,8 +15,8 @@ LOG_DIR=/build/logs
 mkdir -p ${LOG_DIR}
 
 DATE_STAMP=`date +"%Y%m%d_%T"`
-LOG_FILE="${LOG_DIR}/master_${DATE_STAMP}.log"
-BUILD_OPTIONS="--type nightly --upload"
+LOG_FILE="${LOG_DIR}/darga_${DATE_STAMP}.log"
+BUILD_OPTIONS="--type nightly --reference darga --copy-dir darga --upload"
 
 if [ "${1}" = "--fileshare" -o "${1}" = "--no-fileshare" -o "${1}" = "--local" ]
 then
