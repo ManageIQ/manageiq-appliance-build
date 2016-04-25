@@ -13,7 +13,7 @@ LOG_DIR=/build/logs
 mkdir -p ${LOG_DIR}
 
 DATE_STAMP=`date +"%Y%m%d_%T"`
-LOG_FILE="${LOG_DIR}/upstream_${DATE_STAMP}.log"
+LOG_FILE="${LOG_DIR}/master_${DATE_STAMP}.log"
 BUILD_OPTIONS="--type nightly --upload"
 
 if [ "${1}" = "--fileshare" -o "${1}" = "--no-fileshare" -o "${1}" = "--local" ]

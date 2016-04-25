@@ -17,6 +17,7 @@ module Build
       git_ref_desc   = "provide a git reference such as a branch or tag, non \"#{DEFAULT_REF}\" is required for 'release' type"
       type_desc      = "build type: nightly, release, test, a named yum repository"
       local_desc     = "Use local config and kickstart for build"
+      dir_desc       = "Directory to copy builds to"
       share_desc     = "Copy builds to file share"
       manageiq_desc  = "Repo URL containing the ManageIQ code"
       appliance_desc = "Repo URL containing appliance scripts and configs(COPY/LINK/TEMPLATE)"
@@ -32,6 +33,7 @@ module Build
         opt :build_ref,     git_ref_desc,   :type => :string,  :short => "b", :default => DEFAULT_REF
         opt :build_url,     build_desc,     :type => :string,  :short => "B", :default => BUILD_URL
         opt :reference,     git_ref_desc,   :type => :string,  :short => "r", :default => nil
+        opt :copy_dir,      dir_desc,       :type => :string,  :short => "d", :default => DEFAULT_REF
         opt :fileshare,     share_desc,     :type => :boolean, :short => "f", :default => true
         opt :local,         local_desc,     :type => :boolean, :short => "l", :default => false
         opt :manageiq_ref,  git_ref_desc,   :type => :string,  :short => "m", :default => DEFAULT_REF
