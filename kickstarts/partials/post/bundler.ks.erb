@@ -13,5 +13,6 @@ pushd /var/www/miq/vmdb
 popd
 
 pushd /opt/manageiq/manageiq-ui-self_service
-  bundle install
+  # overriding exported BUNDLE_GEMFILE
+  bundle install --gemfile Gemfile
 popd
