@@ -70,11 +70,7 @@ end
 
 $log.info "Using Configuration base directory: #{cfg_base}"
 
-tdl_file = BUILD_BASE.join("config/base.tdl")
 ova_file = BUILD_BASE.join("config/ova.json")
-
-$log.info "Using inputs: puddle: #{puddle}, build_label: #{build_label}"
-$log.info "              tdl_file: #{tdl_file}, ova_file: #{ova_file}."
 
 def verify_run(output)
   if output =~ /UUID: (.*)/
@@ -113,7 +109,13 @@ FileUtils.mkdir_p(destination_directory)
 Dir.chdir(IMGFAC_DIR) do
   targets.sort.reverse.each do |target|
     imgfac_target = target.imagefactory_type
+    vhd_image     = target.file_extension == "vhd"
     $log.info "Building for #{target}:"
+
+    tdl_name = imgfac_target == "azure" ? "base_azure.tdl" : "base.tdl"
+    tdl_file = BUILD_BASE.join("config", tdl_name)
+    $log.info "Using inputs: puddle: #{puddle}, build_label: #{build_label}"
+    $log.info "              tdl_file: #{tdl_file}, ova_file: #{ova_file}."
 
     input_file  = ks_gen.gen_file_path("base-#{target}.json")
     output_file = ks_gen.gen_file_path("base-#{target}-#{build_label}-#{timestamp}.json")
@@ -127,7 +129,7 @@ Dir.chdir(IMGFAC_DIR) do
     uuid   = verify_run(output)
     $log.info "#{target} base_image complete, uuid: #{uuid}"
 
-    unless imgfac_target == "hyperv"
+    unless vhd_image
       $log.info "Running #{target} target_image with #{imgfac_target} and uuid: #{uuid}"
       output = `./imagefactory --config #{IMGFAC_CONF} target_image --id #{uuid} #{imgfac_target}`
       uuid   = verify_run(output)
@@ -143,7 +145,7 @@ Dir.chdir(IMGFAC_DIR) do
     $log.info "Built #{target} with final UUID: #{uuid}"
     source = STORAGE_DIR.join("#{uuid}.body")
 
-    if imgfac_target == "hyperv"
+    if vhd_image
       $log.info "Running qemu-img to convert the raw image"
       source_converted = STORAGE_DIR.join("#{uuid}.converted")
       $log.info `qemu-img convert -f raw -O vpc #{source} #{source_converted}`
