@@ -16,14 +16,13 @@ $log = Logger.new(STDOUT)
 cli_options = Build::Cli.parse.options
 
 puddle    = nil
-directory = "upstream"
+directory = cli_options[:copy_dir]
 
 case cli_options[:type]
 when "nightly"
   build_label = cli_options[:manageiq_ref]
 when "release"
   build_label = cli_options[:manageiq_ref]
-  directory   = "upstream_stable"
 when nil
   build_label = "test"
 else
@@ -182,7 +181,7 @@ end
 
 # Only update the latest symlink for a nightly/release
 if cli_options[:type] == "nightly" || cli_options[:type] == "release"
-  symlink_name = "latest"
+  symlink_name = cli_options[:type] == "nightly" ? "latest" : "stable"
   link = stream_directory.join(symlink_name)
   if File.exist?(link)
     raise "#{link} is not a symlink!" unless File.symlink?(link)
