@@ -6,7 +6,8 @@ module Build
       'vsphere'   => ImagefactoryMetadata.new('vsphere', 'ova'),
       'ovirt'     => ImagefactoryMetadata.new('rhevm', 'ova'),
       'openstack' => ImagefactoryMetadata.new('openstack-kvm', 'qc2'),
-      'hyperv'    => ImagefactoryMetadata.new('hyperv', 'vhd')
+      'hyperv'    => ImagefactoryMetadata.new('hyperv', 'vhd'),
+      'azure'     => ImagefactoryMetadata.new('azure', 'vhd')
     }
 
     attr_reader :name
