@@ -2,14 +2,15 @@ require 'fog'
 
 module Build
   class Uploader
-    attr_reader :directory
+    attr_reader :directory, :type
 
-    def self.upload(directory)
-      new(directory).run
+    def self.upload(directory, type)
+      new(directory, type).run
     end
 
-    def initialize(directory)
+    def initialize(directory, type)
       @directory = directory
+      @type      = type
     end
 
     def service
@@ -50,10 +51,10 @@ module Build
     #                   manageiq-ovirt-master-20140613-8d9d1b8.ova
     def uploaded_filename(appliance_name)
       filename =
-        if appliance_name.include?("-master-")
-          nightly_filename(appliance_name)
-        else
+        if type == "release"
           release_filename(appliance_name)
+        else
+          nightly_filename(appliance_name)
         end
       File.basename(filename)
     end
