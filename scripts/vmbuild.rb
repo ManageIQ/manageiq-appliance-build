@@ -200,5 +200,5 @@ if cli_options[:type] == "nightly" || cli_options[:type] == "release"
     $log.info `ssh #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER} "#{ssh_cmd}"`
   end
 
-  Build::Uploader.upload(destination_directory) if cli_options[:upload]
+  Build::Uploader.upload(destination_directory, cli_options[:type]) if cli_options[:upload]
 end
