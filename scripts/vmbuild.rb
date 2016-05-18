@@ -112,6 +112,8 @@ Dir.chdir(IMGFAC_DIR) do
   targets.sort.reverse.each do |target|
     imgfac_target = target.imagefactory_type
     ova_format    = target.ova_format
+    vhd_image     = target.file_extension == "vhd"
+    gce_image     = target.file_extension == "raw"
     $log.info "Building for #{target}:"
 
     tdl_name = target.name == "azure" ? "base_azure.tdl" : "base.tdl"
@@ -148,6 +150,21 @@ Dir.chdir(IMGFAC_DIR) do
     end
     $log.info "Built #{target} with final UUID: #{uuid}"
     source = STORAGE_DIR.join("#{uuid}.body")
+
+    if vhd_image
+      $log.info "Running qemu-img to convert the raw image"
+      source_converted = STORAGE_DIR.join("#{uuid}.converted")
+      $log.info `qemu-img convert -f raw -O vpc #{source} #{source_converted}`
+      source = source_converted
+    end
+
+    if gce_image
+      $log.info "Tarring disk.raw for gce import"
+      source_converted = STORAGE_DIR.join("#{uuid}.converted")
+      $log.info `mv #{source} disk.raw`
+      $log.info `tar -C #{source_converted} -cSzf disk.raw`
+      source = source_converted
+    end
 
     FileUtils.mkdir_p(destination_directory)
     file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{target.file_extension}"
