@@ -135,6 +135,11 @@ Dir.chdir(IMGFAC_DIR) do
 
     params = "--parameters #{target_file}"
     $log.info "Running #{target} target_image #{imgfac_target} using parameters: #{params}"
+    unless vhd_image || gce_image
+      $log.info "Running #{target} target_image with #{imgfac_target} and uuid: #{uuid}"
+      output = `./imagefactory --config #{IMGFAC_CONF} target_image --id #{uuid} #{imgfac_target}`
+      uuid   = verify_run(output)
+      $log.info "#{target} target_image with imgfac_target: #{imgfac_target} and uuid #{uuid} complete"
 
     output = `./imagefactory --config #{IMGFAC_CONF} target_image #{params} --id #{uuid} #{imgfac_target}`
     uuid   = verify_run(output)
@@ -156,13 +161,13 @@ Dir.chdir(IMGFAC_DIR) do
       source_converted = STORAGE_DIR.join("#{uuid}.converted")
       $log.info `qemu-img convert -f raw -O vpc #{source} #{source_converted}`
       source = source_converted
-    end
+    elsif
 
     if gce_image
       $log.info "Tarring disk.raw for gce import"
       source_converted = STORAGE_DIR.join("#{uuid}.converted")
       $log.info `mv #{source} disk.raw`
-      $log.info `tar -C #{source_converted} -cSzf disk.raw`
+      $log.info `tar -C #{file_name} -cSzf disk.raw`
       source = source_converted
     end
 
