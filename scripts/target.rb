@@ -3,13 +3,14 @@ module Build
     ImagefactoryMetadata = Struct.new(:imagefactory_type, :ova_format, :file_extension)
 
     TYPES = {
+<<<<<<< b47e384afce6cbd38252781265ed2fd95b373616
       'vsphere'   => ImagefactoryMetadata.new('vsphere', 'vsphere', 'ova'),
       'ovirt'     => ImagefactoryMetadata.new('rhevm', 'rhevm', 'ova'),
       'openstack' => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2'),
       'hyperv'    => ImagefactoryMetadata.new('hyperv', nil, 'vhd'),
       'azure'     => ImagefactoryMetadata.new('hyperv', nil, 'vhd'),
       'vagrant'   => ImagefactoryMetadata.new('vsphere', 'vagrant-virtualbox', 'box'),
-      'gce'       => ImagefactoryMetadata.new('gce', 'raw')
+      'gce'       => ImagefactoryMetadata.new('gce', 'tar.gz')
     }
 
     attr_reader :name
