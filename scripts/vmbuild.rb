@@ -113,7 +113,7 @@ Dir.chdir(IMGFAC_DIR) do
     imgfac_target = target.imagefactory_type
     ova_format    = target.ova_format
     vhd_image     = target.file_extension == "vhd"
-    gce_image     = target.file_extension == "raw"
+    gce_image     = target.file_extension == "tar.gz"
     $log.info "Building for #{target}:"
 
     tdl_name = target.name == "azure" ? "base_azure.tdl" : "base.tdl"
@@ -161,14 +161,11 @@ Dir.chdir(IMGFAC_DIR) do
       source_converted = STORAGE_DIR.join("#{uuid}.converted")
       $log.info `qemu-img convert -f raw -O vpc #{source} #{source_converted}`
       source = source_converted
-    elsif
-
-    if gce_image
+    elsif gce_image
       $log.info "Tarring disk.raw for gce import"
-      source_converted = STORAGE_DIR.join("#{uuid}.converted")
       $log.info `mv #{source} disk.raw`
-      $log.info `tar -C #{file_name} -cSzf disk.raw`
-      source = source_converted
+      $log.info `virt-sysprep --no-selinux-relabel -a disk.raw`
+      $log.info `tar -Sczf #{source} disk.raw`
     end
 
     FileUtils.mkdir_p(destination_directory)
