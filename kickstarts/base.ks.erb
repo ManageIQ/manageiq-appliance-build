@@ -99,6 +99,9 @@ ramfsfile="/boot/initramfs-$kversion.img"
 # make sure there is a new line at the end of sshd_config
 echo "" >> /etc/ssh/sshd_config
 
+# Clean the logs
+rm -rf "$vmdb_root/log/*"
+
 chvt 1
 ) 2>&1 | tee /dev/tty3
 %end
