@@ -5,7 +5,7 @@ systemctl enable miqvmstat
 systemctl enable evminit
 systemctl enable evm-watchdog
 
-<% unless @target == "azure" %>
+<% if @target != "azure" && @target != "gce" %>
 systemctl enable cloud-ds-check
 <% end %>
 
