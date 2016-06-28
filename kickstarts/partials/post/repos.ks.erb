@@ -7,3 +7,16 @@ pushd /etc/yum.repos.d/
   wget https://copr.fedorainfracloud.org/coprs/rhscl/rh-postgresql94/repo/epel-7/rhscl-rh-postgresql94-epel-7.repo
   wget https://copr.fedorainfracloud.org/coprs/ncarboni/pglogical-SCL/repo/epel-7/ncarboni-pglogical-SCL-epel-7.repo
 popd
+
+<% if @target == "gce" %>
+cat > /etc/yum.repos.d/google-cloud-compute.repo <<EOF
+[google-cloud-compute]
+name=Google Cloud Compute
+baseurl=https://packages.cloud.google.com/yum/repos/google-cloud-compute-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+       https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+<% end %>

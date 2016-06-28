@@ -88,9 +88,6 @@ NETWORKING=yes
 NOZEROCONF=yes
 EOF
 
-# make sure there is a new line at the end of sshd_config
-echo "" >> /etc/ssh/sshd_config
-
 # Let's rebuild the ramfs with with base scsi drivers we need
 kversion=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
 ramfsfile="/boot/initramfs-$kversion.img"
@@ -98,6 +95,9 @@ ramfsfile="/boot/initramfs-$kversion.img"
 
 <%= render_partial "post/azure" if @target == "azure" %>
 <%= render_partial "post/gce" if @target == "gce" %>
+
+# make sure there is a new line at the end of sshd_config
+echo "" >> /etc/ssh/sshd_config
 
 chvt 1
 ) 2>&1 | tee /dev/tty3
