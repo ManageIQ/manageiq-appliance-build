@@ -1,7 +1,7 @@
 # Create a script to initialize appliance on first boot
 cat > /bin/appliance-initialize.sh <<EOF
 #!/bin/sh
-[[ -d /var/opt/rh/rh-postgresql94/lib/pgsql/data/base ]] && exit 0
+[[ -d /var/opt/rh/rh-postgresql95/lib/pgsql/data/base ]] && exit 0
 [[ -s /etc/default/evm ]] && source /etc/default/evm
 echo "Initializing Appliance, please wait ..." > /dev/tty1
 appliance_console_cli --region 0 --internal --password smartvm
@@ -12,7 +12,7 @@ chmod 755 /bin/appliance-initialize.sh
 cat > /usr/lib/systemd/system/appliance-initialize.service <<EOF
 [Unit]
 Description=Initialize Appliance Database
-ConditionPathExists=!/var/opt/rh/rh-postgresql94/lib/pgsql/data/base
+ConditionPathExists=!/var/opt/rh/rh-postgresql95/lib/pgsql/data/base
 After=evminit.service memcached.service
 Before=evmserverd.service
 Requires=memcached.service
