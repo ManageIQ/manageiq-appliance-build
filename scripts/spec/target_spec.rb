@@ -26,11 +26,11 @@ describe Build::Target do
   end
 
   it ".supported_types" do
-    expect(described_class.supported_types).to match_array %w(openstack ovirt vsphere hyperv azure)
+    expect(described_class.supported_types).to match_array %w(openstack ovirt vsphere hyperv azure vagrant)
   end
 
   it ".default_types" do
-    expect(described_class.default_types).to match_array %w(openstack ovirt vsphere hyperv azure)
+    expect(described_class.default_types).to match_array %w(openstack ovirt vsphere hyperv azure vagrant)
   end
 
   it "#to_s" do

@@ -97,7 +97,8 @@ Below are instructions on installing and configuring a virtual machine to genera
 
 ## Setup Imagefactory:
 
-  * Clone imagefactory as /build/imagefactory
+  * Clone imagefactory as /build/imagefactory (requires version 1.1.9-3 or
+    later for command line parameter passing and hyperv target support):
 
     ```
     cd /build

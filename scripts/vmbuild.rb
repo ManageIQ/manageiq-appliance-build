@@ -70,6 +70,8 @@ end
 
 $log.info "Using Configuration base directory: #{cfg_base}"
 
+base_file = BUILD_BASE.join("config/base.json")
+target_file = BUILD_BASE.join("config/target.json")
 ova_file = BUILD_BASE.join("config/ova.json")
 
 def verify_run(output)
@@ -109,48 +111,43 @@ FileUtils.mkdir_p(destination_directory)
 Dir.chdir(IMGFAC_DIR) do
   targets.sort.reverse.each do |target|
     imgfac_target = target.imagefactory_type
-    vhd_image     = target.file_extension == "vhd"
+    ova_format    = target.ova_format
     $log.info "Building for #{target}:"
 
-    tdl_name = imgfac_target == "azure" ? "base_azure.tdl" : "base.tdl"
+    tdl_name = target.name == "azure" ? "base_azure.tdl" : "base.tdl"
     tdl_file = BUILD_BASE.join("config", tdl_name)
     $log.info "Using inputs: puddle: #{puddle}, build_label: #{build_label}"
     $log.info "              tdl_file: #{tdl_file}, ova_file: #{ova_file}."
 
-    input_file  = ks_gen.gen_file_path("base-#{target}.json")
-    output_file = ks_gen.gen_file_path("base-#{target}-#{build_label}-#{timestamp}.json")
+    input_file  = ks_gen.gen_file_path("base-#{target}.ks")
+    output_file = ks_gen.gen_file_path("base-#{target}-#{build_label}-#{timestamp}.ks")
 
     FileUtils.cp(input_file, output_file)
 
-    log_params = "kickstart: #{output_file} copied from #{input_file}. tdl: #{tdl_file}"
-    $log.info "Running base_image using parameters: #{log_params}"
+    params = "--parameters #{base_file} --file-parameter install_script #{output_file}"
+    $log.info "Running #{target} base_image using parameters: #{params}"
 
-    output = `./imagefactory --config #{IMGFAC_CONF} base_image --parameters #{output_file} #{tdl_file}`
+    output = `./imagefactory --config #{IMGFAC_CONF} base_image #{params} #{tdl_file}`
     uuid   = verify_run(output)
     $log.info "#{target} base_image complete, uuid: #{uuid}"
 
-    unless vhd_image
-      $log.info "Running #{target} target_image with #{imgfac_target} and uuid: #{uuid}"
-      output = `./imagefactory --config #{IMGFAC_CONF} target_image --id #{uuid} #{imgfac_target}`
-      uuid   = verify_run(output)
-      $log.info "#{target} target_image with imgfac_target: #{imgfac_target} and uuid #{uuid} complete"
+    params = "--parameters #{target_file}"
+    $log.info "Running #{target} target_image #{imgfac_target} using parameters: #{params}"
 
-      unless imgfac_target == "openstack-kvm"
-        $log.info "Running #{target} target_image ova with ova file: #{ova_file} and uuid: #{uuid}"
-        output = `./imagefactory --config #{IMGFAC_CONF} target_image ova --parameters #{ova_file} --id #{uuid}`
-        uuid   = verify_run(output)
-        $log.info "#{target} target_image ova with uuid: #{uuid} complete"
-      end
+    output = `./imagefactory --config #{IMGFAC_CONF} target_image #{params} --id #{uuid} #{imgfac_target}`
+    uuid   = verify_run(output)
+    $log.info "#{target} target_image #{imgfac_target} complete, uuid: #{uuid}"
+
+    if ova_format
+      params = "--parameters #{ova_file} --parameter #{imgfac_target}_ova_format #{ova_format}"
+      $log.info "Running #{target} target_image ova using parameters: #{params}"
+
+      output = `./imagefactory --config #{IMGFAC_CONF} target_image #{params} --id #{uuid} ova`
+      uuid   = verify_run(output)
+      $log.info "#{target} target_image ova complete, uuid: #{uuid}"
     end
     $log.info "Built #{target} with final UUID: #{uuid}"
     source = STORAGE_DIR.join("#{uuid}.body")
-
-    if vhd_image
-      $log.info "Running qemu-img to convert the raw image"
-      source_converted = STORAGE_DIR.join("#{uuid}.converted")
-      $log.info `qemu-img convert -f raw -O vpc #{source} #{source_converted}`
-      source = source_converted
-    end
 
     FileUtils.mkdir_p(destination_directory)
     file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{target.file_extension}"

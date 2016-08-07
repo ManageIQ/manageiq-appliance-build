@@ -1,4 +1,5 @@
 {
+  "generate_icicle": false,
   "ovf_cpu_count": "4",
   "ovf_memory_mb": "6144",
   "rhevm_description": "ManageIQ",
