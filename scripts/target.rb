@@ -7,7 +7,8 @@ module Build
       'ovirt'     => ImagefactoryMetadata.new('rhevm', 'rhevm', 'ova'),
       'openstack' => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2'),
       'hyperv'    => ImagefactoryMetadata.new('hyperv', nil, 'vhd'),
-      'azure'     => ImagefactoryMetadata.new('hyperv', nil, 'vhd')
+      'azure'     => ImagefactoryMetadata.new('hyperv', nil, 'vhd'),
+      'vagrant'   => ImagefactoryMetadata.new('vsphere', 'vagrant-virtualbox', 'box')
     }
 
     attr_reader :name
