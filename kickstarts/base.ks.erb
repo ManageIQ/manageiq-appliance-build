@@ -51,6 +51,12 @@ set -x
 # Show timestamps on log entries for build performance tuning.
 PS4="+ [\t] "
 
+# Mount tmpfs on /tmp. This will remove about 200MiB of bower and bundler
+# intermediate files from the image. And do the same for /var/cache which saves
+# another 115MiB in yum cache files.
+mount -t tmpfs tmpfs /tmp
+mount -t tmpfs tmpfs /var/cache
+
 # For some reason, DEBUG is set but empty in the kickstart.
 # Unset it so ruby_parser doesn't print LOTS of output.
 unset DEBUG
