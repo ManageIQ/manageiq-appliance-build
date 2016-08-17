@@ -1,5 +1,3 @@
 {
-  "generate_icicle": false,
-  "openstack_image_format": "qcow2",
-  "rhevm_image_format": "qcow2"
+  "generate_icicle": false
 }
