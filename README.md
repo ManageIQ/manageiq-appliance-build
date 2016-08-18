@@ -97,7 +97,8 @@ Below are instructions on installing and configuring a virtual machine to genera
 
 ## Setup Imagefactory:
 
-  * Clone imagefactory as /build/imagefactory
+  * Clone imagefactory as /build/imagefactory (requires version 1.1.9-3 or
+    later for command line parameter passing and hyperv target support):
 
     ```
     cd /build
@@ -138,6 +139,12 @@ Below are instructions on installing and configuring a virtual machine to genera
     # cd /build/imagefactory
     # scripts/imagefactory_dev_setup.sh
     ```
+
+  * Note that there's a bug in imagefactory where it doesn't install the
+    HyperV plugin. Until that is fixed, use the following command to install
+    it.
+
+    # ln -s /build/imagefactory/imagefactory_plugins/HyperV/HyperV.info /etc/imagefactory/plugins.d
 
 ## Setup for vSphere plugin.
 

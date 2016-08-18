@@ -1,13 +1,14 @@
 module Build
   class Target
-    ImagefactoryMetadata = Struct.new(:imagefactory_type, :file_extension)
+    ImagefactoryMetadata = Struct.new(:imagefactory_type, :ova_format, :file_extension)
 
     TYPES = {
-      'vsphere'   => ImagefactoryMetadata.new('vsphere', 'ova'),
-      'ovirt'     => ImagefactoryMetadata.new('rhevm', 'ova'),
-      'openstack' => ImagefactoryMetadata.new('openstack-kvm', 'qc2'),
-      'hyperv'    => ImagefactoryMetadata.new('hyperv', 'vhd'),
-      'azure'     => ImagefactoryMetadata.new('azure', 'vhd')
+      'vsphere'   => ImagefactoryMetadata.new('vsphere', 'vsphere', 'ova'),
+      'ovirt'     => ImagefactoryMetadata.new('rhevm', 'rhevm', 'ova'),
+      'openstack' => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2'),
+      'hyperv'    => ImagefactoryMetadata.new('hyperv', nil, 'vhd'),
+      'azure'     => ImagefactoryMetadata.new('hyperv', nil, 'vhd'),
+      'vagrant'   => ImagefactoryMetadata.new('vsphere', 'vagrant-virtualbox', 'box')
     }
 
     attr_reader :name
@@ -27,6 +28,10 @@ module Build
 
     def imagefactory_type
       TYPES.fetch(name).imagefactory_type
+    end
+
+    def ova_format
+      TYPES.fetch(name).ova_format
     end
 
     def file_extension

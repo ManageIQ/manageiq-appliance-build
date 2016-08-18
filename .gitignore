@@ -1,6 +1,4 @@
 /pkg
 /productization
-kickstarts/generated/base.ks
-kickstarts/generated/*.json
-kickstarts/generated/*.cfg
+kickstarts/generated/*.ks
 scripts/Gemfile.dev.rb
