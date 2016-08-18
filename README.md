@@ -140,6 +140,12 @@ Below are instructions on installing and configuring a virtual machine to genera
     # scripts/imagefactory_dev_setup.sh
     ```
 
+  * Note that there's a bug in imagefactory where it doesn't install the
+    HyperV plugin. Until that is fixed, use the following command to install
+    it.
+
+    # ln -s /build/imagefactory/imagefactory_plugins/HyperV/HyperV.info /etc/imagefactory/plugins.d
+
 ## Setup for vSphere plugin.
 
   * Install dependencies:
