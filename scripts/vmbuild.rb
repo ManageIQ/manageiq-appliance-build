@@ -157,18 +157,6 @@ Dir.chdir(IMGFAC_DIR) do
     $log.info "Built #{target} with final UUID: #{uuid}"
     source = STORAGE_DIR.join("#{uuid}.body")
 
-    if vhd_image
-      $log.info "Running qemu-img to convert the raw image"
-      source_converted = STORAGE_DIR.join("#{uuid}.converted")
-      $log.info `qemu-img convert -f raw -O vpc #{source} #{source_converted}`
-      source = source_converted
-    elsif gce_image
-      $log.info "Tarring disk.raw for gce import"
-      $log.info `mv #{source} disk.raw`
-      $log.info `virt-sysprep --no-selinux-relabel -a disk.raw`
-      $log.info `tar -Sczf #{source} disk.raw`
-    end
-
     FileUtils.mkdir_p(destination_directory)
     file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{target.file_extension}"
     destination = destination_directory.join(file_name)
