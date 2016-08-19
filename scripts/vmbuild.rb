@@ -135,6 +135,7 @@ Dir.chdir(IMGFAC_DIR) do
 
     params = "--parameters #{target_file}"
     $log.info "Running #{target} target_image #{imgfac_target} using parameters: #{params}"
+
     if !vhd_image && !gce_image
       $log.info "Running #{target} target_image with #{imgfac_target} and uuid: #{uuid}"
       output = `./imagefactory --config #{IMGFAC_CONF} target_image --id #{uuid} #{imgfac_target}`
