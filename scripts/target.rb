@@ -8,7 +8,8 @@ module Build
       'openstack' => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2'),
       'hyperv'    => ImagefactoryMetadata.new('hyperv', nil, 'vhd'),
       'azure'     => ImagefactoryMetadata.new('hyperv', nil, 'vhd'),
-      'vagrant'   => ImagefactoryMetadata.new('vsphere', 'vagrant-virtualbox', 'box')
+      'vagrant'   => ImagefactoryMetadata.new('vsphere', 'vagrant-virtualbox', 'box'),
+      'gce'       => ImagefactoryMetadata.new('gce', 'tar.gz')
     }
 
     attr_reader :name

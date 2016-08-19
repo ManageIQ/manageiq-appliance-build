@@ -112,6 +112,8 @@ Dir.chdir(IMGFAC_DIR) do
   targets.sort.reverse.each do |target|
     imgfac_target = target.imagefactory_type
     ova_format    = target.ova_format
+    vhd_image     = target.file_extension == "vhd"
+    gce_image     = target == "gce"
     $log.info "Building for #{target}:"
 
     tdl_name = target.name == "azure" ? "base_azure.tdl" : "base.tdl"
@@ -133,6 +135,12 @@ Dir.chdir(IMGFAC_DIR) do
 
     params = "--parameters #{target_file}"
     $log.info "Running #{target} target_image #{imgfac_target} using parameters: #{params}"
+
+    if !vhd_image && !gce_image
+      $log.info "Running #{target} target_image with #{imgfac_target} and uuid: #{uuid}"
+      output = `./imagefactory --config #{IMGFAC_CONF} target_image --id #{uuid} #{imgfac_target}`
+      uuid   = verify_run(output)
+      $log.info "#{target} target_image with imgfac_target: #{imgfac_target} and uuid #{uuid} complete"
 
     output = `./imagefactory --config #{IMGFAC_CONF} target_image #{params} --id #{uuid} #{imgfac_target}`
     uuid   = verify_run(output)
