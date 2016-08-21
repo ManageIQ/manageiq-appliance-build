@@ -91,6 +91,8 @@ npm
 <% if @target == "ovirt" %>
 ovirt-guest-agent
 glusterfs-fuse
+<% elsif @target == "libvirt" %>
+qemu-guest-agent
 <% elsif @target == "vsphere" %>
 open-vm-tools
 <% elsif @target == "azure" %>
