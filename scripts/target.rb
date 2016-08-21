@@ -9,7 +9,8 @@ module Build
       'hyperv'    => ImagefactoryMetadata.new('hyperv', nil, 'vhd'),
       'azure'     => ImagefactoryMetadata.new('hyperv', nil, 'vhd'),
       'vagrant'   => ImagefactoryMetadata.new('vsphere', 'vagrant-virtualbox', 'box'),
-      'libvirt'   => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2')
+      'libvirt'   => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2'),
+      'gce'       => ImagefactoryMetadata.new('gce', nil, 'tar.gz'),
     }
 
     attr_reader :name
