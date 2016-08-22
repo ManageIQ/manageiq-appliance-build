@@ -1,4 +1,4 @@
-<% if @target == "openstack" %>
+<% if @target == "aws-ec2" || @target == "openstack" %>
 bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet net.ifnames=0 biosdevname=0 console=tty0 console=ttyS0,115200n8"
 <% elsif @target == "azure" %>
 bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet net.ifnames=0 biosdevname=0 console=ttyS0 earlyprintk=ttyS0 rootdelay=300"

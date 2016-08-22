@@ -1,0 +1,9 @@
+cat >> /etc/cloud/cloud.cfg.d/20_miq_user.cfg << EOF
+disable_root: true
+ssh_pwauth: false
+users:
+  - default
+EOF
+
+# Lock root account
+usermod -L root
