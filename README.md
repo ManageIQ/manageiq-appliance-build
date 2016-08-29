@@ -97,8 +97,8 @@ Below are instructions on installing and configuring a virtual machine to genera
 
 ## Setup Imagefactory:
 
-  * Clone imagefactory as /build/imagefactory (requires version 1.1.9-3 or
-    later for command line parameter passing and hyperv target support):
+  * Clone imagefactory as /build/imagefactory (requires git tag f13dc65
+    or later for google compute engine support):
 
     ```
     cd /build
@@ -141,10 +141,11 @@ Below are instructions on installing and configuring a virtual machine to genera
     ```
 
   * Note that there's a bug in imagefactory where it doesn't install the
-    HyperV plugin. Until that is fixed, use the following command to install
-    it.
+    HyperV and GCE plugins. Until that is fixed, use the following commands to
+    install them.
 
     # ln -s /build/imagefactory/imagefactory_plugins/HyperV/HyperV.info /etc/imagefactory/plugins.d
+    # ln -s /build/imagefactory/imagefactory_plugins/GCE/GCE.info /etc/imagefactory/plugins.d
 
 ## Setup for vSphere plugin.
 

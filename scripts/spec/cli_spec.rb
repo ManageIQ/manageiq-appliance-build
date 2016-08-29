@@ -4,11 +4,11 @@ require 'cli'
 describe Build::Cli do
   context "#parse" do
     it "only (default)" do
-      expect(described_class.new.parse(%w()).options[:only]).to match_array %w(vsphere ovirt openstack hyperv azure vagrant)
+      expect(described_class.new.parse(%w()).options[:only]).to match_array %w(vsphere ovirt openstack hyperv azure vagrant libvirt gce)
     end
 
     it "all" do
-      expect(described_class.new.parse(%w(-o all)).options[:only]).to match_array %w(vsphere ovirt openstack hyperv azure vagrant)
+      expect(described_class.new.parse(%w(-o all)).options[:only]).to match_array %w(vsphere ovirt openstack hyperv azure vagrant libvirt gce)
     end
 
     it "only vsphere and ovirt" do
