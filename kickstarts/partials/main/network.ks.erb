@@ -1,4 +1,4 @@
-<% if @target == "openstack" || @target == "azure" %>
+<% if @target == "aws-ec2" || @target == "azure" || @target == "openstack" %>
 network --onboot yes --device eth0 --bootproto dhcp --noipv6
 <% elsif @target == "gce" %>
 network --onboot yes --device eth0 --bootproto dhcp --noipv6 --mtu=1460
