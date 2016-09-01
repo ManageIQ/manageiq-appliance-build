@@ -93,6 +93,7 @@ kversion=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
 ramfsfile="/boot/initramfs-$kversion.img"
 /sbin/dracut --force --add-drivers "mptbase mptscsih mptspi<%= " hv_storvsc hid_hyperv hv_netvsc hv_vmbus" if @target == "hyperv" || @target == "azure" %>" $ramfsfile $kversion
 
+<%= render_partial "post/aws-ec2" if @target == "aws-ec2" %>
 <%= render_partial "post/azure" if @target == "azure" %>
 <%= render_partial "post/gce" if @target == "gce" %>
 
