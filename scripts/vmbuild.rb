@@ -10,6 +10,7 @@ require_relative 'git_checkout'
 require_relative 'cli'
 require_relative 'uploader'
 require_relative 'target'
+require_relative 'config'
 
 $log = Logger.new(STDOUT)
 
@@ -29,19 +30,6 @@ else
   puddle = cli_options[:type]
   build_label = "#{cli_options[:type]}-#{cli_options[:manageiq_ref]}"
 end
-
-BUILD_BASE          = Pathname.new("/build")
-GPG_DIR             = Pathname.new("/root/.gnupg")
-CFG_DIR             = BUILD_BASE.join("config")
-FILESHARE_DIR       = BUILD_BASE.join("fileshare")
-REFS_DIR            = BUILD_BASE.join("references")
-IMGFAC_DIR          = BUILD_BASE.join("imagefactory")
-IMGFAC_CONF         = CFG_DIR.join("imagefactory.conf")
-STORAGE_DIR         = BUILD_BASE.join("storage")
-
-FILE_SERVER         = ENV["BUILD_FILE_SERVER"]             # SSH Server to host files
-FILE_SERVER_ACCOUNT = ENV["BUILD_FILE_SERVER_ACCOUNT"]     # Account to SSH as
-FILE_SERVER_BASE    = Pathname.new(ENV["BUILD_FILE_SERVER_BASE"] || ".") # Subdirectory of Account where to store builds
 
 if !cli_options[:local] && cli_options[:build_url]
   build_repo = cli_options[:build_url]
@@ -101,8 +89,7 @@ ks_gen.run
 file_rdu_dir_base = FILE_SERVER_BASE.join(directory)
 file_rdu_dir      = file_rdu_dir_base.join(directory_name)
 
-fileshare_dir         = BUILD_BASE.join("fileshare")
-stream_directory      = fileshare_dir.join(directory)
+stream_directory      = FILESHARE_DIR.join(directory)
 destination_directory = stream_directory.join(build_label == "test" ? "test" : directory_name)
 
 $log.info "Creating Fileshare Directory: #{destination_directory}"
@@ -152,7 +139,7 @@ Dir.chdir(IMGFAC_DIR) do
     FileUtils.mkdir_p(destination_directory)
     file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{target.file_extension}"
     destination = destination_directory.join(file_name)
-    $log.info `mv #{source} #{destination}`
+    $log.info `ln #{source} #{destination}`
 
     if !File.exist?(destination)
       $log.warn "Cannot find the target file #{destination}"

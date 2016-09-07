@@ -2,3 +2,4 @@
 /productization
 kickstarts/generated/*.ks
 scripts/Gemfile.dev.rb
+config/creds/*.json

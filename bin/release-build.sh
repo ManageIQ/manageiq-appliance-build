@@ -12,5 +12,10 @@ if [[ $# != 1 ]]; then
 fi
 
 log_file="/build/logs/${1}.log"
-nohup time ruby ${BUILD_DIR}/scripts/vmbuild.rb --type release --upload --reference $1 --copy-dir ${1%%-*} > $log_file 2>&1 &
+copy_dir="${1%%-*}"
+
+nohup sh -c \
+        "echo time ruby ${BUILD_DIR}/scripts/vmbuild.rb --type release --upload --reference $1 --copy-dir $copy_dir \
+         && time ruby ${BUILD_DIR}/scripts/vmpublish.rb --copy-dir $copy_dir" \
+        > $log_file 2>&1 &
 echo "${1} release build kicked off, see log @ $log_file ..."
