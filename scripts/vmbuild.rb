@@ -46,18 +46,12 @@ FILE_SERVER_BASE    = Pathname.new(ENV["BUILD_FILE_SERVER_BASE"] || ".") # Subdi
 if !cli_options[:local] && cli_options[:build_url]
   build_repo = cli_options[:build_url]
   cfg_base = REFS_DIR.join(cli_options[:build_ref])
+  FileUtils.rm_rf(cfg_base)
   FileUtils.mkdir_p(cfg_base)
   Dir.chdir(cfg_base) do
-    unless File.exist?(".git")
-      $log.info("Cloning Repo #{build_repo} to #{cfg_base} ...")
-      `git clone #{build_repo} .` unless File.exist?(".git")
-    end
-    $log.info("Checking out reference #{cli_options[:build_ref]} from repo #{build_repo} ...")
-    `git reset --hard`                                    # Drop any local changes
-    `git clean -dxf`                                      # Clean up any local untracked changes
-    `git checkout #{cli_options[:build_ref]}`             # Checkout existing branch
-    `git fetch origin`                                    # Get origin updates
-    `git reset --hard origin/#{cli_options[:build_ref]}`  # Reset the branch to the origin
+    $log.info("Cloning Repo #{build_repo} to #{cfg_base} ...")
+    `git clone #{build_repo} .`
+    `git checkout #{cli_options[:build_ref]}`             # Checkout existing tag or branch
   end
 
   unless File.exist?(cfg_base)
