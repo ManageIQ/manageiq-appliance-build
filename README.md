@@ -48,17 +48,6 @@ Below are instructions on installing and configuring a virtual machine to genera
       enabled=1
       gpgcheck=0
       ```
-  * Add repo to support building openstack images
-
-    * Create: `/etc/yum.repos.d/openstack-kilo.repo`
-
-      ```
-      [openstack-kilo]
-      name=CentOS-$releasever - openstack-kilo
-      baseurl=http://centos.mirror.constant.com/7/cloud/x86_64/openstack-kilo/
-      enabled=1
-      gpgcheck=0
-      ```
 
 ## Install yum packages and updates
 
@@ -121,23 +110,12 @@ Below are instructions on installing and configuring a virtual machine to genera
   
 ## Run imagefactory_dev_setup.sh
 
-  * Use /build/bin/setup_imagefactory.sh or manually create with the following and run:
+  * Install development version of imagefactory:
 
     ```
-    # cd /build/imagefactory
-    # python ./setup.py sdist install
-    # cd imagefactory-plugins
-    # python ./setup.py sdist install
-
-    # mkdir /etc/imagefactory/plugins.d
-    # cd /etc/imagefactory/plugins.d
-    # for PLUGIN in `ls /usr/lib/python2.7/site-packages/imagefactory_plugins |grep -v .py`
-    do
-      ln -s -v /usr/lib/python2.7/site-packages/imagefactory_plugins/$PLUGIN/$PLUGIN.info ./$PLUGIN.info
-    done
-
-    # cd /build/imagefactory
-    # scripts/imagefactory_dev_setup.sh
+    # cd /build/imagefactory/scripts
+    # ./imagefactory_dev_setup.sh
+    # rm -f /etc/imagefactory/plugins.d/Nova.info
     ```
 
   * Note that there's a bug in imagefactory where it doesn't install the
@@ -152,30 +130,12 @@ Below are instructions on installing and configuring a virtual machine to genera
   * Install dependencies:
 
     ```
-    yum install python-psphere
     yum install VMDKstream
-    ```
-
-  * Create /root/.psphere/config.yaml
-
-    ```
-    general:
-        server: 127.0.0.1
-        username: foo
-        password: bar
-        template_dir: ~/.psphere/templates/
-    logging:
-        destination: ~/.psphere/psphere.log
-        level: DEBUG # DEBUG, INFO, etc
     ```
 
 ## Setup for oVirt plugin.
 
   `yum install ovirt-engine-sdk-python`
-
-## Setup for OpenStack images
-
-  `yum install python-glanceclient`
 
 ## Setup KVM/Virt
 
