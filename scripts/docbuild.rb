@@ -7,7 +7,7 @@ $log = Logger.new(STDOUT)
 BUILD_BASE     = Pathname.new("/build")
 FILESHARE_DIR  = BUILD_BASE.join("fileshare")
 
-DOCS_BRANCH    = "master"
+DOCS_BRANCH    = ARGV[0] || "master"
 DOCS_REPO      = BUILD_BASE.join("manageiq_docs")
 DOCS_PACKAGE   = DOCS_REPO.join("_package/community", DOCS_BRANCH)
 DOCS_FILESHARE = FILESHARE_DIR.join(DOCS_BRANCH, "latest-docs")
