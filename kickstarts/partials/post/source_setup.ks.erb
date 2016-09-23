@@ -14,6 +14,11 @@ ssui_root="$repos_root/manageiq-ui-self_service"
 # Symlink manageiq to the vmdb root so that the SSUI can build into it
 ln -vs $vmdb_root $manageiq_root
 
+# Replace the log directory with the larger logvol
+mkdir -p /var/log/manageiq
+rm -rf $vmdb_root/log
+ln -vs /var/log/manageiq $vmdb_root/log
+
 <%= git_checkout(@ssui_checkout, "$ssui_root") %>
 
 $appliance_root/setup
