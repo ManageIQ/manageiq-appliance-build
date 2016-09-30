@@ -14,10 +14,11 @@ stop_on_existing_build
 LOG_DIR=/build/logs
 mkdir -p ${LOG_DIR}
 
+BRANCH=euwe
 DATE_STAMP=`date +"%Y%m%d_%T"`
-LOG_FILE="${LOG_DIR}/master_${DATE_STAMP}.log"
-DOCS_LOG_FILE="${LOG_DIR}/master_${DATE_STAMP}_docs.log"
-BUILD_OPTIONS="--type nightly --upload"
+LOG_FILE="${LOG_DIR}/${BRANCH}_${DATE_STAMP}.log"
+DOCS_LOG_FILE="${LOG_DIR}/${BRANCH}_${DATE_STAMP}_docs.log"
+BUILD_OPTIONS="--type nightly --upload --reference ${BRANCH} --copy-dir ${BRANCH}"
 
 if [ "${1}" = "--fileshare" -o "${1}" = "--no-fileshare" -o "${1}" = "--local" ]
 then
