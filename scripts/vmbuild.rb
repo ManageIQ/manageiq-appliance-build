@@ -106,6 +106,7 @@ Dir.chdir(IMGFAC_DIR) do
   targets.sort.reverse.each do |target|
     imgfac_target = target.imagefactory_type
     ova_format    = target.ova_format
+    compression   = target.compression_type
     $log.info "Building for #{target}:"
 
     tdl_name = target.name == "azure" ? "base_azure.tdl" : "base.tdl"
@@ -146,7 +147,21 @@ Dir.chdir(IMGFAC_DIR) do
     FileUtils.mkdir_p(destination_directory)
     file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{target.file_extension}"
     destination = destination_directory.join(file_name)
-    $log.info `mv #{source} #{destination}`
+
+    case compression
+    when 'gzip'
+      $log.info `gzip -c #{source} > #{destination}.gz`
+      destination = destination.sub_ext(destination.extname + '.gz')
+    when 'zip'
+      $log.info `ln #{source} #{destination}`
+      Dir.chdir destination_directory do
+        $log.info `zip #{destination.basename.sub_ext('.zip')} #{destination.basename}`
+      end
+      $log.info `rm #{destination}`
+      destination = destination.sub_ext('.zip')
+    else
+      $log.info `ln #{source} #{destination}`
+    end
 
     if !File.exist?(destination)
       $log.warn "Cannot find the target file #{destination}"

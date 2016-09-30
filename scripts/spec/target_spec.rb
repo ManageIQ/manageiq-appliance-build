@@ -20,6 +20,10 @@ describe Build::Target do
     expect(described_class.new("openstack").file_extension).to eql "qc2"
   end
 
+  it "#compression_type" do
+    expect(described_class.new("openstack").compression_type).to eql nil
+  end
+
   it "#sort" do
     targets = [described_class.new("vsphere"), described_class.new("openstack")]
     expect(targets.sort.collect(&:name)).to eql %w(openstack vsphere)
