@@ -1,9 +1,10 @@
-require_relative 'productization'
-
 require 'erb'
 require 'json'
 require 'fileutils'
 require 'pathname'
+
+require_relative 'productization'
+require_relative 'kickstart_helpers'
 
 module Build
   class KickstartGenerator
@@ -40,6 +41,8 @@ module Build
     def gen_file_path(file)
       @ks_gen_base.join(file)
     end
+
+    include Build::KickstartHelpers
 
     private
 

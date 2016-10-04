@@ -1,14 +1,22 @@
-wget -O ruby-install.tar.gz https://github.com/postmodern/ruby-install/archive/v0.5.0.tar.gz
-tar -xzvf ruby-install.tar.gz
-rm -f ruby-install.tar.gz
-cd ruby-install*/
+curl -L https://github.com/postmodern/ruby-install/archive/v0.5.0.tar.gz | tar xvfzC - /tmp
+
+pushd /tmp/ruby-install*/
 make install
+popd
+
+# The ruby-install will result in about 350MiB of files in /usr/local/src.
+# These do not need to be in the image, so put them on a tmpfs.
+mkdir -p /usr/local/src
+mount -t tmpfs tmpfs /usr/local/src
 
 # Note, we hardcode the ruby patch level for now.
 # Once the --update option is available, we could ask
 # ruby-install to "learn" what new rubies are available
 # See: https://github.com/postmodern/ruby-install/issues/175
 /usr/local/bin/ruby-install ruby 2.2.5 -- --disable-install-doc --enable-shared
+
+# Free up tmpfs memory.
+umount /usr/local/src
 
 # Add the ruby binaries path to the PATH so we can find bundle and friends:
 ruby_bin_path=(/opt/rubies/ruby-2.2.5/bin)
