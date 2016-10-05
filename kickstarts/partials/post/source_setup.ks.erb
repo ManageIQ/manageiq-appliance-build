@@ -7,14 +7,28 @@ manageiq_root="$repos_root/manageiq"
 appliance_root="$repos_root/manageiq-appliance"
 ssui_root="$repos_root/manageiq-ui-self_service"
 
-<%= git_checkout(@appliance_checkout, "$appliance_root") %>
+rm -rf $app_root
 
-<%= git_checkout(@manageiq_checkout, "$vmdb_root") %>
+git clone <%= @appliance_checkout.remote %> $appliance_root
+pushd $appliance_root
+  git checkout <%= @appliance_checkout.branch %>
+  git reset --hard <%= @appliance_checkout.commit_sha %>
+popd
 
+mkdir -p $app_root
+git clone <%= @manageiq_checkout.remote %> $vmdb_root
+pushd $vmdb_root
+  git checkout <%= @manageiq_checkout.branch %>
+  git reset --hard <%= @manageiq_checkout.commit_sha %>
+popd
 # Symlink manageiq to the vmdb root so that the SSUI can build into it
 ln -vs $vmdb_root $manageiq_root
 
-<%= git_checkout(@ssui_checkout, "$ssui_root") %>
+git clone <%= @ssui_checkout.remote %> $ssui_root
+pushd $ssui_root
+  git checkout <%= @ssui_checkout.branch %>
+  git reset --hard <%= @ssui_checkout.commit_sha %>
+popd
 
 $appliance_root/setup
 mkdir -p $app_root/vmdb/log/apache
