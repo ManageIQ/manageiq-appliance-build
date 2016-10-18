@@ -11,7 +11,7 @@ module Build
     MANAGEIQ_URL  = "https://github.com/ManageIQ/manageiq.git"
     APPLIANCE_URL = "https://github.com/ManageIQ/manageiq-appliance.git"
     BUILD_URL     = "https://github.com/ManageIQ/manageiq-appliance-build.git"
-    SSUI_URL      = "https://github.com/ManageIQ/manageiq-ui-service.git"
+    SUI_URL       = "https://github.com/ManageIQ/manageiq-ui-service.git"
 
     def parse(args = ARGV)
       git_ref_desc   = "provide a git reference such as a branch or tag, non \"#{DEFAULT_REF}\" is required for 'release' type"
@@ -22,7 +22,7 @@ module Build
       manageiq_desc  = "Repo URL containing the ManageIQ code"
       appliance_desc = "Repo URL containing appliance scripts and configs(COPY/LINK/TEMPLATE)"
       build_desc     = "Repo URL containing the build config and kickstart"
-      ssui_desc      = "Repo URL containing the ManageIQ self service UI code"
+      sui_desc       = "Repo URL containing the ManageIQ service UI code"
       upload_desc    = "Upload appliance builds to the website"
       only_desc      = "Build only specific image types.  Example: --only ovirt openstack.  Defaults to all images."
 
@@ -39,8 +39,8 @@ module Build
         opt :manageiq_ref,  git_ref_desc,   :type => :string,  :short => "m", :default => DEFAULT_REF
         opt :manageiq_url,  manageiq_desc,  :type => :string,  :short => "M", :default => MANAGEIQ_URL
         opt :only,          only_desc,      :type => :strings, :short => "o", :default => Target.default_types
-        opt :ssui_ref,      git_ref_desc,   :type => :string,  :short => "s", :default => DEFAULT_REF
-        opt :ssui_url,      ssui_desc,      :type => :string,  :short => "S", :default => SSUI_URL
+        opt :sui_ref,       git_ref_desc,   :type => :string,  :short => "s", :default => DEFAULT_REF
+        opt :sui_url,       sui_desc,       :type => :string,  :short => "S", :default => SUI_URL
         opt :type,          type_desc,      :type => :string,  :short => "t", :default => DEFAULT_TYPE
         opt :upload,        upload_desc,    :type => :boolean, :short => "u", :default => false
       end
@@ -52,7 +52,7 @@ module Build
       end
 
       # --reference overrides all other reference arguments
-      [:manageiq_ref, :appliance_ref, :build_ref, :ssui_ref].each do |ref|
+      [:manageiq_ref, :appliance_ref, :build_ref, :sui_ref].each do |ref|
         options[ref] = (options[:reference] || options[ref]).to_s.strip
       end
       Trollop.die(:manageiq_ref, git_ref_desc) if options[:manageiq_ref].to_s.empty?

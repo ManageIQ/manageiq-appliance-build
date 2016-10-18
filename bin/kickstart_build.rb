@@ -19,4 +19,4 @@ Build::KickstartGenerator.new(
   nil,
   Build::GitCheckout.new(:remote => options[:manageiq_url],  :ref => options[:manageiq_ref]),
   Build::GitCheckout.new(:remote => options[:appliance_url], :ref => options[:appliance_ref]),
-  Build::GitCheckout.new(:remote => options[:ssui_url],      :ref => options[:ssui_ref])).run
+  Build::GitCheckout.new(:remote => options[:sui_url],       :ref => options[:sui_ref])).run

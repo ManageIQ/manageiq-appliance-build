@@ -23,42 +23,42 @@ describe Build::Cli do
       expect(described_class.new.parse(%w(--reference branch_name)).options[:appliance_ref]).to eq("branch_name")
       expect(described_class.new.parse(%w(--reference branch_name)).options[:build_ref]).to     eq("branch_name")
       expect(described_class.new.parse(%w(--reference branch_name)).options[:manageiq_ref]).to  eq("branch_name")
-      expect(described_class.new.parse(%w(--reference branch_name)).options[:ssui_ref]).to      eq("branch_name")
+      expect(described_class.new.parse(%w(--reference branch_name)).options[:sui_ref]).to       eq("branch_name")
     end
 
     it "with a branch name for appliance reference" do
       expect(described_class.new.parse(%w(-a branch_name)).options[:appliance_ref]).to eq("branch_name")
       expect(described_class.new.parse(%w(-a branch_name)).options[:build_ref]).to     eq("master")
       expect(described_class.new.parse(%w(-a branch_name)).options[:manageiq_ref]).to  eq("master")
-      expect(described_class.new.parse(%w(-a branch_name)).options[:ssui_ref]).to      eq("master")
+      expect(described_class.new.parse(%w(-a branch_name)).options[:sui_ref]).to       eq("master")
     end
 
     it "with a branch name for build reference" do
       expect(described_class.new.parse(%w(-b branch_name)).options[:appliance_ref]).to eq("master")
       expect(described_class.new.parse(%w(-b branch_name)).options[:build_ref]).to     eq("branch_name")
       expect(described_class.new.parse(%w(-b branch_name)).options[:manageiq_ref]).to  eq("master")
-      expect(described_class.new.parse(%w(-b branch_name)).options[:ssui_ref]).to      eq("master")
+      expect(described_class.new.parse(%w(-b branch_name)).options[:sui_ref]).to       eq("master")
     end
 
     it "with a branch name for manageiq reference" do
       expect(described_class.new.parse(%w(-m branch_name)).options[:appliance_ref]).to eq("master")
       expect(described_class.new.parse(%w(-m branch_name)).options[:build_ref]).to     eq("master")
       expect(described_class.new.parse(%w(-m branch_name)).options[:manageiq_ref]).to  eq("branch_name")
-      expect(described_class.new.parse(%w(-m branch_name)).options[:ssui_ref]).to      eq("master")
+      expect(described_class.new.parse(%w(-m branch_name)).options[:sui_ref]).to       eq("master")
     end
 
-    it "with a branch name for ssui reference" do
+    it "with a branch name for sui reference" do
       expect(described_class.new.parse(%w(-s branch_name)).options[:appliance_ref]).to eq("master")
       expect(described_class.new.parse(%w(-s branch_name)).options[:build_ref]).to     eq("master")
       expect(described_class.new.parse(%w(-s branch_name)).options[:manageiq_ref]).to  eq("master")
-      expect(described_class.new.parse(%w(-s branch_name)).options[:ssui_ref]).to      eq("branch_name")
+      expect(described_class.new.parse(%w(-s branch_name)).options[:sui_ref]).to       eq("branch_name")
     end
 
     it "with DEFAULT_REF for reference override" do
       expect(described_class.new.parse(%w(--reference master -a branch_name)).options[:appliance_ref]).to eq("master")
       expect(described_class.new.parse(%w(--reference master -b branch_name)).options[:build_ref]).to     eq("master")
       expect(described_class.new.parse(%w(--reference master -m branch_name)).options[:manageiq_ref]).to  eq("master")
-      expect(described_class.new.parse(%w(--reference master -s branch_name)).options[:ssui_ref]).to      eq("master")
+      expect(described_class.new.parse(%w(--reference master -s branch_name)).options[:sui_ref]).to       eq("master")
     end
 
     it "release without reference" do
