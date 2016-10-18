@@ -11,7 +11,7 @@ module Build
     MANAGEIQ_URL  = "https://github.com/ManageIQ/manageiq.git"
     APPLIANCE_URL = "https://github.com/ManageIQ/manageiq-appliance.git"
     BUILD_URL     = "https://github.com/ManageIQ/manageiq-appliance-build.git"
-    SSUI_URL      = "https://github.com/ManageIQ/manageiq-ui-self_service.git"
+    SSUI_URL      = "https://github.com/ManageIQ/manageiq-ui-service.git"
 
     def parse(args = ARGV)
       git_ref_desc   = "provide a git reference such as a branch or tag, non \"#{DEFAULT_REF}\" is required for 'release' type"
