@@ -1,16 +1,16 @@
 module Build
   class Target
-    ImagefactoryMetadata = Struct.new(:imagefactory_type, :ova_format, :file_extension)
+    ImagefactoryMetadata = Struct.new(:imagefactory_type, :ova_format, :file_extension, :compression_type)
 
     TYPES = {
-      'vsphere'   => ImagefactoryMetadata.new('vsphere', 'vsphere', 'ova'),
-      'ovirt'     => ImagefactoryMetadata.new('rhevm', 'rhevm', 'ova'),
-      'openstack' => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2'),
-      'hyperv'    => ImagefactoryMetadata.new('hyperv', nil, 'vhd'),
-      'azure'     => ImagefactoryMetadata.new('hyperv', nil, 'vhd'),
-      'vagrant'   => ImagefactoryMetadata.new('vsphere', 'vagrant-virtualbox', 'box'),
-      'libvirt'   => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2'),
-      'gce'       => ImagefactoryMetadata.new('gce', nil, 'tar.gz'),
+      'vsphere'   => ImagefactoryMetadata.new('vsphere', 'vsphere', 'ova', nil),
+      'ovirt'     => ImagefactoryMetadata.new('rhevm', 'rhevm', 'ova', nil),
+      'openstack' => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2', nil),
+      'hyperv'    => ImagefactoryMetadata.new('hyperv', nil, 'vhd', nil),
+      'azure'     => ImagefactoryMetadata.new('hyperv', nil, 'vhd', nil),
+      'vagrant'   => ImagefactoryMetadata.new('vsphere', 'vagrant-virtualbox', 'box', nil),
+      'libvirt'   => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2', nil),
+      'gce'       => ImagefactoryMetadata.new('gce', nil, 'tar.gz', nil),
     }
 
     attr_reader :name
@@ -38,6 +38,10 @@ module Build
 
     def file_extension
       TYPES.fetch(name).file_extension
+    end
+
+    def compression_type
+      TYPES.fetch(name).compression_type
     end
 
     def <=>(other)
