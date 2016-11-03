@@ -103,9 +103,16 @@ EOF
 # Let's rebuild the ramfs with with base scsi drivers we need
 kversion=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
 ramfsfile="/boot/initramfs-$kversion.img"
-/sbin/dracut --force --add-drivers "mptbase mptscsih mptspi<%= " hv_storvsc hid_hyperv hv_netvsc hv_vmbus" if @target == "hyperv" || @target == "azure" %>" $ramfsfile $kversion
+drivers="mptbase mptscsih mptspi"
+<% case @target
+   when "azure", "hyperv" %>
+drivers="$drivers hv_storvsc hid_hyperv hv_netvsc hv_vmbus"
+<% when "ec2" %>
+drivers="$drivers xen-blkfront xen-netfront"
+<% end %>
+/sbin/dracut --force --add-drivers "$drivers" $ramfsfile $kversion
 
-<%= render_partial "post/aws-ec2" if @target == "aws-ec2" %>
+<%= render_partial "post/ec2" if @target == "ec2" %>
 <%= render_partial "post/azure" if @target == "azure" %>
 <%= render_partial "post/gce" if @target == "gce" %>
 <%= render_partial "post/vagrant" if @target == "vagrant" %>

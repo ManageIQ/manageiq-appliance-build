@@ -11,6 +11,7 @@ module Build
       'vagrant'   => ImagefactoryMetadata.new('vsphere', 'vagrant-virtualbox', 'box'),
       'libvirt'   => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2'),
       'gce'       => ImagefactoryMetadata.new('gce', nil, 'tar.gz'),
+      'ec2'       => ImagefactoryMetadata.new('ec2', nil, 'vhd'),
     }
 
     attr_reader :name
