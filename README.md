@@ -97,7 +97,7 @@ Below are instructions on installing and configuring a virtual machine to genera
 
 ## Setup Imagefactory:
 
-  * Clone imagefactory as /build/imagefactory (requires git tag f13dc65
+  * Clone imagefactory as /build/imagefactory (requires git tag 0adeb22
     or later for google compute engine support):
 
     ```
@@ -116,6 +116,7 @@ Below are instructions on installing and configuring a virtual machine to genera
     yum install python-paste-deploy
     yum install python-oauth2
     yum install python-pygments
+    yum install python-boto
     yum install oz
     ```
   
