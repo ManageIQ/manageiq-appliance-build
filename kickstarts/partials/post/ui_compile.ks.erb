@@ -7,8 +7,8 @@ pushd /var/www/miq/vmdb
   rake evm:compile_sti_loader
 popd
 
-# Self Service UI
-pushd /opt/manageiq/manageiq-ui-self_service
+# Service UI
+pushd /opt/manageiq/manageiq-ui-service
   npm install
   bower -F --allow-root install
   gulp build
