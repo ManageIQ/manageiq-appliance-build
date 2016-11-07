@@ -88,8 +88,8 @@ targets = cli_options[:only].collect { |only| Build::Target.new(only) }
 
 manageiq_checkout  = Build::GitCheckout.new(:remote => cli_options[:manageiq_url],  :ref => cli_options[:manageiq_ref])
 appliance_checkout = Build::GitCheckout.new(:remote => cli_options[:appliance_url], :ref => cli_options[:appliance_ref])
-ssui_checkout      = Build::GitCheckout.new(:remote => cli_options[:ssui_url],      :ref => cli_options[:ssui_ref])
-ks_gen = Build::KickstartGenerator.new(cfg_base, cli_options[:only], puddle, manageiq_checkout, appliance_checkout, ssui_checkout)
+sui_checkout       = Build::GitCheckout.new(:remote => cli_options[:sui_url],       :ref => cli_options[:sui_ref])
+ks_gen = Build::KickstartGenerator.new(cfg_base, cli_options[:only], puddle, manageiq_checkout, appliance_checkout, sui_checkout)
 ks_gen.run
 
 file_rdu_dir_base = FILE_SERVER_BASE.join(directory)
