@@ -98,7 +98,7 @@ Below are instructions on installing and configuring a virtual machine to genera
 ## Setup Imagefactory:
 
   * Clone imagefactory as /build/imagefactory (requires git tag 0adeb22
-    or later for google compute engine support):
+    or later for EC2 support):
 
     ```
     cd /build
