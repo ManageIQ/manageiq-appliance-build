@@ -8,10 +8,11 @@ module Build
     ALLOWED_TYPES = %w(nightly release test)
     DEFAULT_TYPE  = "nightly"
     DEFAULT_REF   = "master"
-    MANAGEIQ_URL  = "https://github.com/ManageIQ/manageiq.git"
-    APPLIANCE_URL = "https://github.com/ManageIQ/manageiq-appliance.git"
-    BUILD_URL     = "https://github.com/ManageIQ/manageiq-appliance-build.git"
-    SSUI_URL      = "https://github.com/ManageIQ/manageiq-ui-self_service.git"
+    VANEQ_REF     = "darga-vaneq"
+    MANAGEIQ_URL  = "http://gitlab.vanecloud.com:8077/anyisalin/vaneq.git"
+    APPLIANCE_URL = "http://gitlab.vanecloud.com:8077/anyisalin/manageiq-appliance.git"
+    BUILD_URL     = "http://gitlab.vanecloud.com:8077/anyisalin/manageiq-appliance-build.git"
+    SUI_URL       = "http://gitlab.vanecloud.com:8077/anyisalin/manageiq-ui-service.git"
 
     def parse(args = ARGV)
       git_ref_desc   = "provide a git reference such as a branch or tag, non \"#{DEFAULT_REF}\" is required for 'release' type"
