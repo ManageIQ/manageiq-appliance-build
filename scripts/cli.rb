@@ -7,6 +7,7 @@ module Build
     attr_reader :options
     ALLOWED_TYPES = %w(nightly release test)
     DEFAULT_TYPE  = "nightly"
+    VANEQ_REF     = "darga-vaneq"
     DEFAULT_REF   = "darga"
     MANAGEIQ_URL  = "http://gitlab.vanecloud.com/vanecloud/vaneq.git"
     APPLIANCE_URL = "http://gitlab.vanecloud.com/vanecloud/manageiq-appliance.git"
@@ -36,7 +37,7 @@ module Build
         opt :copy_dir,      dir_desc,       :type => :string,  :short => "d", :default => DEFAULT_REF
         opt :fileshare,     share_desc,     :type => :boolean, :short => "f", :default => true
         opt :local,         local_desc,     :type => :boolean, :short => "l", :default => false
-        opt :manageiq_ref,  git_ref_desc,   :type => :string,  :short => "m", :default => DEFAULT_REF
+        opt :manageiq_ref,  git_ref_desc,   :type => :string,  :short => "m", :default => VANEQ_REF
         opt :manageiq_url,  manageiq_desc,  :type => :string,  :short => "M", :default => MANAGEIQ_URL
         opt :only,          only_desc,      :type => :strings, :short => "o", :default => Target.default_types
         opt :ssui_ref,      git_ref_desc,   :type => :string,  :short => "s", :default => DEFAULT_REF
