@@ -30,7 +30,8 @@ then
 
   time ruby ${BUILD_DIR}/scripts/vmbuild.rb $BUILD_OPTIONS 2>&1 | tee ${LOG_FILE}
 else
-  nohup time ruby ${BUILD_DIR}/scripts/vmbuild.rb $BUILD_OPTIONS >${LOG_FILE} 2>&1 &
+  #nohup time ruby ${BUILD_DIR}/scripts/vmbuild.rb $BUILD_OPTIONS >${LOG_FILE} 2>&1 &
+  nohup ruby ${BUILD_DIR}/scripts/vmbuild.rb $BUILD_OPTIONS >${LOG_FILE} 2>&1 &
 
   echo "Nightly Build kicked off, Log @ ${LOG_FILE} ..."
 fi
