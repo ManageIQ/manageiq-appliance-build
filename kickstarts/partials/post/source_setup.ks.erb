@@ -18,8 +18,8 @@ popd
 mkdir -p $app_root
 git clone <%= @manageiq_checkout.remote %> $vmdb_root
 pushd $vmdb_root
-  git checkout <%= @manageiq_checkout.branch %>
-  git reset --hard <%= @manageiq_checkout.commit_sha %>
+#  git checkout <%= @manageiq_checkout.branch %>
+#  git reset --hard <%= @manageiq_checkout.commit_sha %>
 popd
 # Symlink manageiq to the vmdb root so that the SSUI can build into it
 ln -vs $vmdb_root $manageiq_root
