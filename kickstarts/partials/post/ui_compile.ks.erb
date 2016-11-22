@@ -2,7 +2,7 @@ npm install --registry=https://registry.npm.taobao.org -g gulp bower
 
 pushd /var/www/miq/vmdb
   bower -F --allow-root install
-  cp config/settings.yml.default config/settings.yml
+  cp config/settings.yml.default_local_memcache config/settings.yml
   RAILS_ENV=production rake evm:compile_assets
   rake evm:compile_sti_loader
 popd
