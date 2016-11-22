@@ -10,10 +10,10 @@ gem sources --add https://gems.ruby-china.org/ --remove https://rubygems.org/
 gem install bundler -v ">=1.8.4"
 
 pushd /var/www/miq/vmdb
- bundle config mirror.https://rubygems.org https://gems.ruby-china.org &&  bundle install
+ bundle config mirror.https://rubygems.org https://gems.ruby-china.org &&  bundle install --gemfile Gemfile
 popd
 
 pushd /opt/manageiq/manageiq-ui-self_service
   # overriding exported BUNDLE_GEMFILE
-  bundle install --gemfile Gemfile
+  bundle install 
 popd
