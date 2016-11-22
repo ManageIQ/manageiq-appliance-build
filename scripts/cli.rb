@@ -7,8 +7,7 @@ module Build
     attr_reader :options
     ALLOWED_TYPES = %w(nightly release test)
     DEFAULT_TYPE  = "nightly"
-    DEFAULT_REF   = "master"
-    VANEQ_REF     = "darga-vaneq"
+    DEFAULT_REF   = "darga"
     MANAGEIQ_URL  = "http://gitlab.vanecloud.com:8077/anyisalin/vaneq.git"
     APPLIANCE_URL = "http://gitlab.vanecloud.com:8077/anyisalin/manageiq-appliance.git"
     BUILD_URL     = "http://gitlab.vanecloud.com:8077/anyisalin/manageiq-appliance-build.git"
