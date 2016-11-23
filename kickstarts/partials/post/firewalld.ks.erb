@@ -21,3 +21,6 @@ firewall-offline-cmd --set-default-zone=manageiq
 #firewall-offline-cmd --zone=manageiq --add-port=443/tcp
 #firewall-offline-cmd --zone=manageiq --add-port=443/udp
 #firewall-offline-cmd --zone=manageiq --add-port=5432/tcp
+
+#disable selinux
+sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/sysconfig/selinux
