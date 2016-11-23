@@ -42,3 +42,10 @@ cp /etc/motd.manageiq /etc/motd
 # Legacy directory symlinks
 ln -vs $appliance_root $app_root/system
 ln -vs $app_root/vmdb/gems/pending $app_root/lib
+
+# Add YUM Repo
+pushd /etc/yum.repos.d/
+rm -rf *
+  curl -O http://192.168.20.170/repofile/centos-ustc.repo
+  curl -O http://192.168.20.170/repofile/epel.repo
+popd
