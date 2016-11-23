@@ -2,7 +2,8 @@
 zerombr
 clearpart       --all --drives=vda
 
-part pv.1             --ondrive=vda                     --size=<%= @target == "azure" ? "11264" : "16384" %>
+#part pv.1             --ondrive=vda                     --size=<%= @target == "azure" ? "11264" : "16384" %>
+part pv.1             --ondrive=vda                     --size=<%= @target == "azure" ? "11264" : "46384" %>
 part /boot            --ondrive=vda                     --size=512   --fstype=xfs
 part /var/www/miq_tmp --ondrive=vda                     --size=10240 --fstype=xfs --fsoptions="rw,noatime,nobarrier"
 
