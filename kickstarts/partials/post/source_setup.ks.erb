@@ -33,6 +33,10 @@ popd
 $appliance_root/setup
 mkdir -p $app_root/vmdb/log/apache
 
+# Download vaneq static
+mkdir $www_root/vaneq
+curl -L http://192.168.20.170/github/vaneq_static.tar.gz| tar vxz -C $www_root/vaneq --strip 1
+
 cp /etc/motd.manageiq /etc/motd
 
 # Legacy directory symlinks
