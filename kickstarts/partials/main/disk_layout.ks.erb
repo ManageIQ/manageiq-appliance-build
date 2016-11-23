@@ -7,8 +7,10 @@ part /boot            --ondrive=vda                     --size=512   --fstype=xf
 part /var/www/miq_tmp --ondrive=vda                     --size=10240 --fstype=xfs --fsoptions="rw,noatime,nobarrier"
 
 volgroup vg_system    --pesize=4096 pv.1
-logvol /              --name=lv_os             --vgname=vg_system --size=4608 --fstype=xfs<%= " --grow" if @target == "azure" %>
-logvol /var           --name=lv_var            --vgname=vg_system --size=2048 --fstype=xfs
+#logvol /              --name=lv_os             --vgname=vg_system --size=4608 --fstype=xfs<%= " --grow" if @target == "azure" %>
+logvol /              --name=lv_os             --vgname=vg_system --size=14608 --fstype=xfs<%= " --grow" if @target == "azure" %>
+#logvol /var           --name=lv_var            --vgname=vg_system --size=2048 --fstype=xfs
+logvol /var           --name=lv_var            --vgname=vg_system --size=20480 --fstype=xfs
 logvol /var/log       --name=lv_var_log        --vgname=vg_system --size=1024 --fstype=xfs
 logvol /var/log/audit --name=lv_var_log_audit  --vgname=vg_system --size=512  --fstype=xfs
 logvol /tmp           --name=lv_tmp            --vgname=vg_system --size=1024 --fstype=xfs
