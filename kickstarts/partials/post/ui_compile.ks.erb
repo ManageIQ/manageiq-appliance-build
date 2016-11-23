@@ -16,9 +16,9 @@ popd
 
 # Self Service UI
 pushd /opt/manageiq/manageiq-ui-self_service
-  npm config set proxy=http://192.168.20.114:8123
-  npm install #--registry=https://registry.npm.taobao.org
-  npm config delete proxy
+  #npm config set proxy=http://192.168.20.114:8123
+  npm install --registry=https://registry.npm.taobao.org
+  #npm config delete proxy
   bower -F --allow-root install
   gulp build
 popd
