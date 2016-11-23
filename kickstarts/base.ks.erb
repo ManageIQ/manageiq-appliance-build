@@ -32,9 +32,9 @@ part / --fstype="xfs" --grow --size=1
 reboot
 
 %packages
-@base --nodefaults
-@server-policy --nodefaults
-@development tools
+#@base --nodefaults
+#@server-policy --nodefaults
+#@development tools
 
 <%= render_partial "packages/includes" %>
 <%= render_partial "packages/excludes" %>
