@@ -24,6 +24,7 @@ device mptspi
 <%= render_partial "main/bootloader" %>
 #<% render_partial "main/disk_layout" %>
 #<% render_partial "main/db_fs" %>
+clearpart --all --initlabel 
 part /boot --fstype="xfs" --size=200
 part / --fstype="xfs" --grow --size=1
 
