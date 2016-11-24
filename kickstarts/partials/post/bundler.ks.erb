@@ -19,5 +19,5 @@ pushd /opt/manageiq/manageiq-ui-self_service
 popd
 
 pushd /opt/manageiq/vaneq_rails_api
-  bundle install
+  bundle config mirror.https://rubygems.org https://gems.ruby-china.org &&  bundle install 
 popd
