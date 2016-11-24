@@ -34,8 +34,11 @@ $appliance_root/setup
 mkdir -p $app_root/vmdb/log/apache
 
 # Download vaneq static
-mkdir $www_root/vaneq
-curl -L http://192.168.20.170/github/vaneq_static.tar.gz| tar vxz -C $www_root/vaneq --strip 1
+git clone http://gitlab.vanecloud.com/vanecloud/vaneqStatic.git $repos_root/vaneq
+ln -sv $www_root/vaneq $repos_root/vaneq/dist
+
+# Download vaneq rails api
+git clone http://gitlab.vanecloud.com/vanecloud/vaneq_rails_api.git $repos_root/vaneq_rails_api
 
 cp /etc/motd.manageiq /etc/motd
 
