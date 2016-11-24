@@ -26,3 +26,29 @@ EOF
 
 # Finally, enable the service
 systemctl enable appliance-initialize
+
+
+# Rails API Started
+cat > /bin/vaneq_rails_api.sh <<EOF
+#!/bin/bash
+[[ -d /opt/manageiq/vaneq_rails_api ]] || exit 1
+source /etc/default/evm && BUNDLE_GEMFILE=''
+cd /opt/manageiq/vaneq_rails_api && nohup rails s -b 0.0.0.0 -p 6001 &>> /var/www/miq/vmdb/log/vaneq_api.log &
+EOF
+
+chmod 755 /bin/vaneq_rails_api.sh
+
+# Create a systemd service to run it on first boot
+cat > /usr/lib/systemd/system/vaneq_rails_api.service <<EOF
+[Unit]
+Description=Start VaneQ Rails API
+ConditionPathExists=/opt/manageiq/vaneq_rails_api
+Before=evmserverd.service
+Requires=evmserverd.service
+[Service]
+Type=forking
+ExecStart=/bin/vaneq_rails_api.sh
+ExecStop=/bin/sh -c "fuser -k 6001/tcp"
+[Install]
+WantedBy=multi-user.target
+EOF
