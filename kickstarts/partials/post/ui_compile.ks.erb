@@ -26,6 +26,6 @@ popd
 # VaneQ Frontend 
 pushd /opt/manageiq/vaneq
   npm install --registry=https://registry.npm.taobao.org 
-  sed 's/192.168.20.160/localhost/gi' src/assets/js/config/domain.js
+  sed -i 's/192.168.20.160/localhost/gi' src/assets/js/config/domain.js
   node build/build.js
 popd
