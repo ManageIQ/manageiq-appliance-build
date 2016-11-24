@@ -35,7 +35,7 @@ mkdir -p $app_root/vmdb/log/apache
 
 # Download vaneq static
 git clone http://gitlab.vanecloud.com/vanecloud/vaneqStatic.git $repos_root/vaneq
-ln -sv $www_root/vaneq $repos_root/vaneq/dist
+ln -sv /opt/manageiq/vaneq/dist /var/www/miq/vaneq
 
 # Download vaneq rails api
 git clone http://gitlab.vanecloud.com/vanecloud/vaneq_rails_api.git $repos_root/vaneq_rails_api
