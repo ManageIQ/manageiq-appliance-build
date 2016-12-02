@@ -14,8 +14,8 @@ keyboard us
 rootpw  --iscrypted $1$DZprqvCu$mhqFBjfLTH/PVvZIompVP/
 
 authconfig --enableshadow --passalgo=sha512
-selinux --enforcing
-timezone --utc America/New_York
+selinux --disabled
+timezone --cst Asia/Shanghai
 
 device mptbase
 device mptscsih
