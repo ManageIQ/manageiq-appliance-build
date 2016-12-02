@@ -1,0 +1,36 @@
+# graphite install
+
+[ -d ~/.pip ] || mkdir ~/.pip
+cat >> ~/.pip/pip.conf << EOF
+[global]
+index-url = http://mirrors.aliyun.com/pypi/simple/
+trusted-host = mirrors.aliyun.com
+EOF
+
+
+pip install django==1.8.13 carbon whisper graphite-web django-tagging pytz
+pip install twisted --upgrade
+chmod a+w /opt/graphite/storage &&\
+cp /opt/graphite/conf/carbon.conf.example /opt/graphite/conf/carbon.conf &&\
+cp /opt/graphite/conf/graphite.wsgi.example /opt/graphite/conf/graphite.wsgi &&\
+cp /opt/graphite/conf/storage-schemas.conf.example /opt/graphite/conf/storage-schemas.conf &&\
+cp /opt/graphite/webapp/graphite/local_settings.py.example /opt/graphite/webapp/graphite/local_settings.py  &&\
+sed -i "24aTIME_ZONE = 'Asia/Shanghai'" /opt/graphite/webapp/graphite/local_settings.py
+
+python /opt/graphite/webapp/graphite/manage.py syncdb --noinput
+chown apache.apache -R /opt/graphite/
+
+cat > /usr/lib/systemd/system/carbon-cache.service <<EOF
+[unit]
+Description=Start carbon cache
+ConditionPathExists=/opt/graphite/bin/carbon-cache.py
+Before=evmserverd.service
+Requires=evmserverd.service
+[Service]
+Type=forking
+ExecStart=/bin/python /opt/graphite/bin/carbon-cache.py start
+ExecStop=/bin/python /opt/graphite/bin/carbon-cache.py stop
+Restart=always
+[Install]
+WantedBy=multi-user.target
+EOF

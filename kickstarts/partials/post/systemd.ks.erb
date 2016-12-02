@@ -4,7 +4,7 @@ systemctl enable miqvmstat
 
 systemctl enable evminit
 systemctl enable evm-watchdog
-systemctl enable vaneq_rails_api
+systemctl enable carbon-cache
 
 <% if @target != "azure" && @target != "gce" %>
 systemctl enable cloud-ds-check
