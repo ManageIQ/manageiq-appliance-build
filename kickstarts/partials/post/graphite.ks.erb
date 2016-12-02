@@ -16,6 +16,7 @@ cp /opt/graphite/conf/graphite.wsgi.example /opt/graphite/conf/graphite.wsgi &&\
 cp /opt/graphite/conf/storage-schemas.conf.example /opt/graphite/conf/storage-schemas.conf &&\
 cp /opt/graphite/webapp/graphite/local_settings.py.example /opt/graphite/webapp/graphite/local_settings.py  &&\
 sed -i "24aTIME_ZONE = 'Asia/Shanghai'" /opt/graphite/webapp/graphite/local_settings.py
+sed -i '86s/False/True/gi' /opt/graphite/conf/carbon.conf
 
 python /opt/graphite/webapp/graphite/manage.py syncdb --noinput
 chown apache.apache -R /opt/graphite/
