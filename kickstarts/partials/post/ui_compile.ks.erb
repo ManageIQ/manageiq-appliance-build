@@ -23,9 +23,9 @@ pushd /opt/manageiq/manageiq-ui-self_service
   gulp build
 popd
 
-# VaneQ Frontend 
+# VaneQ Frontend
 pushd /opt/manageiq/vaneq
-  npm install --registry=https://registry.npm.taobao.org 
-  sed -i 's/192.168.20.160/localhost/gi' src/assets/js/config/domain.js
-  node build/build.js
+  npm install --registry=https://registry.npm.taobao.org
+  #sed -i 's/192.168.20.160/localhost/gi' src/assets/js/config/domain.js
+  #node build/build.js
 popd
