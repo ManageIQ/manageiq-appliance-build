@@ -24,11 +24,11 @@ popd
 # Symlink manageiq to the vmdb root so that the SSUI can build into it
 ln -vs $vmdb_root $manageiq_root
 
-git clone <%= @ssui_checkout.remote %> $ssui_root
-pushd $ssui_root
-  git checkout <%= @ssui_checkout.branch %>
-  git reset --hard <%= @ssui_checkout.commit_sha %>
-popd
+#git clone <%= @ssui_checkout.remote %> $ssui_root
+#pushd $ssui_root
+#  git checkout <%= @ssui_checkout.branch %>
+#  git reset --hard <%= @ssui_checkout.commit_sha %>
+#popd
 
 $appliance_root/setup
 mkdir -p $app_root/vmdb/log/apache

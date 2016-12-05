@@ -8,7 +8,8 @@ trusted-host = mirrors.aliyun.com
 EOF
 
 
-pip install django==1.8.13 carbon whisper graphite-web django-tagging pytz cairocffi
+pip install django==1.8.13 carbon whisper graphite-web django-tagging pytz
+pip install cairocffi
 pip install twisted --upgrade
 chmod a+w /opt/graphite/storage &&\
 cp /opt/graphite/conf/carbon.conf.example /opt/graphite/conf/carbon.conf &&\
