@@ -14,22 +14,26 @@ keyboard us
 rootpw  --iscrypted $1$DZprqvCu$mhqFBjfLTH/PVvZIompVP/
 
 authconfig --enableshadow --passalgo=sha512
-selinux --enforcing
-timezone --utc America/New_York
+selinux --disabled
+timezone --utc Asia/Shanghai
 
 device mptbase
 device mptscsih
 device mptspi
 
 <%= render_partial "main/bootloader" %>
-<%= render_partial "main/disk_layout" %>
-<%= render_partial "main/db_fs" %>
+#<% render_partial "main/disk_layout" %>
+#<% render_partial "main/db_fs" %>
+clearpart --all --initlabel
+part /boot --fstype="xfs" --size=200
+part / --fstype="xfs" --grow --size=1
+
 
 reboot
 
 %packages
 @base --nodefaults
-@server-policy --nodefaults
+#@server-policy --nodefaults
 @development tools
 
 <%= render_partial "packages/includes" %>
@@ -69,6 +73,8 @@ export RAILS_USE_MEMORY_STORE="true"
 
 # appliance_root="/opt/manageiq/manageiq-appliance" -- in post/source_setup partial
 $appliance_root/manageiq-setup.sh
+
+<%= render_partial "post/graphite" %>
 
 <%= render_partial "post/systemd" %>
 

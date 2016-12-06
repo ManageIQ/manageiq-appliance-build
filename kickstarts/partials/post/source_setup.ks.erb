@@ -18,23 +18,28 @@ popd
 mkdir -p $app_root
 git clone <%= @manageiq_checkout.remote %> $vmdb_root
 pushd $vmdb_root
-  git checkout <%= @manageiq_checkout.branch %>
-  git reset --hard <%= @manageiq_checkout.commit_sha %>
+#  git checkout <%= @manageiq_checkout.branch %>
+#  git reset --hard <%= @manageiq_checkout.commit_sha %>
 popd
 # Symlink manageiq to the vmdb root so that the SSUI can build into it
 ln -vs $vmdb_root $manageiq_root
 
-git clone <%= @ssui_checkout.remote %> $ssui_root
-pushd $ssui_root
-  git checkout <%= @ssui_checkout.branch %>
-  git reset --hard <%= @ssui_checkout.commit_sha %>
-popd
-
 $appliance_root/setup
 mkdir -p $app_root/vmdb/log/apache
+
+# Download vaneq static
+git clone http://gitlab.vanecloud.com/vanecloud/vaneqStatic.git $repos_root/vaneq
+ln -sv /opt/manageiq/vaneq/dist /var/www/vaneq
 
 cp /etc/motd.manageiq /etc/motd
 
 # Legacy directory symlinks
 ln -vs $appliance_root $app_root/system
 ln -vs $app_root/vmdb/gems/pending $app_root/lib
+
+# Add YUM Repo
+pushd /etc/yum.repos.d/
+rm -rf *
+  curl -O http://192.168.20.170/repofile/centos-ustc.repo
+  curl -O http://192.168.20.170/repofile/epel.repo
+popd

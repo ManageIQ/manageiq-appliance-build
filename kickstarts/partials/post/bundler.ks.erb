@@ -6,13 +6,15 @@ export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
 [[ -s /etc/default/evm ]] && source /etc/default/evm
+gem sources --add https://gems.ruby-china.org/ --remove https://rubygems.org/
 gem install bundler -v ">=1.8.4"
 
 pushd /var/www/miq/vmdb
-  bundle install
+ bundle config mirror.https://rubygems.org https://gems.ruby-china.org &&  bundle install 
+ bundle install
 popd
 
-pushd /opt/manageiq/manageiq-ui-self_service
-  # overriding exported BUNDLE_GEMFILE
-  bundle install --gemfile Gemfile
-popd
+#pushd /opt/manageiq/manageiq-ui-self_service
+#  # overriding exported BUNDLE_GEMFILE
+#  bundle install
+#popd

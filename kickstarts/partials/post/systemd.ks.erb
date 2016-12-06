@@ -4,6 +4,7 @@ systemctl enable miqvmstat
 
 systemctl enable evminit
 systemctl enable evm-watchdog
+systemctl enable carbon-cache
 
 <% if @target != "azure" && @target != "gce" %>
 systemctl enable cloud-ds-check
@@ -18,3 +19,4 @@ ln -sf /dev/null /etc/systemd/system/ctrl-alt-del.target
 mkdir /var/log/journal
 
 systemctl disable NetworkManager
+systemctl disable firewalld
