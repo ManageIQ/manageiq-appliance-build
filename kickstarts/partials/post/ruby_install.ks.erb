@@ -1,9 +1,3 @@
-curl -L https://github.com/postmodern/ruby-install/archive/v0.6.0.tar.gz | tar xvfzC - /tmp
-
-pushd /tmp/ruby-install*/
-make install
-popd
-
 # The ruby-install will result in about 350MiB of files in /usr/local/src.
 # These do not need to be in the image, so put them on a tmpfs.
 mkdir -p /usr/local/src
