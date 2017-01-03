@@ -7,7 +7,7 @@ mount -t tmpfs tmpfs /usr/local/src
 # Once the --update option is available, we could ask
 # ruby-install to "learn" what new rubies are available
 # See: https://github.com/postmodern/ruby-install/issues/175
-/usr/local/bin/ruby-install ruby 2.3.1 -- --disable-install-doc --enable-shared
+ruby-install ruby 2.3.1 -- --disable-install-doc --enable-shared
 
 # Free up tmpfs memory.
 umount /usr/local/src
