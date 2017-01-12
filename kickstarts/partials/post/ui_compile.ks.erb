@@ -1,4 +1,4 @@
-npm install -g gulp bower yarn
+npm install -g bower yarn
 
 pushd /var/www/miq/vmdb
   bower -F --allow-root install
@@ -10,5 +10,5 @@ popd
 # Service UI
 pushd /opt/manageiq/manageiq-ui-service
   yarn install
-  gulp build
+  yarn run build
 popd
