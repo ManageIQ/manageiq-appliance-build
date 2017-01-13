@@ -7,6 +7,9 @@ manageiq_root="$repos_root/manageiq"
 appliance_root="$repos_root/manageiq-appliance"
 ssui_root="$repos_root/manageiq-ui-self_service"
 
+# vagrant for darga is built using 'master' vmbuild.rb, which uses 'sui_checkout' instead of 'ssui_checkout'
+<% sui_git_checkout = @target == "vagrant" ? @sui_checkout : @ssui_checkout %>
+
 rm -rf $app_root
 
 git clone <%= @appliance_checkout.remote %> $appliance_root
@@ -24,10 +27,10 @@ popd
 # Symlink manageiq to the vmdb root so that the SSUI can build into it
 ln -vs $vmdb_root $manageiq_root
 
-git clone <%= @ssui_checkout.remote %> $ssui_root
+git clone <%= sui_git_checkout.remote %> $ssui_root
 pushd $ssui_root
-  git checkout <%= @ssui_checkout.branch %>
-  git reset --hard <%= @ssui_checkout.commit_sha %>
+  git checkout <%= sui_git_checkout.branch %>
+  git reset --hard <%= sui_git_checkout.commit_sha %>
 popd
 
 $appliance_root/setup
