@@ -5,5 +5,10 @@ users:
   - default
 EOF
 
+cat >> /etc/cloud/cloud.cfg.d/20_miq_ephemeral_mount.cfg << EOF
+mounts:
+ - [ ephemeral0 ]
+EOF
+
 # Lock root account
 usermod -L root
