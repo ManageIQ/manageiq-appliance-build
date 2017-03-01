@@ -66,8 +66,8 @@ module Build
     end
 
     def release_filename(appliance_name)
-      ext = File.extname(appliance_name)
       name = appliance_name.split("-")
+      ext = name[-1].sub(/\h*/, '')
       name[0..-3].join("-") << ext
     end
   end
