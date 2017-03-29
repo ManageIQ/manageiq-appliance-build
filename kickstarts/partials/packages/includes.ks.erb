@@ -4,7 +4,8 @@ centos-release-scl-rh
 createrepo
 freeipmi
 fuse-libs
-httpd
+httpd            # TODO: to be removed
+httpd24
 ipmitool
 
 # ruby dependencies auto-installed by ruby-install
@@ -32,7 +33,8 @@ logrotate
 lshw                             # From epel
 lvm2
 memcached
-mod_ssl
+mod_ssl           # TODO: to be removed
+httpd24-mod_ssl
 nmap-ncat
 net-snmp
 net-snmp-libs
@@ -62,10 +64,11 @@ zip                              # build requires
 c-ares
 ipa-client
 sssd-dbus
-mod_intercept_form_submit
-mod_auth_kerb
-mod_authnz_pam
-mod_lookup_identity
+mod_intercept_form_submit   # TODO: to be removed   replace with httpd24-mod_intercept_form_submit
+mod_auth_kerb               # TODO: to be removed
+httpd24-mod_auth_kerb
+mod_authnz_pam              # TODO: to be removed   replace with httpd24-mod_authnz_pam
+mod_lookup_identity         # TODO: to be removed   replace with httpd24-mod_lookup_identity
 realmd
 
 # IPA RPMs for certificate support
@@ -83,7 +86,7 @@ samba-common
 openldap-clients
 
 # External Authentication - SAML
-mod_auth_mellon
+mod_auth_mellon             # TODO: to be replaced with httpd24-mod_auth_mellon
 
 <% if @target != "azure" && @target != "gce" %>
 cloud-init

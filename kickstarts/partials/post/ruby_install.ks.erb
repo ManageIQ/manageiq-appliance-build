@@ -16,6 +16,9 @@ umount /usr/local/src
 ruby_bin_path=(/opt/rubies/ruby-2.3.1/bin)
 echo "export PATH=\$PATH:$ruby_bin_path" >> /etc/default/evm
 
+# Set the RUBY_EXEC variable for scripts that need it
+sed --follow-symlinks -i /etc/default/evm_apache -e s:^RUBY_EXEC=.*$:RUBY_EXEC=$ruby_bin_path/ruby:
+
 cat /etc/default/evm
 
 echo "gem: --no-ri --no-rdoc --no-document" > /root/.gemrc
