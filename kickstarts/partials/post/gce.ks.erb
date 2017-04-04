@@ -1,3 +1,18 @@
+# Install google compute engine packages
+# Disable functions that need network/retrieve metadata, as that will not be available in imagefactory installation
+cat >> /etc/default/instance_configs.cfg.template << EOF
+[InstanceSetup]
+network_enabled=false
+
+[NetworkInterfaces]
+setup=false
+EOF
+
+yum install -y google-compute-engine google-compute-engine-init google-config
+
+# Delete cfg files used here, so default cfg file will be created on next boot
+rm -f /etc/default/instance_configs.cfg*
+
 # sshd configuration
 sed -i 's/^#\(ClientAliveInterval\).*$/\1 420/g' /etc/ssh/sshd_config
 sed -i 's/^#\(PermitRootLogin\).*$/\1 no/g' /etc/ssh/sshd_config
