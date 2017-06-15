@@ -123,6 +123,15 @@ echo "" >> /etc/ssh/sshd_config
 # Clean the logs
 rm -vf "$vmdb_root"/log/*.log
 
+# CentOS 7.3 isn't clearing out spaces during install.
+# Add a workaround to write zeros and manually clear out.
+partitions="/ /var /var/log /var/log/audit /tmp /home"
+for partition in $partitions
+do
+  dd if=/dev/zero of=$partition/tmp_file bs=1M
+  rm -f $partition/tmp_file
+done
+
 chvt 1
 ) 2>&1 | tee /dev/tty3
 %end
