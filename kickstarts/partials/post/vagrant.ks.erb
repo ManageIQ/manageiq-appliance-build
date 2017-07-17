@@ -19,5 +19,6 @@ chown -R vagrant:vagrant ~vagrant/.ssh/
 
 cat << EOM >> ~vagrant/.bashrc
 umask 022
-alias appliance_console='sudo appliance_console'
+alias appliance_console='sudo -i appliance_console'
+alias ap=appliance_console
 EOM
