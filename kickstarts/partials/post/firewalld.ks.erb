@@ -9,9 +9,10 @@ firewall-offline-cmd --new-zone=manageiq
 firewall-offline-cmd --set-default-zone=manageiq
 
 ###
-# Allow HTTP, HTTPS, SSH and postgresql in the manageiq firewall zone
+# Allow required services in the manageiq firewall zone
 ###
 firewall-offline-cmd --zone=manageiq --add-service=http
 firewall-offline-cmd --zone=manageiq --add-service=https
 firewall-offline-cmd --zone=manageiq --add-service=ssh
 firewall-offline-cmd --zone=manageiq --add-service=postgresql
+firewall-offline-cmd --zone=manageiq --add-service=dhcpv6-client
