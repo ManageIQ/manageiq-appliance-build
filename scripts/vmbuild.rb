@@ -177,7 +177,7 @@ Dir.chdir(IMGFAC_DIR) do
     end
 
     # The final image is moved out of STORAGE_DIR at this point, delete all other files created during build
-    temp_file_uuid.each { |uuid| FileUtils.rm(Dir.glob("#{STORAGE_DIR}/#{uuid}.*"), :verbose => true) }
+    temp_file_uuid.each { |file_uuid| FileUtils.rm_f(Dir.glob("#{STORAGE_DIR}/#{file_uuid}.*"), :verbose => true) }
   end
 
   passphrase_file = GPG_DIR.join("pass")
