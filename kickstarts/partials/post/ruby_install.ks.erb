@@ -7,13 +7,13 @@ mount -t tmpfs tmpfs /usr/local/src
 # Once the --update option is available, we could ask
 # ruby-install to "learn" what new rubies are available
 # See: https://github.com/postmodern/ruby-install/issues/175
-ruby-install ruby 2.3.1 -- --disable-install-doc --enable-shared
+ruby-install ruby 2.4.2 -- --disable-install-doc --enable-shared
 
 # Free up tmpfs memory.
 umount /usr/local/src
 
 # Add the ruby binaries path to the PATH so we can find bundle and friends:
-ruby_bin_path=(/opt/rubies/ruby-2.3.1/bin)
+ruby_bin_path=(/opt/rubies/ruby-2.4.2/bin)
 echo "export PATH=\$PATH:$ruby_bin_path" >> /etc/default/evm
 
 cat /etc/default/evm
