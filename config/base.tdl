@@ -11,6 +11,6 @@
   </os>
   <description>CentOS73 TDL meant to be used with custom kickstart for manageiq.</description>
   <disk>
-    <size>56G</size>
+    <size>66G</size>
   </disk>
 </template>
