@@ -9,6 +9,9 @@ mount -t tmpfs tmpfs /usr/local/src
 # See: https://github.com/postmodern/ruby-install/issues/175
 ruby-install --system ruby 2.3.1 -- --disable-install-doc --enable-shared
 
+# ensure /usr/local/bin is on the path as this is where ruby, gem, and bundle will be installed
+export PATH=$PATH:/usr/local/bin
+
 # Free up tmpfs memory.
 umount /usr/local/src
 
