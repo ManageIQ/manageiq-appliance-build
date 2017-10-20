@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## Unreleased as of Sprint 71 ending 2017-10-16
 
 ### Added
-- Rename ws to api to not be confused with websockets [(#131)](https://github.com/ManageIQ/manageiq-appliance/pull/131)
 - Use a master copr repo on the master branch [(#230)](https://github.com/ManageIQ/manageiq-appliance-build/pull/230)
 - Add qpid-proton-c libs [(#228)](https://github.com/ManageIQ/manageiq-appliance-build/pull/228)
 
