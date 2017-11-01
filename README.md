@@ -1,6 +1,6 @@
 # ManageIQ Appliance Build
 
-[![Build Status](https://api.travis-ci.org/ManageIQ/manageiq-appliance-build.svg)](https://travis-ci.org/ManageIQ/manageiq-appliance-build)
+[![Build Status](https://api.travis-ci.org/ManageIQ/manageiq-appliance-build.svg?branch=gaprindashvili)](https://travis-ci.org/ManageIQ/manageiq-appliance-build)
 
 # Introduction
 
