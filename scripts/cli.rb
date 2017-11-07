@@ -7,7 +7,7 @@ module Build
     attr_reader :options
     ALLOWED_TYPES = %w(nightly release test)
     DEFAULT_TYPE  = "nightly"
-    DEFAULT_REF   = "master"
+    DEFAULT_REF   = "gaprindashvili"
     MANAGEIQ_URL  = "https://github.com/ManageIQ/manageiq.git"
     APPLIANCE_URL = "https://github.com/ManageIQ/manageiq-appliance.git"
     BUILD_URL     = "https://github.com/ManageIQ/manageiq-appliance-build.git"

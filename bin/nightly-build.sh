@@ -2,7 +2,7 @@
 # Kick off a nightly upstream build
 #
 # repo:      ManageIQ/manageiq.git
-# branch:    master
+# branch:    gaprindashvili
 # fileshare: true
 #
 
@@ -14,7 +14,7 @@ stop_on_existing_build
 LOG_DIR=/build/logs
 mkdir -p ${LOG_DIR}
 
-BRANCH=master
+BRANCH=gaprindashvili
 DATE_STAMP=`date +"%Y%m%d_%T"`
 LOG_FILE="${LOG_DIR}/${BRANCH}_${DATE_STAMP}.log"
 DOCS_LOG_FILE="${LOG_DIR}/${BRANCH}_${DATE_STAMP}_docs.log"
