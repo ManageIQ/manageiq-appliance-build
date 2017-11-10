@@ -1,15 +1,15 @@
 <template>
-  <name>CentOS-7.3</name>
+  <name>CentOS-7.4</name>
   <os>
     <rootpw>ozrootpw</rootpw>
     <name>CentOS-7</name>
-    <version>3</version>
+    <version>4</version>
     <arch>x86_64</arch>
     <install type="iso">
-      <iso>file:///build/isos/CentOS-7-x86_64-DVD-1611.iso</iso>
+      <iso>file:///build/isos/CentOS-7-x86_64-DVD-1708.iso</iso>
     </install>
   </os>
-  <description>CentOS73 TDL meant to be used with custom kickstart for manageiq.</description>
+  <description>CentOS74 TDL meant to be used with custom kickstart for manageiq.</description>
   <disk>
     <size>50G</size>
   </disk>
