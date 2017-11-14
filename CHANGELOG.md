@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## Unreleased as of Sprint 73 ending 2017-11-13
+
+### Added
+- Update to CentOS 7.4 [(#244)](https://github.com/ManageIQ/manageiq-appliance-build/pull/244)
+
+### Fixed
+- Increase filesystem sizes [(#232)](https://github.com/ManageIQ/manageiq-appliance-build/pull/232)
+
 ## Gaprindashvili Beta1
 
 ### Added
