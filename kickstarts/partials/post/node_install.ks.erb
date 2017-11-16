@@ -1,0 +1,19 @@
+# Install NVM
+export NVM_DIR="/root/.nvm" && (
+  git clone https://github.com/creationix/nvm.git "/root/.nvm"
+  cd "/root/nvm"
+  git checkout `git describe --abbrev=0 --tags --match "v[0-9]*" origin`
+) && . "/root/.nvm/nvm.sh"
+
+# Setup NVM in the shell
+echo "export NVM_DIR=/root/.nvm >> /etc/default/evm"
+echo "[ -s \"/room/.nvm/nvm.sh\" ] && . \"/root/.nvm/nvm.sh\" >> /etc/default/evm"
+
+# Install the version of Node the SUI needs
+nvm install `cat /opt/manageiq/manageiq-ui-service/.nvmrc`
+
+# Set the default NodeJS version
+nvm alias default node `cat /opt/manageiq/manageiq-ui-service/.nvmrc`
+
+# Install the most up to date version of NPM for our version of NodeJS
+nvm install-latest-npm
