@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## Gaprindashvili Beta2
+
+### Added
+- Update to CentOS 7.4 [(#244)](https://github.com/ManageIQ/manageiq-appliance-build/pull/244)
+
 ## Gaprindashvili Beta1
 
 ### Added
