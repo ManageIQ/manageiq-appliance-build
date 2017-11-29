@@ -11,6 +11,8 @@ systemctl enable cloud-ds-check
 
 systemctl enable memcached
 
+systemctl enable docker
+
 # Link ctrl-alt-del.target to /dev/null to prevent reboot from console
 ln -sf /dev/null /etc/systemd/system/ctrl-alt-del.target
 
