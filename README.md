@@ -92,7 +92,6 @@ Below are instructions on installing and configuring a virtual machine to genera
     git clone https://www.github.com/ManageIQ/manageiq-appliance-build.git
     ln -s manageiq-appliance-build/bin     bin
     ln -s manageiq-appliance-build/scripts scripts
-    ln -s manageiq-appliance-build/config  config
       ```
 
 ## Setup Imagefactory:
