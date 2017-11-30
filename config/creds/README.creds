@@ -1,0 +1,21 @@
+This directory will hold credentials files on the build host.
+
+All JSON files in this directory are ignored via gitignore(5) to reduce the
+risk that credentials accentally get commit.
+
+The following files are currently used:
+
+* gce.json
+
+  A service account JSON file for the Google Cloud Platform. This file can be
+  generated as describe here:
+  https://cloud.google.com/storage/docs/authentication#generating-a-private-key
+
+* atlas.json
+
+  A JSON file with an Atlas token, as follows:
+
+  {
+      "username": "<username>",
+      "token": "<token"
+  }
