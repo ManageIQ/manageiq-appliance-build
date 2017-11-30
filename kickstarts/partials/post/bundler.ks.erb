@@ -12,4 +12,5 @@ ln -s ${APPLIANCE_SOURCE_DIRECTORY}/manageiq-appliance-dependencies.rb /var/www/
 
 pushd /var/www/miq/vmdb
   bundle install
+  bundle clean --force
 popd
