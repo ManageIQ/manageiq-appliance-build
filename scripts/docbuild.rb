@@ -30,5 +30,6 @@ $log.info("Packaging docs...Complete")
 
 $log.info("Copying docs to fileshare...")
 FileUtils.rm_rf DOCS_FILESHARE
+FileUtils.mkdir_p DOCS_FILESHARE
 FileUtils.cp_r(DOCS_PACKAGE, DOCS_FILESHARE)
 $log.info("Copying docs to fileshare...Complete")
