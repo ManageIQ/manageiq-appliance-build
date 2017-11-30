@@ -11,6 +11,6 @@ gem install bundler -v ">=1.8.4"
 ln -s ${APPLIANCE_SOURCE_DIRECTORY}/manageiq-appliance-dependencies.rb /var/www/miq/vmdb/bundler.d/manageiq-appliance-dependencies.rb
 
 pushd /var/www/miq/vmdb
-  bundle install
+  bundle install --with qpid_proton
   bundle clean --force
 popd
