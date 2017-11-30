@@ -32,7 +32,7 @@ end
 
 BUILD_BASE          = Pathname.new("/build")
 GPG_DIR             = Pathname.new("/root/.gnupg")
-CFG_DIR             = BUILD_BASE.join("config")
+CFG_DIR             = Pathname.new(__dir__).join("../config")
 FILESHARE_DIR       = BUILD_BASE.join("fileshare")
 REFS_DIR            = BUILD_BASE.join("references")
 IMGFAC_DIR          = BUILD_BASE.join("imagefactory")
@@ -64,9 +64,9 @@ end
 
 $log.info "Using Configuration base directory: #{cfg_base}"
 
-base_file = BUILD_BASE.join("config/base.json")
-target_file = BUILD_BASE.join("config/target.json")
-ova_file = BUILD_BASE.join("config/ova.json")
+base_file   = CFG_DIR.join("base.json")
+target_file = CFG_DIR.join("target.json")
+ova_file    = CFG_DIR.join("ova.json")
 
 def verify_run(output)
   if output =~ /UUID: (.*)/
@@ -109,7 +109,7 @@ Dir.chdir(IMGFAC_DIR) do
     $log.info "Building for #{target}:"
 
     tdl_name = target.name == "azure" ? "base_azure.tdl" : "base.tdl"
-    tdl_file = BUILD_BASE.join("config", tdl_name)
+    tdl_file = CFG_DIR.join(tdl_name)
     $log.info "Using inputs: puddle: #{puddle}, build_label: #{build_label}"
     $log.info "              tdl_file: #{tdl_file}, ova_file: #{ova_file}."
 
