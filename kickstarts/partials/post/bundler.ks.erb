@@ -14,3 +14,7 @@ pushd /var/www/miq/vmdb
   bundle install
   bundle clean --force
 popd
+
+# Install mime-types outside of bundle, needed by 'rest-client' gem when run under irb/automate
+# Run this command after 'bundle clean' so it won't be removed by 'bundle clean'
+gem install mime-types -v 2.6.1
