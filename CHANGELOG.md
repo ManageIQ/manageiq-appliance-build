@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## Gaprindashvili RC
+
+### Fixed
+- Install 'mime-types' outside of bundle [(#254)](https://github.com/ManageIQ/manageiq-appliance-build/pull/254)
+- Run `bundle clean --force` after we `bundle install` [(#248)](https://github.com/ManageIQ/manageiq-appliance-build/pull/248)
+- Change config path to be relative to script [(#252)](https://github.com/ManageIQ/manageiq-appliance-build/pull/252)
+
 ## Gaprindashvili Beta2
 
 ### Added
