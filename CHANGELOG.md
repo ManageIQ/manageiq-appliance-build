@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## Unreleased as of Sprint 75 ending 2017-12-11
+
+### Added
+- Remove enable for docker service [(#251)](https://github.com/ManageIQ/manageiq-appliance-build/pull/251)
+- Add the docker package to run awx locally on the appliance [(#250)](https://github.com/ManageIQ/manageiq-appliance-build/pull/250)
+
+### Fixed
+- Run `bundle clean --force` after we `bundle install` [(#248)](https://github.com/ManageIQ/manageiq-appliance-build/pull/248)
+
 ## Unreleased as of Sprint 73 ending 2017-11-13
 
 ### Added
