@@ -1,5 +1,0 @@
-#
-# Special Exclusions
-#
-AllCops:
-  TargetRubyVersion: 2.2
