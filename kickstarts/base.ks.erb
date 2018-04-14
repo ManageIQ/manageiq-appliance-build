@@ -76,6 +76,9 @@ export RAILS_USE_MEMORY_STORE="true"
 
 <%= render_partial "post/bundler" %>
 
+# needs to run *BEFORE* the ui_compile
+<%= render_partial "post/node_install" %>
+
 # needs to run *after* post/bundler
 <%= render_partial "post/ui_compile" %>
 
