@@ -1,6 +1,7 @@
 # ManageIQ Appliance Build
 
 [![Build Status](https://api.travis-ci.org/ManageIQ/manageiq-appliance-build.svg)](https://travis-ci.org/ManageIQ/manageiq-appliance-build)
+[![License](http://img.shields.io/badge/license-APACHE2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 # Introduction
 
@@ -420,3 +421,6 @@ Note:
 vncviewer has an "F8" menu we need to use if we want to send an "alt" keypress to the VM.
 On t540p thinkpad, with the function lock key on, pressing F8 actually disables WIFI.
 
+# License
+
+See [LICENSE.txt](LICENSE.txt)
