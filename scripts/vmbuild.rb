@@ -211,5 +211,11 @@ if cli_options[:type] == "nightly" || cli_options[:type] == "release"
     $log.info `ssh #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER} "#{ssh_cmd}"`
   end
 
+  # Also create relese ref symlink (e.g. gaprindashvili-1)
+  if cli_options[:type] == "release"
+    result = FileUtils.ln_s(directory_name, stream_directory.join(cli_options[:reference]), :verbose => true)
+    $log.info("Created release ref link: #{result}")
+  end
+
   Build::Uploader.upload(destination_directory, cli_options[:type]) if cli_options[:upload]
 end
