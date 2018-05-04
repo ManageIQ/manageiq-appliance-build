@@ -5,7 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
-## Gaprindashvili-1
+## Gaprindashvili-3
+
+### Added
+- Create ref symlink for release build [(#265)](https://github.com/ManageIQ/manageiq-appliance-build/pull/265)
+- Clear yarn cache [(#264)](https://github.com/ManageIQ/manageiq-appliance-build/pull/264)
+
+## Gaprindashvili-1 - Released 2018-01-31
+
 ### Added
 - Update to CentOS 7.4 [(#244)](https://github.com/ManageIQ/manageiq-appliance-build/pull/244)
 - Use a master copr repo on the master branch [(#230)](https://github.com/ManageIQ/manageiq-appliance-build/pull/230)
