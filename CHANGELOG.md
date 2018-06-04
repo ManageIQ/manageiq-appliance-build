@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Removed
 - Remove non-existing "server-policy" yum group [(#268)](https://github.com/ManageIQ/manageiq-appliance-build/pull/268)
 
-## Unreleased as of Sprint 85 ending 2018-05-07
+## Gaprindashvili-3 - Released 2018-05-15
 
 ### Added
 - Create ref symlink for release build [(#265)](https://github.com/ManageIQ/manageiq-appliance-build/pull/265)
