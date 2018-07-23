@@ -90,6 +90,9 @@ openldap-clients
 # External Authentication - SAML
 mod_auth_mellon
 
+# External Authentication - OpenID-Connect
+mod_auth_openidc
+
 <% if @target != "azure" && @target != "gce" %>
 cloud-init
 <% end %>
