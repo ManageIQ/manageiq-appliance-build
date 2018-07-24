@@ -2,7 +2,7 @@ npm install -g bower yarn
 
 pushd /var/www/miq/vmdb
   rake update:ui
-  RAILS_ENV=production rake evm:compile_assets
+  RAILS_ENV=production NODE_ENV=production rake evm:compile_assets
   rake evm:compile_sti_loader
 popd
 
