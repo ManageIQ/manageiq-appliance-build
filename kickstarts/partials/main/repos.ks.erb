@@ -6,6 +6,8 @@ repo --name=epel    --baseurl=http://dl.fedoraproject.org/pub/epel/7/x86_64/
 
 # repos to install packages not found in the os
 repo --name=centos-scl --baseurl=http://mirror.centos.org/centos/7/sclo/x86_64/rh/
+repo --name=nodesource --baseurl=https://rpm.nodesource.com/pub_8.x/el/7/x86_64/
+
 <% if @target == "gce" %>
 repo --name=google-cloud-compute --baseurl=https://packages.cloud.google.com/yum/repos/google-cloud-compute-el7-x86_64/
 <% end %>
