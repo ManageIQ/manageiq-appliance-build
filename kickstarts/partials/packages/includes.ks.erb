@@ -112,6 +112,8 @@ open-vm-tools
 WALinuxAgent
 <% elsif @target == "hyperv" %>
 hyperv-daemons
+<% elsif @target == "ec2" %>
+dracut-config-generic
 <% end %>
 
 # Chinese and Japanese fonts for PDF reports
