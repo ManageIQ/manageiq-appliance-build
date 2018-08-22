@@ -101,17 +101,20 @@ cloud-init
 
 wmi
 
-<% if @target == "ovirt" %>
+<% case @target
+   when "azure" %>
+WALinuxAgent
+<% when "ec2" %>
+dracut-config-generic
+<% when "hyperv" %>
+hyperv-daemons
+<% when "libvirt" %>
+qemu-guest-agent
+<% when "ovirt" %>
 ovirt-guest-agent
 glusterfs-fuse
-<% elsif @target == "libvirt" %>
-qemu-guest-agent
-<% elsif @target == "vsphere" %>
+<% when "vsphere" %>
 open-vm-tools
-<% elsif @target == "azure" %>
-WALinuxAgent
-<% elsif @target == "hyperv" %>
-hyperv-daemons
 <% end %>
 
 # Chinese and Japanese fonts for PDF reports
