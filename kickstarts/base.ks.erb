@@ -102,12 +102,15 @@ EOF
 # Let's rebuild the ramfs with with base scsi drivers we need
 kversion=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
 ramfsfile="/boot/initramfs-$kversion.img"
-drivers="mptbase mptscsih mptspi"
 <% case @target
    when "azure", "hyperv" %>
-drivers="$drivers hv_storvsc hid_hyperv hv_netvsc hv_vmbus"
+drivers="mptbase mptscsih mptspi hv_storvsc hid_hyperv hv_netvsc hv_vmbus"
 <% when "ec2" %>
-drivers="$drivers xen-blkfront xen-netfront"
+drivers="mptbase mptscsih mptspi xen-blkfront xen-netfront"
+<% when "vsphere" %>
+drivers="mptspi vmw_pvscsi"
+<% else %>
+drivers="mptbase mptscsih mptspi"
 <% end %>
 /sbin/dracut --force --add-drivers "$drivers" $ramfsfile $kversion
 

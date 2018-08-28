@@ -5,7 +5,10 @@
   "rhevm_description": "ManageIQ",
   "rhevm_default_display_type": "1",
   "rhevm_os_descriptor": "RHEL7",
+  "vsphere_network_controller_type": "VmxNet3",
+  "vsphere_os_type": "centos64Guest",
   "vsphere_product_name": "ManageIQ",
   "vsphere_product_vendor_name": "ManageIQ",
-  "vsphere_product_version": "master"
+  "vsphere_product_version": "master",
+  "vsphere_virtual_system_type": "vmx-10"
 }
