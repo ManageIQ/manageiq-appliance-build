@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## Unreleased as of Sprint 94 ending 2018-09-10
+
+### Fixed
+- Update vSphere ova [(#278)](https://github.com/ManageIQ/manageiq-appliance-build/pull/278)
+
 ## Unreleased as of Sprint 91 ending 2018-07-30
 
 ### Added
