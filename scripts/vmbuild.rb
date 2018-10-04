@@ -106,6 +106,7 @@ Dir.chdir(IMGFAC_DIR) do
   targets.sort.reverse.each do |target|
     imgfac_target = target.imagefactory_type
     ova_format    = target.ova_format
+    compression   = target.compression_type
     $log.info "Building for #{target}:"
 
     tdl_name = target.name == "azure" ? "base_azure.tdl" : "base.tdl"
@@ -144,12 +145,29 @@ Dir.chdir(IMGFAC_DIR) do
       temp_file_uuid << uuid
     end
     $log.info "Built #{target} with final UUID: #{uuid}"
-    source = STORAGE_DIR.join("#{uuid}.body")
 
     FileUtils.mkdir_p(destination_directory)
     file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{target.file_extension}"
     destination = destination_directory.join(file_name)
-    $log.info `mv #{source} #{destination}`
+
+    Dir.chdir(STORAGE_DIR) do
+      FileUtils.mv("#{uuid}.body", file_name)
+
+      case compression
+      when 'gzip'
+        destination = destination.sub_ext(destination.extname + '.gz')
+        $log.info "Compressing #{file_name} to #{destination}"
+        $log.info `gzip -c #{file_name} > #{destination}`
+        FileUtils.rm_f(file_name)
+      when 'zip'
+        destination = destination.sub_ext('.zip')
+        $log.info "Compressing #{file_name} to #{destination}"
+        $log.info `zip -m -j #{destination} #{file_name}`
+      else
+        $log.info "Moving #{file_name} to #{destination}"
+        FileUtils.mv(file_name, destination)
+      end
+    end
 
     if !File.exist?(destination)
       $log.warn "Cannot find the target file #{destination}"
@@ -158,8 +176,8 @@ Dir.chdir(IMGFAC_DIR) do
       if cli_options[:fileshare] && FILE_SERVER && File.size(destination)
         $log.info "Creating File server #{FILE_SERVER} directory #{file_rdu_dir} ..."
         $log.info `ssh #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER} mkdir -p #{file_rdu_dir}`
-        $log.info "Copying file #{file_name} to #{FILE_SERVER}:#{file_rdu_dir}/ ..."
-        $log.info `scp #{destination} #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER}:#{file_rdu_dir.join(file_name)}`
+        $log.info "Copying file #{destination} to #{FILE_SERVER}:#{file_rdu_dir}/ ..."
+        $log.info `scp #{destination} #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER}:#{file_rdu_dir}`
       end
     end
 
@@ -172,7 +190,7 @@ Dir.chdir(IMGFAC_DIR) do
       $log.info `qemu-img convert -f qcow2 -O qcow2 -o compat=0.10 -c #{STORAGE_DIR.join("#{target_image_uuid}.body")} #{source}`
       $log.info `mv #{source} #{destination}`
       if cli_options[:fileshare] && FILE_SERVER && File.size(destination)
-        $log.info `scp #{destination} #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER}:#{file_rdu_dir.join(file_name)}`
+        $log.info `scp #{destination} #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER}:#{file_rdu_dir}`
       end
     end
 
