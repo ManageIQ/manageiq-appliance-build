@@ -6,12 +6,12 @@ module Build
       'vsphere'   => ImagefactoryMetadata.new('vsphere', 'vsphere', 'ova', nil),
       'ovirt'     => ImagefactoryMetadata.new('rhevm', 'rhevm', 'ova', nil),
       'openstack' => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2', nil),
-      'hyperv'    => ImagefactoryMetadata.new('hyperv', nil, 'vhd', nil),
-      'azure'     => ImagefactoryMetadata.new('hyperv', nil, 'vhd', nil),
+      'hyperv'    => ImagefactoryMetadata.new('hyperv', nil, 'vhd', 'zip'),
+      'azure'     => ImagefactoryMetadata.new('hyperv', nil, 'vhd', 'zip'),
       'vagrant'   => ImagefactoryMetadata.new('vsphere', 'vagrant-virtualbox', 'box', nil),
       'libvirt'   => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2', nil),
       'gce'       => ImagefactoryMetadata.new('gce', nil, 'tar.gz', nil),
-      'ec2'       => ImagefactoryMetadata.new('ec2', nil, 'vhd', nil),
+      'ec2'       => ImagefactoryMetadata.new('ec2', nil, 'vhd', 'zip'),
     }
 
     attr_reader :name
