@@ -10,13 +10,15 @@ module Build
     end
 
     def commit_sha
-      long_sha =
-        if ref == "master"
-          ls_remote_sha("master")
-        else
-          ls_remote_sha(dereferenced_tag) || ls_remote_sha(ref)
-        end
-      long_sha.to_s[0, 10]
+      @commit_sha ||= begin
+        long_sha =
+          if ref == "master"
+            ls_remote_sha("master")
+          else
+            ls_remote_sha(dereferenced_tag) || ls_remote_sha(ref)
+          end
+        long_sha.to_s[0, 10]
+      end
     end
 
     def branch
