@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## Unreleased as of Sprint 96 ending 2018-10-08
+
+### Added
+- Compress Azure HyperV and EC2 images [(#289)](https://github.com/ManageIQ/manageiq-appliance-build/pull/289)
+- Add post compression support [(#288)](https://github.com/ManageIQ/manageiq-appliance-build/pull/288)
+- Move from apache module mod_auth_kerb to mod_auth_gssapi [(#282)](https://github.com/ManageIQ/manageiq-appliance-build/pull/282)
+
+### Fixed
+- Set commit_sha just once [(#290)](https://github.com/ManageIQ/manageiq-appliance-build/pull/290)
+
 ## Unreleased as of Sprint 95 ending 2018-09-24
 
 ### Added
@@ -21,9 +31,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Added
 - Add support for OpenID-Connect [(#272)](https://github.com/ManageIQ/manageiq-appliance-build/pull/272)
 
-## Unreleased as of Sprint 86 ending 2018-05-21
+## Gaprindashvili-4 - Released 2018-07-16
 
-### Removed
+### Fixed
 - Remove non-existing "server-policy" yum group [(#268)](https://github.com/ManageIQ/manageiq-appliance-build/pull/268)
 
 ## Gaprindashvili-3 - Released 2018-05-15
