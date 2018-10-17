@@ -14,10 +14,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Add sqlite-devel package [(#260)](https://github.com/ManageIQ/manageiq-appliance-build/pull/260)
 - Remove enable for docker service [(#251)](https://github.com/ManageIQ/manageiq-appliance-build/pull/251)
 - Add the docker package to run awx locally on the appliance [(#250)](https://github.com/ManageIQ/manageiq-appliance-build/pull/250)
+- Add post compression support [(#288)](https://github.com/ManageIQ/manageiq-appliance-build/pull/288)
+- Compress Azure, HyperV and EC2 images [(#289)](https://github.com/ManageIQ/manageiq-appliance-build/pull/289)
+- Move from apache module mod_auth_kerb to mod_auth_gssapi [(#282)](https://github.com/ManageIQ/manageiq-appliance-build/pull/282)
 
 ### Fixed
 - Update vSphere ova [(#278)](https://github.com/ManageIQ/manageiq-appliance-build/pull/278)
 - Increase filesystem sizes [(#232)](https://github.com/ManageIQ/manageiq-appliance-build/pull/232)
+- Set commit_sha just once [(#290)](https://github.com/ManageIQ/manageiq-appliance-build/pull/290)
 
 ### Removed
 - Remove non-existing "server-policy" yum group [(#268)](https://github.com/ManageIQ/manageiq-appliance-build/pull/268)
