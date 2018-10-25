@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
-## Hammer Beta-1
+## Hammer Beta-2
+
+### Added
+- Add vspk python module for Nuage [(#292)](https://github.com/ManageIQ/manageiq-appliance-build/pull/292)
+- Add pylxca python module for Lenovo [(#293)](https://github.com/ManageIQ/manageiq-appliance-build/pull/293)
+
+## Hammer Beta-1 - Released 2018-10-12
 
 ### Added
 - Add RPMs needed for Ansible playbooks and roles for oVirt [(#281)](https://github.com/ManageIQ/manageiq-appliance-build/pull/281)
