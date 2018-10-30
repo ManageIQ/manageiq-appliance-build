@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## Gaprindashvili-6
+
+### Added
+- Add post compression support [(#288)](https://github.com/ManageIQ/manageiq-appliance-build/pull/288)
+- Compress Azure, HyperV and EC2 images [(#289)](https://github.com/ManageIQ/manageiq-appliance-build/pull/289)
+
 ## Gaprindashvili-4
 
 ### Fixed
