@@ -82,6 +82,8 @@ export RAILS_USE_MEMORY_STORE="true"
 # needs to run *after* post/bundler
 <%= render_partial "post/ui_compile" %>
 
+<%= render_partial "post/rake_tasks" %>
+
 # appliance_root="/opt/manageiq/manageiq-appliance" -- in post/source_setup partial
 $appliance_root/manageiq-setup.sh
 
