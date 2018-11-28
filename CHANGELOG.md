@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
-## Hammer Beta-2
+## Hammer RC-2
+
+### Fixed
+- Add seeding ansible runner galaxy roles [(#298)](https://github.com/ManageIQ/manageiq-appliance-build/pull/298)
+
+## Hammer Beta-2 - Released 2018-10-29
 
 ### Added
 - Add vspk python module for Nuage [(#292)](https://github.com/ManageIQ/manageiq-appliance-build/pull/292)
