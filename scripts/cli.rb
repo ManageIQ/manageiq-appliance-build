@@ -1,5 +1,5 @@
 require 'rubygems'
-require 'trollop'
+require 'optimist'
 require_relative 'target'
 
 module Build
@@ -26,7 +26,7 @@ module Build
       upload_desc    = "Upload appliance builds to the website"
       only_desc      = "Build only specific image types.  Example: --only ovirt openstack.  Defaults to all images."
 
-      @options = Trollop.options(args) do
+      @options = Optimist.options(args) do
         banner "Usage: build.rb [options]"
         opt :appliance_ref, git_ref_desc,   :type => :string,  :short => "a", :default => DEFAULT_REF
         opt :appliance_url, appliance_desc, :type => :string,  :short => "A", :default => APPLIANCE_URL
@@ -55,10 +55,10 @@ module Build
       [:manageiq_ref, :appliance_ref, :build_ref, :sui_ref].each do |ref|
         options[ref] = (options[:reference] || options[ref]).to_s.strip
       end
-      Trollop.die(:manageiq_ref, git_ref_desc) if options[:manageiq_ref].to_s.empty?
+      Optimist.die(:manageiq_ref, git_ref_desc) if options[:manageiq_ref].to_s.empty?
 
       # 'release' build requires non DEFAULT_REF reference
-      Trollop.die(:manageiq_ref, git_ref_desc) if options[:type] == "release" && options[:manageiq_ref] == DEFAULT_REF
+      Optimist.die(:manageiq_ref, git_ref_desc) if options[:type] == "release" && options[:manageiq_ref] == DEFAULT_REF
 
       self
     end

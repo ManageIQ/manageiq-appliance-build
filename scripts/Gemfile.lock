@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     diff-lcs (1.2.5)
+    optimist (3.0.0)
     rake (10.4.2)
     rspec (3.3.0)
       rspec-core (~> 3.3.0)
@@ -16,15 +17,14 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.3.0)
     rspec-support (3.3.0)
-    trollop (2.1.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  optimist
   rake
   rspec
-  trollop
 
 BUNDLED WITH
    1.10.6
