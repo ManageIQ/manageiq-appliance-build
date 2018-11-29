@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## Hammer RC-2
 
-### Fixed
+### Added
 - Add seeding ansible runner galaxy roles [(#298)](https://github.com/ManageIQ/manageiq-appliance-build/pull/298)
 
 ## Hammer Beta-2 - Released 2018-10-29
