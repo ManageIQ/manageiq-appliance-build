@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem "trollop"
+gem "optimist"
 
 group :development, :test do
   gem "rake"

@@ -265,7 +265,7 @@ Below are instructions on installing and configuring a virtual machine to genera
   yum install zlib-devel
   yum install zip unzip
 
-  gem install trollop
+  gem install optimist
   gem install fog
   ```
 
