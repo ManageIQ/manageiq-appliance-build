@@ -1,8 +1,11 @@
 language: ruby
 rvm:
-- "2.0"
-- "2.1"
-- "2.2"
+- 2.4.5
+- 2.5.3
+matrix:
+  allow_failures:
+  - rvm: 2.5.3
+fast_finish: true
 sudo: false
 cache: bundler
 script: "rake spec"
