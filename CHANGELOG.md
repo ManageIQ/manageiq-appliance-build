@@ -5,15 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
-## Unreleased as of Sprint 97 ending 2018-10-22
+## Hammer-1
 
 ### Added
-- Add pylxca python module for Lenovo [(#293)](https://github.com/ManageIQ/manageiq-appliance-build/pull/293)
+- Add seeding ansible runner galaxy roles [(#298)](https://github.com/ManageIQ/manageiq-appliance-build/pull/298)
 - Add vspk python module for Nuage [(#292)](https://github.com/ManageIQ/manageiq-appliance-build/pull/292)
-
-## Hammer Beta-1 - Released 2018-10-12
-
-### Added
+- Add pylxca python module for Lenovo [(#293)](https://github.com/ManageIQ/manageiq-appliance-build/pull/293)
 - Add RPMs needed for Ansible playbooks and roles for oVirt [(#281)](https://github.com/ManageIQ/manageiq-appliance-build/pull/281)
 - Update appliances to ruby 2.4.4 [(#280)](https://github.com/ManageIQ/manageiq-appliance-build/pull/280)
 - Add support for OpenID-Connect [(#272)](https://github.com/ManageIQ/manageiq-appliance-build/pull/272)
@@ -30,6 +27,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Increase filesystem sizes [(#232)](https://github.com/ManageIQ/manageiq-appliance-build/pull/232)
 - Set commit_sha just once [(#290)](https://github.com/ManageIQ/manageiq-appliance-build/pull/290)
 - Update to node 8 [(#276)](https://github.com/ManageIQ/manageiq-appliance-build/pull/276)
+
+### Removed
+- Remove non-existing "server-policy" yum group [(#268)](https://github.com/ManageIQ/manageiq-appliance-build/pull/268)
 
 ## Gaprindashvili-4 - Released 2018-07-16
 
