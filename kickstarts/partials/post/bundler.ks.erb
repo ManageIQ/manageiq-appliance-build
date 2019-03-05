@@ -10,6 +10,9 @@ gem install bundler -v ">=1.8.4"
 
 ln -s ${APPLIANCE_SOURCE_DIRECTORY}/manageiq-appliance-dependencies.rb /var/www/miq/vmdb/bundler.d/manageiq-appliance-dependencies.rb
 
+# TEMPORARY FIX
+yum -y downgrade qpid-proton-c-0.19.0-1.el7.centos qpid-proton-c-devel-0.19.0-1.el7.centos
+
 pushd /var/www/miq/vmdb
   bundle install --with qpid_proton
   bundle clean --force
