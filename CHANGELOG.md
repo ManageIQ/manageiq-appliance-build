@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## Unreleased as of Sprint 107 ending 2019-03-18
+
+### Added
+- Change database paths and packages to PG 10 [(#306)](https://github.com/ManageIQ/manageiq-appliance-build/pull/306)
+
 ## Hammer-1
 
 ### Added
