@@ -6,7 +6,10 @@
 # We don't need any firmware files. We always run as a virtual appliance, and
 # none of the virtual hardware devices implement by any of the major hypervisor
 # vendors needs firmware.
--*-firmware
+# Since 'linux-firmware' is required by kernel, exclude everything but that.
+-aic*-firmware
+-ivtv-firmware
+-iwl*-firmware
 
 # Misc other things we do not need.
 -gcc-gfortran
