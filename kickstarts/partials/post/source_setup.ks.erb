@@ -20,8 +20,8 @@ ln -vs $vmdb_root $manageiq_root
 
 # Replace the log directory with the larger logvol
 mkdir -p /var/log/manageiq
-rm -rf $vmdb_root/log
-ln -vs /var/log/manageiq $vmdb_root/log
+touch /var/log/manageiq/.keep
+mount --bind /var/log/manageiq $vmdb_root/log
 
 <%= git_checkout(@sui_checkout, "$sui_root") %>
 
