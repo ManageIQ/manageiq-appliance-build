@@ -4,7 +4,7 @@ clearpart       --all --drives=vda
 
 part pv.1             --ondrive=vda                   --size=<%= @target == "azure" ? "37888" : "43008" %>
 part /boot            --ondrive=vda                   --size=1024  --fstype=xfs
-part /var/www/miq_tmp --ondrive=vda                   --size=10240 --fstype=xfs --fsoptions="rw,noatime,nobarrier"
+part /var/www/miq_tmp --ondrive=vda                   --size=10240 --fstype=xfs --fsoptions="rw,noatime"
 
 volgroup vg_system           --pesize=4096 pv.1
 logvol /                     --name=lv_os             --vgname=vg_system --size=10752 --fstype=xfs<%= " --grow" if @target == "azure" %>
