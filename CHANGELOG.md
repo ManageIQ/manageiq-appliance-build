@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## Unreleased as of Sprint 116 ending 2019-07-22
+
+### Added
+- Update to ruby 2.5.5 [(#327)](https://github.com/ManageIQ/manageiq-appliance-build/pull/327)
+
 ## Unreleased as of Sprint 115 ending 2019-07-08
 
 ### Added
