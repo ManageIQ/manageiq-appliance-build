@@ -4,16 +4,8 @@
 
 pushd /etc/yum.repos.d/
   wget https://copr.fedorainfracloud.org/coprs/manageiq/ManageIQ-Ivanchuk/repo/epel-7/manageiq-ManageIQ-Ivanchuk-epel-7.repo
+  wget https://releases.ansible.com/ansible-runner/ansible-runner.el7.repo
 popd
-
-cat > /etc/yum.repos.d/ansible-runner.repo <<EOF
-[ansible-runner]
-name=Ansible Runner
-baseurl=https://releases.ansible.com/ansible-runner/rpm/epel-7-x86_64/
-gpgcheck=1
-enabled=1
-gpgkey=https://releases.ansible.com/keys/RPM-GPG-KEY-ansible-release.pub
-EOF
 
 <% if @target == "gce" %>
 cat > /etc/yum.repos.d/google-cloud-compute.repo <<EOF
