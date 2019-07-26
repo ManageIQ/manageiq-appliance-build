@@ -5,31 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
-## Unreleased as of Sprint 116 ending 2019-07-22
+## Ivanchuk Beta1
 
 ### Added
 - Update to ruby 2.5.5 [(#327)](https://github.com/ManageIQ/manageiq-appliance-build/pull/327)
-
-## Unreleased as of Sprint 115 ending 2019-07-08
-
-### Added
 - Do not use unrecommended mount option nobarrier [(#325)](https://github.com/ManageIQ/manageiq-appliance-build/pull/325)
-
-## Unreleased as of Sprint 112 ending 2019-05-27
-
-### Added
 - Update to node 10 [(#320)](https://github.com/ManageIQ/manageiq-appliance-build/pull/320)
 - Remove pglogical package [(#317)](https://github.com/ManageIQ/manageiq-appliance-build/pull/317)
-
-## Unreleased as of Sprint 108 ending 2019-04-01
+- Change database paths and packages to PG 10 [(#306)](https://github.com/ManageIQ/manageiq-appliance-build/pull/306)
 
 ### Fixed
 - Exclude specific -firmware packages only [(#311)](https://github.com/ManageIQ/manageiq-appliance-build/pull/311)
-
-## Unreleased as of Sprint 107 ending 2019-03-18
-
-### Added
-- Change database paths and packages to PG 10 [(#306)](https://github.com/ManageIQ/manageiq-appliance-build/pull/306)
 
 ## Hammer-1 - Released 2019-01-14
 
