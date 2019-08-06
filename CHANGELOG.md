@@ -7,8 +7,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## Unreleased as of Sprint 117 ending 2019-08-05
 
-### Fixed
-- Do not forward /ui/service/console to the sui index.html [(#248)](https://github.com/ManageIQ/manageiq-appliance/pull/248)
+### Added
+- Update to ovirt 4.3 [(#334)](https://github.com/ManageIQ/manageiq-appliance-build/pull/334)
+- Download the ansible-runner repo file rather than hardcoding the contents [(#332)](https://github.com/ManageIQ/manageiq-appliance-build/pull/332)
 
 ## Ivanchuk Beta1 - Released 2019-07-29
 
