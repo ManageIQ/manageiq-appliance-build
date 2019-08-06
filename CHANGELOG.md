@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
-## Ivanchuk Beta1
+## Unreleased as of Sprint 117 ending 2019-08-05
+
+### Fixed
+- Do not forward /ui/service/console to the sui index.html [(#248)](https://github.com/ManageIQ/manageiq-appliance/pull/248)
+
+## Ivanchuk Beta1 - Released 2019-07-29
 
 ### Added
 - Update to ruby 2.5.5 [(#327)](https://github.com/ManageIQ/manageiq-appliance-build/pull/327)
