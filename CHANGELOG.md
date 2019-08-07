@@ -5,7 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
-## Ivanchuk Beta1
+## Ivanchuk-Beta2
+
+### Added
+- Download the ansible-runner repo file rather than hardcoding the contents [(#332)](https://github.com/ManageIQ/manageiq-appliance-build/pull/332)
+- Update to ovirt 4.3 [(#334)](https://github.com/ManageIQ/manageiq-appliance-build/pull/334)
+- Add libssh2-devel for rugged gem SSH support [(#336)](https://github.com/ManageIQ/manageiq-appliance-build/pull/336)
+
+### Fixed
+- Increase libvirt memory to 4GB to reduce build time [(#337)](https://github.com/ManageIQ/manageiq-appliance-build/pull/337)
+
+### Removed
+- Remove SCL related packages/repo - no longer used [(#333)](https://github.com/ManageIQ/manageiq-appliance-build/pull/333)
+
+## Ivanchuk Beta1 - Released 2019-07-29
 
 ### Added
 - Update to ruby 2.5.5 [(#327)](https://github.com/ManageIQ/manageiq-appliance-build/pull/327)
