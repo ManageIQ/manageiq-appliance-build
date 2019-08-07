@@ -7,6 +7,15 @@ pushd /etc/yum.repos.d/
   wget https://releases.ansible.com/ansible-runner/ansible-runner.el7.repo
 popd
 
+cat > /etc/yum.repos.d/ansible-tower.repo <<EOF
+[ansible-tower]
+name=Ansible Tower
+baseurl=https://releases.ansible.com/ansible-tower/rpm/epel-7-x86_64/
+enabled=1
+gpgcheck=1
+gpgkey=https://releases.ansible.com/keys/RPM-GPG-KEY-ansible-release.pub
+EOF
+
 <% if @target == "gce" %>
 cat > /etc/yum.repos.d/google-cloud-compute.repo <<EOF
 [google-cloud-compute]
