@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
-## Ivanchuk-Beta2
+## Unreleased as of Sprint 118 - 2019-08-19
+
+### Fixed
+- Install python modules required for embedded ansible credentials [(#341)](https://github.com/ManageIQ/manageiq-appliance-build/pull/341)
+
+## Ivanchuk-Beta2 - Released 2019-08-14
 
 ### Added
 - Download the ansible-runner repo file rather than hardcoding the contents [(#332)](https://github.com/ManageIQ/manageiq-appliance-build/pull/332)
