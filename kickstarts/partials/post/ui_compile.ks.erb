@@ -8,7 +8,8 @@ popd
 
 # Service UI
 pushd /opt/manageiq/manageiq-ui-service
-  yarn install --production
+  yarn install
+  yarn run available-languages
   yarn run build
 popd
 
