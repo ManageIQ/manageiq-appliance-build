@@ -55,5 +55,10 @@ module Build
       file = Productization.file_for(@build_base, "#{KS_PART_DIR}/#{filename}.ks.erb")
       ERB.new(File.read(file)).result(binding)
     end
+
+    def render_partial_if_exist(filename)
+      return unless File.file?(filename)
+      ERB.new(File.read(filename)).result(binding)
+    end
   end
 end
