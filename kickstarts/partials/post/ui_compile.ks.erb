@@ -1,8 +1,8 @@
+<%= render_partial_if_exist("/build/optional_kickstart_partials/npm_registry.ks.erb") %>
+
 npm install -g yarn
 
-<% if File.exist?(@build_base.join(KS_PART_DIR, "post", "npm_registry.ks.erb")) %>
-  <%= render_partial "post/npm_registry" %>
-<% end %>
+<%= render_partial_if_exist("/build/optional_kickstart_partials/npm_registry_yarn.ks.erb") %>
 
 pushd /var/www/miq/vmdb
   rake update:ui
@@ -20,6 +20,4 @@ popd
 # Clean cache, will be populated again when yarn runs next time
 yarn cache clean
 
-<% if File.exist?(@build_base.join(KS_PART_DIR, "post", "npm_registry_cleanup.ks.erb")) %>
-  <%= render_partial "post/npm_registry_cleanup" %>
-<% end %>
+<%= render_partial_if_exist("/build/optional_kickstart_partials/npm_registry_cleanup.ks.erb") %>
