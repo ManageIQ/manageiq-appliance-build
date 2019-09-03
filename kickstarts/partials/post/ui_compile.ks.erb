@@ -1,6 +1,8 @@
+<%= render_partial_if_exist("/build/optional_kickstart_partials/npm_registry.ks.erb") %>
+
 npm install -g yarn
 
-<%= render_partial_if_exist("/build/optional_kickstart_partials/npm_registry.ks.erb") %>
+<%= render_partial_if_exist("/build/optional_kickstart_partials/npm_registry_yarn.ks.erb") %>
 
 pushd /var/www/miq/vmdb
   rake update:ui
