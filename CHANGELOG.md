@@ -15,7 +15,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Update to ruby 2.5.5 [(#327)](https://github.com/ManageIQ/manageiq-appliance-build/pull/327)
 - Do not use unrecommended mount option nobarrier [(#325)](https://github.com/ManageIQ/manageiq-appliance-build/pull/325)
 - Update to node 10 [(#320)](https://github.com/ManageIQ/manageiq-appliance-build/pull/320)
-- Remove pglogical package [(#317)](https://github.com/ManageIQ/manageiq-appliance-build/pull/317)
+
+### Changed
 - Change database paths and packages to PG 10 [(#306)](https://github.com/ManageIQ/manageiq-appliance-build/pull/306)
 
 ### Fixed
@@ -24,6 +25,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Removed
 - Remove SCL related packages/repo - no longer used [(#333)](https://github.com/ManageIQ/manageiq-appliance-build/pull/333)
+- Remove pglogical package [(#317)](https://github.com/ManageIQ/manageiq-appliance-build/pull/317)
 
 ## Hammer-1 - Released 2019-01-14
 
