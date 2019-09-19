@@ -72,8 +72,8 @@ def verify_run(output)
   if output =~ /UUID: (.*)/
     Regexp.last_match[1]
   else
-    $log.error("Could not find UUID.")
-    exit 1
+    $log.error("Could not find UUID. Skipping...")
+    nil
   end
 end
 
@@ -125,6 +125,8 @@ Dir.chdir(IMGFAC_DIR) do
 
     output = `./imagefactory --config #{IMGFAC_CONF} base_image #{params} #{tdl_file}`
     uuid   = verify_run(output)
+    next if uuid.nil?
+
     $log.info "#{target} base_image complete, uuid: #{uuid}"
     temp_file_uuid = [uuid]
 
@@ -133,6 +135,8 @@ Dir.chdir(IMGFAC_DIR) do
 
     output = `./imagefactory --config #{IMGFAC_CONF} target_image #{params} --id #{uuid} #{imgfac_target}`
     uuid   = verify_run(output)
+    next if uuid.nil?
+
     $log.info "#{target} target_image #{imgfac_target} complete, uuid: #{uuid}"
     temp_file_uuid << uuid
 
@@ -142,6 +146,8 @@ Dir.chdir(IMGFAC_DIR) do
 
       output = `./imagefactory --config #{IMGFAC_CONF} target_image #{params} --id #{uuid} ova`
       uuid   = verify_run(output)
+      next if uuid.nil?
+
       $log.info "#{target} target_image ova complete, uuid: #{uuid}"
       temp_file_uuid << uuid
     end
@@ -189,6 +195,8 @@ Dir.chdir(IMGFAC_DIR) do
     # The final image is moved out of STORAGE_DIR at this point, delete all other files created during build
     temp_file_uuid.each { |file_uuid| FileUtils.rm_f(Dir.glob("#{STORAGE_DIR}/#{file_uuid}.*"), :verbose => true) }
   end
+
+  exit 1 if destination_directory.empty?
 
   passphrase_file = GPG_DIR.join("pass")
   public_key_file = GPG_DIR.join("manageiq_public.key")
