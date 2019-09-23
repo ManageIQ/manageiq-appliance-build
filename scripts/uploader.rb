@@ -1,3 +1,4 @@
+require 'active_support/all'
 require 'json'
 require 'rest-client'
 require 'yaml'
@@ -5,6 +6,8 @@ require 'yaml'
 module Build
   class Uploader
     attr_reader :container, :directory, :type
+
+    NIGHTLY_BUILD_RETENTION_TIME = 8.weeks
 
     def self.upload(directory, type)
       new(directory, type).run
@@ -35,10 +38,17 @@ module Build
         destination_url = url(destination_name)
         source_hash = Digest::MD5.file(source_name).hexdigest
 
+        upload_headers = headers.merge("ETag" => source_hash)
+        unless release?
+          image_date = destination_name.split("-")[-2]
+          delete_at  = (DateTime.parse(image_date) + NIGHTLY_BUILD_RETENTION_TIME)
+          upload_headers["X-Delete-At"] = delete_at.to_i.to_s
+        end
+
         RestClient.put(
           destination_url,
           File.read(source_name),
-          headers.merge("ETag" => source_hash)
+          upload_headers
         )
 
         puts "Uploading #{appliance} as #{destination_name}...complete: #{destination_url}"
