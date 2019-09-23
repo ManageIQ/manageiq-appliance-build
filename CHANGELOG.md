@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
-## Ivanchuk-1
+## Unreleased as of Srint 120 ending 2019-09-16
+
+### Fixed
+- Explicitly depend on enabled postfix package [(#349)](https://github.com/ManageIQ/manageiq-appliance-build/pull/349)
+
+## Ivanchuk-1 - Released 2019-09-18
 
 ### Added
 - Install python modules required for embedded ansible credentials [(#341)](https://github.com/ManageIQ/manageiq-appliance-build/pull/341)
