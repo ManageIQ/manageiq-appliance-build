@@ -23,7 +23,7 @@ Dir.chdir(BUILD_BASE) do
   Dir.chdir("manageiq_docs") do
     execute("git checkout #{DOCS_BRANCH}")
     execute("bundle install")
-    execute("bundle exec ascii_binder package")
+    execute("bundle exec asciibinder package")
   end
 end
 $log.info("Packaging docs...Complete")
