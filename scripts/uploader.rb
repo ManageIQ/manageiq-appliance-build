@@ -1,44 +1,104 @@
-require 'fog'
+require 'active_support/all'
+require 'json'
+require 'rest-client'
+require 'yaml'
 
 module Build
   class Uploader
-    attr_reader :directory, :type
+    attr_reader :container, :directory, :type
+
+    NIGHTLY_BUILD_RETENTION_TIME = 8.weeks
 
     def self.upload(directory, type)
       new(directory, type).run
     end
 
     def initialize(directory, type)
+      @container = "release"
       @directory = directory
       @type      = type
     end
 
-    def service
-      # Example config/upload.yml
-      # ---
-      # :provider: XYZ
-      # :rackspace_username: MyUser
-      # :rackspace_api_key: MyKey
-      # :rackspace_region: :my_region
-      @service ||= Fog::Storage.new(YAML.load_file("#{__dir__}/../config/upload.yml"))
-    end
-
-    def container
-      @container ||= service.directories.get("release")
-    end
-
     def run
+      login
+
       appliances = Dir.glob("#{directory}/manageiq*")
       appliances.each do |appliance|
         # Skip badly named appliances, missing git sha: manageiq-openstack-master-201407142000-.qc2
-        next unless appliance.match(/.+-[0-9]{12}-[0-9a-fA-F]+/)
-        key = uploaded_filename(appliance)
-        puts "Uploading #{appliance} as #{key}..."
-        upload_file = File.expand_path(appliance)
-        file = container.files.create :key => key, :body => File.open(upload_file, "r")
-        url = file.public_url if file
-        puts "Uploading #{appliance} as #{key}...complete: #{url}"
+        unless appliance.match?(/.+-[0-9]{12}-[0-9a-fA-F]+/)
+          puts "Skipping #{appliance}"
+          next
+        end
+
+        destination_name = uploaded_filename(appliance)
+        source_name = File.expand_path(appliance)
+
+        puts "Uploading #{appliance} as #{destination_name}..."
+
+        destination_url = url(destination_name)
+        source_hash = Digest::MD5.file(source_name).hexdigest
+
+        upload_headers = headers.merge("ETag" => source_hash)
+        unless release?
+          image_date = destination_name.split("-")[-2]
+          delete_at  = (DateTime.parse(image_date) + NIGHTLY_BUILD_RETENTION_TIME)
+          upload_headers["X-Delete-At"] = delete_at.to_i.to_s
+        end
+
+        RestClient.put(
+          destination_url,
+          File.read(source_name),
+          upload_headers
+        )
+
+        puts "Uploading #{appliance} as #{destination_name}...complete: #{destination_url}"
       end
+    end
+
+    private
+
+    def release?
+      type == "release"
+    end
+
+    def config
+      @config ||= YAML.load_file("#{__dir__}/../config/upload.yml")
+    end
+
+    def login
+      @login ||= begin
+        login_response = RestClient.post(
+          "https://identity.api.rackspacecloud.com/v2.0/tokens",
+          {
+            "auth" => {
+              "RAX-KSKEY:apiKeyCredentials" => {
+                "username" => config[:rackspace_username],
+                "apiKey"   => config[:rackspace_api_key]
+              }
+            }
+          }.to_json,
+          :content_type => :json
+        )
+
+        JSON.parse(login_response.body)
+      end
+    end
+
+    def headers
+      @headers ||= {
+        "X-Auth-Token"          => login["access"]["token"]["id"],
+        "X-Detect-Content-Type" => "True",
+      }.freeze
+    end
+
+    def url(file = nil)
+      parts = [public_url, container]
+      parts << URI.encode(file) if file
+      parts.join("/")
+    end
+
+    def public_url
+      @public_url ||= login["access"]["serviceCatalog"].detect { |i| i["name"] == "cloudFiles" }["endpoints"].detect { |i| i["region"] == config[:rackspace_region].to_s.upcase }["publicURL"]
     end
 
     # prerelease: manageiq-ovirt-anand-1-rc1.ova
@@ -50,12 +110,7 @@ module Build
     # a nightly:        manageiq-${platform}-master-${YYYYMMDD}-${sha1}.${ext}
     #                   manageiq-ovirt-master-20140613-8d9d1b8.ova
     def uploaded_filename(appliance_name)
-      filename =
-        if type == "release"
-          release_filename(appliance_name)
-        else
-          nightly_filename(appliance_name)
-        end
+      filename = release? ? release_filename(appliance_name) : nightly_filename(appliance_name)
       File.basename(filename)
     end
 
