@@ -132,7 +132,7 @@ Dir.chdir(IMGFAC_DIR) do
     $log.info "Running #{target} target_image #{imgfac_target} using parameters: #{params}"
 
     output = `./imagefactory --config #{IMGFAC_CONF} target_image #{params} --id #{uuid} #{imgfac_target}`
-    uuid = target_image_uuid = verify_run(output)
+    uuid   = verify_run(output)
     $log.info "#{target} target_image #{imgfac_target} complete, uuid: #{uuid}"
     temp_file_uuid << uuid
 
@@ -160,6 +160,10 @@ Dir.chdir(IMGFAC_DIR) do
         $log.info "Compressing #{file_name} to #{destination}"
         $log.info `gzip -c #{file_name} > #{destination}`
         FileUtils.rm_f(file_name)
+      when 'qemu-qcow2'
+        $log.info "Compressing and converting #{file_name} to #{destination}"
+        $log.info `qemu-img convert -f qcow2 -O qcow2 -o compat=0.10 -c #{file_name} #{destination}`
+        FileUtils.rm_f(file_name)
       when 'zip'
         destination = destination.sub_ext('.zip')
         $log.info "Compressing #{file_name} to #{destination}"
@@ -178,19 +182,6 @@ Dir.chdir(IMGFAC_DIR) do
         $log.info "Creating File server #{FILE_SERVER} directory #{file_rdu_dir} ..."
         $log.info `ssh #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER} mkdir -p #{file_rdu_dir}`
         $log.info "Copying file #{destination} to #{FILE_SERVER}:#{file_rdu_dir}/ ..."
-        $log.info `scp #{destination} #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER}:#{file_rdu_dir}`
-      end
-    end
-
-    # Ovirt/RHV 4.1 doesn't support ova import, create both qcow2 and ova
-    if target.name == "ovirt"
-      file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.qc2"
-      destination = destination_directory.join(file_name)
-      source = STORAGE_DIR.join("#{target_image_uuid}.qc2")
-      $log.info "Compress qcow image, #{target_image_uuid}.body"
-      $log.info `qemu-img convert -f qcow2 -O qcow2 -o compat=0.10 -c #{STORAGE_DIR.join("#{target_image_uuid}.body")} #{source}`
-      $log.info `mv #{source} #{destination}`
-      if cli_options[:fileshare] && FILE_SERVER && File.size(destination)
         $log.info `scp #{destination} #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER}:#{file_rdu_dir}`
       end
     end
