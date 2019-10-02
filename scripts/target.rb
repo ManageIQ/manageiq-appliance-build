@@ -4,7 +4,7 @@ module Build
 
     TYPES = {
       'vsphere'   => ImagefactoryMetadata.new('vsphere', 'vsphere', 'ova', nil),
-      'ovirt'     => ImagefactoryMetadata.new('rhevm', 'rhevm', 'ova', nil),
+      'ovirt'     => ImagefactoryMetadata.new('rhevm', nil, 'qc2', 'qemu-qcow2'),
       'openstack' => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2', nil),
       'hyperv'    => ImagefactoryMetadata.new('hyperv', nil, 'vhd', 'zip'),
       'azure'     => ImagefactoryMetadata.new('hyperv', nil, 'vhd', 'zip'),
