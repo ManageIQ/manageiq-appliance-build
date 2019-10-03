@@ -39,7 +39,7 @@ module Build
         source_hash = Digest::MD5.file(source_name).hexdigest
 
         upload_headers = headers.merge("ETag" => source_hash)
-        unless release?
+        if nightly?
           image_date = destination_name.split("-")[-2]
           delete_at  = (DateTime.parse(image_date) + NIGHTLY_BUILD_RETENTION_TIME)
           upload_headers["X-Delete-At"] = delete_at.to_i.to_s
@@ -56,6 +56,10 @@ module Build
     end
 
     private
+
+    def nightly?
+      !release?
+    end
 
     def release?
       type == "release"
