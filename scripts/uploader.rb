@@ -140,7 +140,7 @@ module Build
 
     def devel_filename(appliance_name)
       name = appliance_name.split("-")
-      (name[0..1] << "devel").join("-") + File.extname(appliance_name)
+      (name[0..1] << "devel").join("-") + name[-1].sub(/\h*/, '')
     end
 
     def nightly_filename(appliance_name)
