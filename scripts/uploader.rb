@@ -77,7 +77,7 @@ module Build
     end
 
     def nightly?
-      !release?
+      type == "nightly"
     end
 
     def release?
