@@ -52,10 +52,29 @@ module Build
         )
 
         puts "Uploading #{appliance} as #{destination_name}...complete: #{destination_url}"
+
+        next unless master?(appliance)
+
+        if nightly?
+          devel = devel_filename(destination_name)
+          puts "Copying   #{appliance} to #{devel}..."
+
+          RestClient::Request.execute(
+            :method  => :copy,
+            :url     => destination_url,
+            :headers => token_headers.merge("Destination" => "/#{container}/#{devel}")
+          )
+
+          puts "Copying   #{appliance} to #{devel}...complete"
+        end
       end
     end
 
     private
+
+    def master?(filename)
+      filename.include?("-master-")
+    end
 
     def nightly?
       !release?
@@ -117,6 +136,11 @@ module Build
     def uploaded_filename(appliance_name)
       filename = release? ? release_filename(appliance_name) : nightly_filename(appliance_name)
       File.basename(filename)
+    end
+
+    def devel_filename(appliance_name)
+      name = appliance_name.split("-")
+      (name[0..1] << "devel").join("-") + File.extname(appliance_name)
     end
 
     def nightly_filename(appliance_name)
