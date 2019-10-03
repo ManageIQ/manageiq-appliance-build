@@ -89,10 +89,11 @@ module Build
     end
 
     def headers
-      @headers ||= {
-        "X-Auth-Token"          => login["access"]["token"]["id"],
-        "X-Detect-Content-Type" => "True",
-      }.freeze
+      @headers ||= token_headers.merge("X-Detect-Content-Type" => "True").freeze
+    end
+
+    def token_headers
+      @token_headers ||= {"X-Auth-Token" => login["access"]["token"]["id"]}.freeze
     end
 
     def url(file = nil)
