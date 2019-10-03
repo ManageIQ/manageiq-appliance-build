@@ -77,7 +77,7 @@ module Build
     end
 
     def nightly?
-      !release?
+      type == "nightly"
     end
 
     def release?
@@ -140,7 +140,8 @@ module Build
 
     def devel_filename(appliance_name)
       name = appliance_name.split("-")
-      (name[0..1] << "devel").join("-") + File.extname(appliance_name)
+      extension = ".#{appliance_name.split(".", 2).last}"
+      (name[0..1] << "devel").join("-") + extension
     end
 
     def nightly_filename(appliance_name)
