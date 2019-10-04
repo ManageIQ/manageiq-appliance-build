@@ -10,6 +10,9 @@ pushd /var/www/miq/vmdb
   rake evm:compile_sti_loader
 popd
 
+# Workaround for https://github.com/yarnpkg/yarn/issues/7584
+yarn cache clean
+
 # Service UI
 pushd /opt/manageiq/manageiq-ui-service
   yarn install
