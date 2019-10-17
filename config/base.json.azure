@@ -1,4 +1,0 @@
-{
-  "generate_icicle": false,
-  "oz_overrides" : "{'libvirt': {'memory': 6144}}"
-}

@@ -110,7 +110,6 @@ Dir.chdir(IMGFAC_DIR) do
     $log.info "Building for #{target}:"
 
     tdl_name = target.name == "azure" ? "base_azure.tdl" : "base.tdl"
-    base_file   = CFG_DIR.join("base.json.azure") if target.name == "azure"
     tdl_file = CFG_DIR.join(tdl_name)
     $log.info "Using inputs: puddle: #{puddle}, build_label: #{build_label}"
     $log.info "              tdl_file: #{tdl_file}, ova_file: #{ova_file}."
