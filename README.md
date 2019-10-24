@@ -7,194 +7,107 @@
 
 This repository contains code to build ManageIQ appliances in the various virtualization formats.
 
-It depends on the following git repositories:
-
-* [ManageIQ](https://github.com/ManageIQ/manageiq) - ManageIQ application code
-* [ManageIQ-Appliance](https://github.com/ManageIQ/manageiq-appliance) - System files for ManageIQ appliances
-
-Below are instructions on installing and configuring a virtual machine to generate appliance images.
+Below are instructions on configuring a dedicated build machine to generate appliance images.
 
 # Installation
 
   **Note: All instructions are as root unless specified**
 
-## Setup CentOS 7.2 in a new virtual machine
+## Setup CentOS 8 build machine
 
-  * CentOS-7-x86_64-DVD-1511-01.iso (attached to vm)
-  * Vm configuration:
-    * 8GB Ram
-    * HD 80GB Minimum - 200GB Recommended
+  * RAM: 12GB minimum
+  * HD: 80GB Minimum - 200GB Recommended
+
+  * If setting up as a VM:
     * NAT or Bridged
     * Enable Intel Hardware Virtualization VT-x/EPT
     * Time Sync with Host
+    * Install appropriate guest agent (`rhevm-guest-agent` for RHV, `open-vm-tools` for vSphere)
 
   * Create a personal userid with admin privileges.
-  * Enable Network in UI.
-  * Default enable network upon boot.
-
-  `/etc/sysconfig/network-scripts/ifcfg-eno* equiv eth0 file, ONBOOT=yes`
-
+  * Enable Network and set to start on boot.
   * Add /root/.ssh/authorized_key with id_rsa.pub if desired to ssh to root without password.
 
-## Add yum repositories
+  * Install Updates and reboot
+
+## Add repositories
 
   * Add EPEL repo
+    ```
+    yum install epel-release
+    ```
 
-    * Create: `/etc/yum.repos.d/epel.repo`
+  * Enable CentOS PowerTools repo
+    ```
+    yum config-manager --set-enabled PowerTools
+    ```
 
-      ```
-      [epel]
-      name=CentOS-$releasever - Epel
-      baseurl=http://dl.fedoraproject.org/pub/epel/$releasever/$basearch/
-      enabled=1
-      gpgcheck=0
-      ```
-  * Add repo to support building openstack images
-
-    * Create: `/etc/yum.repos.d/openstack-kilo.repo`
-
-      ```
-      [openstack-kilo]
-      name=CentOS-$releasever - openstack-kilo
-      baseurl=http://centos.mirror.constant.com/7/cloud/x86_64/openstack-kilo/
-      enabled=1
-      gpgcheck=0
-      ```
-
-## Install yum packages and updates
-
-  * Install Updates from UI
-  * Reboot
-  * `yum install git`
-  * As personal user-id (NOT NEEEDED?  We use https to clone, pull)
-    * Create ssh-keygen for Github (optional).
-    * Add ssh-key to personal user-id on Github settings.
+  * Add ManageIQ Build repo
+    ```
+    pushd /etc/yum.repos.d/
+      wget https://copr.fedorainfracloud.org/coprs/manageiq/ManageIQ-Build/repo/epel-8/manageiq-ManageIQ-Build-epel-8.repo
+    popd
+    ```
 
 ## Setup the /build directory
 
   * Create the directories:
-
     ```
     /build
       /fileshare
-      /imagefactory
       /images
       /isos
-      /kickstarts
       /logs
-      /references
       /storage
     ```
 
   * Clone the build scripts and setup symlinks
-
     ```
     cd /build
     git clone https://www.github.com/ManageIQ/manageiq-appliance-build.git
-    ln -s manageiq-appliance-build/bin     bin
-    ln -s manageiq-appliance-build/scripts scripts
-      ```
+    ln -s manageiq-appliance-build/bin bin
+    ```
 
 ## Setup Imagefactory:
 
-  * Clone imagefactory as /build/imagefactory (requires git tag 0adeb22
-    or later for EC2 support):
-
+  * Install dependencies:
+    ```
+    yum install @development
+    yum install python3-pycurl python3-libguestfs python3-zope-interface python3-libxml2 python3-httplib2 python3-libs oz python3-m2crypto
+    pip3 install oauth2 cherrypy boto monotinic
+    ```
+  
+  * Clone imagefactory as /build/imagefactory
     ```
     cd /build
     git clone https://www.github.com/redhat-imaging/imagefactory.git
     ```
 
-  * Install dependencies:
-
+  * Set up imagefactory plugins
     ```
-    yum install libguestfs
-    yum install pycurl
-    yum install python-zope-interface
-    yum install libxml2
-    yum install python-httplib2
-    yum install python-paste-deploy
-    yum install python-oauth2
-    yum install python-pygments
-    yum install python-boto
-    yum install oz
-    ```
-  
-## Run imagefactory_dev_setup.sh
-
-  * Use /build/bin/setup_imagefactory.sh or manually create with the following and run:
-
-    ```
-    # cd /build/imagefactory
-    # python ./setup.py sdist install
-    # cd imagefactory-plugins
-    # python ./setup.py sdist install
-
-    # mkdir /etc/imagefactory/plugins.d
-    # cd /etc/imagefactory/plugins.d
-    # for PLUGIN in `ls /usr/lib/python2.7/site-packages/imagefactory_plugins |grep -v .py`
-    do
-      ln -s -v /usr/lib/python2.7/site-packages/imagefactory_plugins/$PLUGIN/$PLUGIN.info ./$PLUGIN.info
-    done
-
-    # cd /build/imagefactory
-    # scripts/imagefactory_dev_setup.sh
+    cd /build/imagefactory/scripts
+    (set PYTHON_PATH to "/usr/lib/python3.6" in imagefactory_dev_setup.sh)
+    ./imagefactory_dev_setup.sh
     ```
 
-  * Note that there's a bug in imagefactory where it doesn't install the
-    HyperV and GCE plugins. Until that is fixed, use the following commands to
-    install them.
-
-    # ln -s /build/imagefactory/imagefactory_plugins/HyperV/HyperV.info /etc/imagefactory/plugins.d
-    # ln -s /build/imagefactory/imagefactory_plugins/GCE/GCE.info /etc/imagefactory/plugins.d
-
-## Setup for vSphere plugin.
-
-  * Install dependencies:
-
+  * Set environment variable for libguestfs
     ```
-    yum install python-psphere
-    yum install VMDKstream
+    echo "export LIBGUESTFS_BACKEND=direct" >> ~/.bash_profile
     ```
-
-  * Create /root/.psphere/config.yaml
-
-    ```
-    general:
-        server: 127.0.0.1
-        username: foo
-        password: bar
-        template_dir: ~/.psphere/templates/
-    logging:
-        destination: ~/.psphere/psphere.log
-        level: DEBUG # DEBUG, INFO, etc
-    ```
-
-## Setup for oVirt plugin.
-
-  `yum install ovirt-engine-sdk-python`
-
-## Setup for OpenStack images
-
-  `yum install python-glanceclient`
 
 ## Setup KVM/Virt
 
   * Install packages
-
     ```
-    yum install kvm qemu-kvm qemu-kvm-tools libvirt libvirt-python libguestfs-tools virt-install
-    yum install virt-manager virt-viewer
+    yum install qemu-kvm libvirt libguestfs-tools virt-install virt-manager virt-viewer
     ```
   * Enable libvirtd
-
     ```
     systemctl enable libvirtd
     systemctl start libvirtd
     ```
 
   * Package information:
-
     ```
     qemu-kvm        = QEMU emulator
     qemu-img        = QEMU disk image manager
@@ -205,39 +118,18 @@ Below are instructions on installing and configuring a virtual machine to genera
     virt-viewer     = Graphical console
     ```
 
-## Install guest-agent if running as a RHEVM vm
-
-  `yum install rhevm-guest-agent`
-
-## Setup for Hyper-V Image builds
-
-  * Add repo for installing newer kvm-common imaging packages:
-
-    * Create: `/etc/yum.repos.d/kvm-common.repo`
-
-      ```
-      [kvm-common]
-      name=CentOS-$releasever - kvm-common
-      baseurl=http://mirror.centos.org/centos/7/virt/x86_64/kvm-common/
-      enabled=1
-      gpgcheck=0
-      ```
-
-  * Update the following package:
-
-    * yum install qemu-img-ev
-
 ## Configure virtualization hardware
 
-  * In hosting's VM's .vmx file:
-    ```
-    monitor.virtual_mmu = "hardware"
-    monitor.virtual_exec = "hardware"
-    vhv.enable = "TRUE"
-    ```
+  * Enable virtualization
+
+    * For vSphere: in hosting's VM's .vmx file:
+      ```
+      monitor.virtual_mmu = "hardware"
+      monitor.virtual_exec = "hardware"
+      vhv.enable = "TRUE"
+      ```
 
   * Start imagefactory vm and verify hardware:
-
     ```
     egrep '(vmx|svm)' /proc/cpuinfo
 
@@ -247,7 +139,6 @@ Below are instructions on installing and configuring a virtual machine to genera
     ```
 
   * To manually load kernel modules:
-
     ```
     modprobe kvm
     modprobe kvm_intel
@@ -260,36 +151,46 @@ Below are instructions on installing and configuring a virtual machine to genera
 ## Setup build environment
 
   ```
-  yum install ruby
-  yum install ruby-devel
-  yum install zlib-devel
-  yum install zip unzip
-
-  pushd scripts/; bundle install; popd
+  yum install ruby ruby-devel
+  gem install bundler
+  cd /build/manageiq-appliance-build/scripts
+  bundle install
   ```
 
+## Setup and start VNC Server/Viewer
 
-
-
-## Setup VNC Server and Viewer
-
-  ```
-  yum install tigervnc tigervnc-server*
-  cp /lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@:1.service
-  vi /etc/systemd/system/vncserver@:1.service
-    replace: <USER> in ExecStart and PIDFile lines with user to allow vnc server
-
-  systemctl daemon-reload
-  ```
-
-  * as `<USER>`
-    * `vncpasswd`
-
-  * as root again
-
+  * Install GNOME Desktop
     ```
-    systemctl enable vncserver@:1.service
-    systemctl start vncserver@:1.service
+    yum groupinstall "Server with GUI"
+    systemctl set-default graphical
+    reboot
+    ```
+    Change to "WaylandEnable=false" in "/etc/gdm/custom.conf"
+
+  * Install VNC and configure as user service
+    ```
+    yum install tigervnc tigervnc-server tigervnc-server-module
+    loginctl enable-linger
+    ```
+
+  * Set VNC password as `<USER>`
+    ```
+    su - <USER>
+    vncpasswd
+    exit
+    ```
+
+  * Start VNC server
+    ```
+    mkdir -p ~/.config/systemd/user
+    cp /usr/lib/systemd/user/vncserver@.service ~/.config/systemd/user/
+    systemctl --user daemon-reload
+    systemctl --user enable vncserver@:<display>.service --now
+      replace: <display> with a display number (e.g. 1)
+    ```
+
+  * Set firewall
+    ```
     firewall-cmd --permanent --add-service vnc-server
     systemctl restart firewalld.service
     ```
