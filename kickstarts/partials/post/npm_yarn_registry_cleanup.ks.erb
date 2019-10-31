@@ -1,0 +1,14 @@
+npm config delete registry
+npm config delete strict-ssl
+yarn config delete registry
+yarn config delete strict-ssl
+
+# Delete yarn.lock files generated
+find $(gem env gemdir)/bundler -name yarn.lock -exec rm -f {} +
+find ${repos_root} -name yarn.lock -exec rm -f {} +
+
+# Put back pre-existing yarn.lock
+for lock_file in ${yarn_lock_files}
+do
+  mv ${lock_file}.orig ${lock_file}
+done

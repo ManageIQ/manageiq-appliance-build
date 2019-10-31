@@ -1,8 +1,8 @@
-<%= render_partial_if_exist("/build/optional_kickstart_partials/npm_registry.ks.erb") %>
+<%= render_partial("post/npm_registry_setup") if ENV['NPM_REGISTRY_OVERRIDE'] %>
 
 npm install -g bower yarn
 
-<%= render_partial_if_exist("/build/optional_kickstart_partials/npm_registry_yarn.ks.erb") %>
+<%= render_partial("post/yarn_registry_setup") if ENV['NPM_REGISTRY_OVERRIDE'] %>
 
 pushd /var/www/miq/vmdb
   rake update:ui
@@ -20,4 +20,4 @@ popd
 # Clean cache, will be populated again when yarn runs next time
 yarn cache clean
 
-<%= render_partial_if_exist("/build/optional_kickstart_partials/npm_registry_cleanup.ks.erb") %>
+<%= render_partial("post/npm_yarn_registry_cleanup") if ENV['NPM_REGISTRY_RESET'] == "true" %>
