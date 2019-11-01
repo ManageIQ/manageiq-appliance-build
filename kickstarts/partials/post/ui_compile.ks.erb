@@ -2,6 +2,10 @@
 
 npm install -g yarn
 
+yarn_cache_dir=`yarn cache dir`
+mkdir -p ${yarn_cache_dir}
+mount -t tmpfs tmpfs ${yarn_cache_dir}
+
 pushd /var/www/miq/vmdb
   ui_plugin_repos=`rake update:print_engines | grep path: | cut -d: -f2`
 popd
@@ -36,6 +40,6 @@ pushd /opt/manageiq/manageiq-ui-service
 popd
 
 # Clean cache, will be populated again when yarn runs next time
-yarn cache clean
+umount ${yarn_cache_dir}
 
 <%= render_partial("post/npm_yarn_registry_cleanup") if ENV['NPM_REGISTRY_RESET'] == "true" %>
