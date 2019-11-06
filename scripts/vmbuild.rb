@@ -10,6 +10,7 @@ require_relative 'cli'
 require_relative 'uploader'
 require_relative 'target'
 require_relative 'target_disk_converter'
+require_relative 'vagrant_box'
 
 $log = Logger.new(STDOUT)
 
@@ -234,5 +235,8 @@ if cli_options[:type] == "nightly" || cli_options[:type] == "release"
     $log.info("Created release ref link: #{result}")
   end
 
-  Build::Uploader.upload(destination_directory, cli_options[:type], cli_options[:delete]) if cli_options[:upload]
+  if cli_options[:upload]
+    Build::Uploader.upload(destination_directory, cli_options[:type], cli_options[:delete])
+    Build::VagrantBox.create(cli_options[:reference]) if cli_options[:type] == "release" && targets.include?("vagrant")
+  end
 end
