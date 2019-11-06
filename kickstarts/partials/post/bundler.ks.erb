@@ -18,3 +18,28 @@ popd
 # Install mime-types outside of bundle, needed by 'rest-client' gem when run under irb/automate
 # Run this command after 'bundle clean' so it won't be removed by 'bundle clean'
 gem install mime-types -v 2.6.1
+
+## Gem clean up
+# Unnecessary gem cache, will be rebuilt as needed
+rm -rf $(gem env gemdir)/cache/*
+
+# Vendored libgit2 shouldn't be needed once the gem is compiled
+rm -rf $(gem env gemdir)/bundler/gems/rugged-*/vendor
+
+# *.o files shouldn't be needed once gems are compiled
+find $(gem env gemdir)/gems/**/ -name *.o -delete
+find $(gem env gemdir)/bundler/gems/**/ -name *.o -delete
+
+# Remove tests that are shipped with gems
+find $(gem env gemdir)/gems/**/ -maxdepth 2 -name spec -type d -exec rm -rf {} +
+find $(gem env gemdir)/gems/**/ -maxdepth 2 -name test -type d -exec rm -rf {} +
+find $(gem env gemdir)/bundler/gems/**/ -maxdepth 2 -name spec -type d -exec rm -rf {} +
+find $(gem env gemdir)/bundler/gems/**/ -maxdepth 2 -name test -type d -exec rm -rf {} +
+rm -f $(gem env gemdir)/gems/manageiq-smartstate-*/lib/metadata/linux/test/Packages
+
+# Git directories are not needed, a new gem directory is created on update
+find $(gem env gemdir)/bundler/gems/**/ -maxdepth 2 -name .git -type d -exec rm -rf {} +
+
+# Remove gem docs directories
+find $(gem env gemdir)/gems/**/ -maxdepth 2 -name docs -type d -exec rm -rf {} +
+find $(gem env gemdir)/bundler/gems/**/ -maxdepth 2 -name docs -type d -exec rm -rf {} +
