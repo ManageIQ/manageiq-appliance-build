@@ -30,7 +30,7 @@ device mptspi
 
 reboot
 
-%packages
+%packages --excludedocs
 @base --nodefaults
 @development tools
 
@@ -49,6 +49,9 @@ set -x
 
 # Show timestamps on log entries for build performance tuning.
 PS4="+ [\t] "
+
+# Don't install doc
+yum-config-manager --setopt=tsflags=nodocs --save > /dev/null
 
 # Mount tmpfs on /tmp. This will remove about 200MiB of bower and bundler
 # intermediate files from the image. And do the same for /var/cache which saves
@@ -134,6 +137,9 @@ drivers="mptbase mptscsih mptspi"
 
 # make sure there is a new line at the end of sshd_config
 echo "" >> /etc/ssh/sshd_config
+
+# Remove packages not needed
+yum -C -y --noplugins remove linux-firmware doxygen
 
 # Clean the logs
 rm -vf "$vmdb_root"/log/*.log
