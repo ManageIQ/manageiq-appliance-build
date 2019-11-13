@@ -1,14 +1,11 @@
 yarn config set registry <%= ENV['NPM_REGISTRY_OVERRIDE'] %>
 yarn config set strict-ssl false
 
-# Replace registry in yarn.lock
-yarn_lock_files=""
-for root_dir in "${repos_root} $(gem env gemdir)/bundler"
+# Replace registry in existing yarn.lock
+for repo in ${ui_plugin_repos} ${sui_root}
 do
-  for lock_file in `find $root_dir -name yarn.lock`
-  do
-    yarn_lock_files+="${lock_file} "
-    cp ${lock_file} ${lock_file}.orig
-    sed -i 's$https\?://registry.\(npmjs\|yarnpkg\).\(org\|com\)$<%= ENV['NPM_REGISTRY_OVERRIDE'] %>$g' ${lock_file}
-  done
+  lock_file="${repo}/yarn.lock"
+  if [ -f "${lock_file}" ]; then
+    sed -i 's#https\?://registry.\(npmjs\|yarnpkg\).\(org\|com\)#<%= ENV['NPM_REGISTRY_OVERRIDE'] %>#g' ${lock_file}
+  fi
 done

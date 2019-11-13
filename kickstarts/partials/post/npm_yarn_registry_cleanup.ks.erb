@@ -3,12 +3,9 @@ npm config delete strict-ssl
 yarn config delete registry
 yarn config delete strict-ssl
 
-# Delete yarn.lock files generated
-find $(gem env gemdir)/bundler -name yarn.lock -exec rm -f {} +
-find ${repos_root} -name yarn.lock -exec rm -f {} +
-
-# Put back pre-existing yarn.lock
-for lock_file in ${yarn_lock_files}
+# Replace registry in yarn.lock
+default_yarn_registry=`yarn config get registry`
+for repo in ${ui_plugin_repos} ${sui_root}
 do
-  mv ${lock_file}.orig ${lock_file}
+  sed -i "s#<%= ENV['NPM_REGISTRY_OVERRIDE'] %>#${default_yarn_registry}#g" ${repo}/yarn.lock
 done
