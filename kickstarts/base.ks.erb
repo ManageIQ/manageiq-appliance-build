@@ -126,7 +126,7 @@ drivers="mptspi vmw_pvscsi"
 <% else %>
 drivers="mptbase mptscsih mptspi"
 <% end %>
-/sbin/dracut --force --add-drivers "$drivers" $ramfsfile $kversion
+dracut --force --add-drivers "$drivers" $ramfsfile $kversion
 
 <%= render_partial "post/ec2" if @target == "ec2" %>
 <%= render_partial "post/azure" if @target == "azure" %>
