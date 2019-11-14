@@ -1,7 +1,7 @@
 <% if @target == "ec2" || @target == "azure" || @target == "openstack" %>
-network --onboot yes --device eth0 --bootproto dhcp --noipv6
+network --bootproto=dhcp --device=link --activate --onboot=on --noipv6
 <% elsif @target == "gce" %>
-network --onboot yes --device eth0 --bootproto dhcp --noipv6 --mtu=1460
+network --bootproto=dhcp --device=link --activate --onboot=on --noipv6 --mtu=1460
 <% else %>
-network --onboot yes --device eth0 --bootproto dhcp
+network --bootproto=dhcp --device=link --activate --onboot=on
 <% end %>
