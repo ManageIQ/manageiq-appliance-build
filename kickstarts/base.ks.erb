@@ -66,6 +66,9 @@ unset DEBUG
 # See: https://github.com/ManageIQ/manageiq/pull/6751
 export RAILS_USE_MEMORY_STORE="true"
 
+# ensure /usr/local/bin is on the path (for ruby and virtualenv)
+export PATH=$PATH:/usr/local/bin
+
 <%= render_partial "post/firewalld" %>
 
 <%= render_partial "post/source_setup" %>
