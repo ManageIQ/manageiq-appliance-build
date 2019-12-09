@@ -118,6 +118,20 @@ Below are instructions on configuring a dedicated build machine to generate appl
     virt-viewer     = Graphical console
     ```
 
+## Setup docker for container build
+
+  * Install docker and start service
+    ```
+    yum config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+    yum install docker-ce --nobest
+    systemctl enable --now docker
+    ```
+
+  * Login to a registry (for pushing image)
+    ```
+    docker login --username <user> <server> (e.g. docker.io)
+    ```
+
 ## Configure virtualization hardware
 
   * Enable virtualization
