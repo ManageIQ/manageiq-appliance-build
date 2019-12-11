@@ -33,11 +33,11 @@ then
 
   time ruby ${BUILD_DIR}/scripts/vmbuild.rb $BUILD_OPTIONS 2>&1 | tee ${LOG_FILE}
   time ruby ${BUILD_DIR}/scripts/docbuild.rb 2>&1 | tee ${DOCS_LOG_FILE}
-  time bin/container-build.sh ${BRANCH} 2>&1 | tee ${CONTAINER_LOG_FILE}
+  time ${BUILD_DIR}/bin/container-build.sh ${BRANCH} 2>&1 | tee ${CONTAINER_LOG_FILE}
 else
   nohup time ruby ${BUILD_DIR}/scripts/vmbuild.rb $BUILD_OPTIONS >${LOG_FILE} 2>&1 &
   nohup time ruby ${BUILD_DIR}/scripts/docbuild.rb >${DOCS_LOG_FILE} 2>&1 &
-  nohup time bin/container-build.sh ${BRANCH} >${CONTAINER_LOG_FILE} 2>&1 &
+  nohup time ${BUILD_DIR}/bin/container-build.sh ${BRANCH} >${CONTAINER_LOG_FILE} 2>&1 &
 
   echo "Nightly Build kicked off, Log @ ${LOG_FILE} ..."
 fi

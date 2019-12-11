@@ -16,5 +16,5 @@ nohup time ruby ${BUILD_DIR}/scripts/vmbuild.rb --type release --upload --refere
 echo "${1} release build kicked off, see log @ $log_file ..."
 
 container_log_file="/build/logs/${1}_container.log"
-nohup time bin/container-build.sh ${1} > $container_log_file 2>&1 &
+nohup time ${BUILD_DIR}/bin/container-build.sh ${1} > $container_log_file 2>&1 &
 echo "${1} release container build kicked off, see log @ $container_log_file ..."
