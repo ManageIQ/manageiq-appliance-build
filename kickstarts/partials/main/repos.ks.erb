@@ -3,6 +3,7 @@ repo --name=BaseOS     --baseurl=http://mirror.centos.org/centos/8/BaseOS/x86_64
 repo --name=AppStream  --baseurl=http://mirror.centos.org/centos/8/AppStream/x86_64/os/
 repo --name=PowerTools --baseurl=http://mirror.centos.org/centos/8/PowerTools/x86_64/os/
 repo --name=extras     --baseurl=http://mirror.centos.org/centos/8/extras/x86_64/os/
+repo --name=epel-playground  --baseurl=https://download.fedoraproject.org/pub/epel/playground/8/Everything/x86_64/os
 
 <% if @target == "gce" %>
 repo --name=google-cloud-compute --baseurl=https://packages.cloud.google.com/yum/repos/google-compute-engine-el8-x86_64-stable
