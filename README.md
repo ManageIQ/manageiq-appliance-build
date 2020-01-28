@@ -10,113 +10,21 @@ This repository contains code to build ManageIQ appliances in the various virtua
 Below are instructions on configuring a dedicated build machine to generate appliance images.
 
 # Installation
+  * Hardware requirements:
+    * CPU: 2 cores minimum
+    * RAM: 12GB minimum
+    * HD: 80GB Minimum - 200GB Recommended
 
-  **Note: All instructions are as root unless specified**
+  Get the kickstart from `kickstarts/centos8_build_machine.ks` and adjust it as needed based on your environment and hardware.  Example iPXE boot script for the kickstart:
 
-## Setup CentOS 8 build machine
+  ```
+  #!ipxe
 
-  * RAM: 12GB minimum
-  * HD: 80GB Minimum - 200GB Recommended
-
-  * If setting up as a VM:
-    * NAT or Bridged
-    * Enable Intel Hardware Virtualization VT-x/EPT
-    * Time Sync with Host
-    * Install appropriate guest agent (`rhevm-guest-agent` for RHV, `open-vm-tools` for vSphere)
-
-  * Create a personal userid with admin privileges.
-  * Enable Network and set to start on boot.
-  * Add /root/.ssh/authorized_key with id_rsa.pub if desired to ssh to root without password.
-
-  * Install Updates and reboot
-
-## Add repositories
-
-  * Add EPEL repo
-    ```
-    yum install epel-release
-    ```
-
-  * Enable CentOS PowerTools repo
-    ```
-    yum config-manager --set-enabled PowerTools
-    ```
-
-  * Add ManageIQ Build repo
-    ```
-    pushd /etc/yum.repos.d/
-      wget https://copr.fedorainfracloud.org/coprs/manageiq/ManageIQ-Build/repo/epel-8/manageiq-ManageIQ-Build-epel-8.repo
-    popd
-    ```
-
-## Setup the /build directory
-
-  * Create the directories:
-    ```
-    /build
-      /fileshare
-      /images
-      /isos
-      /logs
-      /storage
-    ```
-
-  * Clone the build scripts and setup symlinks
-    ```
-    cd /build
-    git clone https://www.github.com/ManageIQ/manageiq-appliance-build.git
-    ln -s manageiq-appliance-build/bin bin
-    ```
-
-## Setup Imagefactory:
-
-  * Install dependencies:
-    ```
-    yum install @development
-    yum install python3-pycurl python3-libguestfs python3-zope-interface python3-libxml2 python3-httplib2 python3-libs oz python3-m2crypto
-    pip3 install oauth2 cherrypy boto monotinic
-    ```
-  
-  * Clone imagefactory as /build/imagefactory
-    ```
-    cd /build
-    git clone https://www.github.com/redhat-imaging/imagefactory.git
-    ```
-
-  * Set up imagefactory plugins
-    ```
-    cd /build/imagefactory/scripts
-    (set PYTHON_PATH to "/usr/lib/python3.6" in imagefactory_dev_setup.sh)
-    ./imagefactory_dev_setup.sh
-    ```
-
-  * Set environment variable for libguestfs
-    ```
-    echo "export LIBGUESTFS_BACKEND=direct" >> ~/.bash_profile
-    ```
-
-## Setup KVM/Virt
-
-  * Install packages
-    ```
-    yum install qemu-kvm libvirt libguestfs-tools virt-install virt-manager virt-viewer
-    ```
-  * Enable libvirtd
-    ```
-    systemctl enable libvirtd
-    systemctl start libvirtd
-    ```
-
-  * Package information:
-    ```
-    qemu-kvm        = QEMU emulator
-    qemu-img        = QEMU disk image manager
-    virt-install    = Command line tool to create virtual machines.
-    libvirt         = Provides libvirtd daemon that manages virtual machines and controls hypervisor.
-    libvirt-client  = provides client side API’s for accessing servers and also provides virsh utility
-                      which provides command line tool to manage virtual machines.
-    virt-viewer     = Graphical console
-    ```
+  kernel http://pxeserver.example.com/sources/centos/8/vmlinuz inst.ks=http://pxeserver.example.com/ipxe/mac/centos8_build_machine.ks net.ifnames=0 biosdevname=0
+  #ramdisk_size=10000
+  initrd http://pxeserver.example.com/sources/centos/8/initrd.img
+  boot
+  ```
 
 ## Setup docker for container build
 
@@ -132,9 +40,13 @@ Below are instructions on configuring a dedicated build machine to generate appl
     docker login --username <user> <server> (e.g. docker.io)
     ```
 
-## Configure virtualization hardware
+## Configure virtualization hardware (if running build machine in a VM)
 
-  * Enable virtualization
+  * Network: NAT or Bridged
+  * Time Sync with Host
+  * Install appropriate guest agent (`rhevm-guest-agent` for RHV, `open-vm-tools` for vSphere)
+
+  * Enable nested virtualization
 
     * For vSphere: in hosting's VM's .vmx file:
       ```
@@ -162,54 +74,8 @@ Below are instructions on configuring a dedicated build machine to generate appl
     * Append options in /etc/modprobe.d/dist.conf (create file if not there)
       `options kvm-intel nested=y`
 
-## Setup build environment
 
-  ```
-  yum install ruby ruby-devel
-  gem install bundler
-  cd /build/manageiq-appliance-build/scripts
-  bundle install
-  ```
-
-## Setup and start VNC Server/Viewer
-
-  * Install GNOME Desktop
-    ```
-    yum groupinstall "Server with GUI"
-    systemctl set-default graphical
-    reboot
-    ```
-    Change to "WaylandEnable=false" in "/etc/gdm/custom.conf"
-
-  * Install VNC and configure as user service
-    ```
-    yum install tigervnc tigervnc-server tigervnc-server-module
-    loginctl enable-linger
-    ```
-
-  * Set VNC password as `<USER>`
-    ```
-    su - <USER>
-    vncpasswd
-    exit
-    ```
-
-  * Start VNC server
-    ```
-    mkdir -p ~/.config/systemd/user
-    cp /usr/lib/systemd/user/vncserver@.service ~/.config/systemd/user/
-    systemctl --user daemon-reload
-    systemctl --user enable vncserver@:<display>.service --now
-      replace: <display> with a display number (e.g. 1)
-    ```
-
-  * Set firewall
-    ```
-    firewall-cmd --permanent --add-service vnc-server
-    systemctl restart firewalld.service
-    ```
-  
-## Setup Apache for sharing built images
+## Optional: Setup Apache for sharing built images
 
   ```
   yum install httpd
