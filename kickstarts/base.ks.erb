@@ -14,6 +14,8 @@ cdrom
 lang en_US.UTF-8
 keyboard us
 <%= render_partial "main/network" %>
+
+# Root password: smartvm
 rootpw  --iscrypted $1$DZprqvCu$mhqFBjfLTH/PVvZIompVP/
 
 authconfig --enableshadow --passalgo=sha512

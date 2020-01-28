@@ -40,7 +40,7 @@ network --bootproto=dhcp --device=eth1 --onboot=off --noipv6 --no-activate # CHA
 network --bootproto=static --device=eth0 --gateway=192.0.2.1 --ip=192.0.2.2 --nameserver=192.0.2.1 --netmask=255.255.252.0 --noipv6 --activate # CHANGEME
 network --hostname=kegerator8.example.com # CHANGEME
 
-# Root password
+# Root password: smartvm
 rootpw --iscrypted $1$DZprqvCu$mhqFBjfLTH/PVvZIompVP/
 
 # SELinux configuration
