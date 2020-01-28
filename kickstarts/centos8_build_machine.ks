@@ -83,12 +83,6 @@ popd
 
 echo "export LIBGUESTFS_BACKEND=direct" >> /root/.bash_profile
 
-# needed to test this kickstart file in Fusion
-sed -i 's/^#options kvm_intel.*/options kvm_intel nested=1/' /etc/modprobe.d/kvm.conf
-kversion=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
-ramfsfile="/boot/initramfs-$kversion.img"
-dracut --force --add-drivers "vmw_pvscsi mptspi" $ramfsfile $kversion
-
 # Resulting build storage
 mkdir /mnt/builds
 #echo "nfs-host.example.com:/builds/manageiq /mnt/builds nfs rw,timeo=600,tcp,nfsvers=3,soft,nosharecache,context=system_u:object_r:public_content_rw_t:s0  0 0" >> /etc/fstab # CHANGEME if desired
