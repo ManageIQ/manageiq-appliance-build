@@ -94,21 +94,28 @@ chvt 1
 %packages
 @development
 @graphical-server-environment
-@virtualization-client
-@virtualization-hypervisor
 epel-release
-kexec-tools
-libguestfs-tools
+
+# For oz/imagefactory
 oz
-python3-httplib2
-python3-libguestfs
-python3-libs
-python3-libxml2
-python3-m2crypto
 python3-pycurl
+python3-libguestfs
 python3-zope-interface
+python3-libxml2
+python3-httplib2
+python3-libs
+python3-m2crypto
+
+# For KVM/Virt
+@virtualization-hypervisor
+@virtualization-client
+libguestfs-tools
+
+# Ruby
 ruby
 ruby-devel
+
+# VNC
 tigervnc
 tigervnc-server
 tigervnc-server-module
