@@ -12,6 +12,7 @@ module Build
       'libvirt'   => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2', nil, '66'),
       'gce'       => ImagefactoryMetadata.new('gce', nil, 'tar.gz', nil, '66'),
       'ec2'       => ImagefactoryMetadata.new('ec2', nil, 'vhd', 'zip', '66'),
+      'v2v'       => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2', nil, '10'),
     }
 
     attr_reader :name

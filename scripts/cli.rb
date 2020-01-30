@@ -12,6 +12,7 @@ module Build
     APPLIANCE_URL = "https://github.com/ManageIQ/manageiq-appliance.git"
     BUILD_URL     = "https://github.com/ManageIQ/manageiq-appliance-build.git"
     SUI_URL       = "https://github.com/ManageIQ/manageiq-ui-service.git"
+    V2V_URL       = "https://raw.github.com/ManageIQ/manageiq-v2v-conversion_host-build"
 
     def parse(args = ARGV)
       git_ref_desc   = "provide a git reference such as a branch or tag, non \"#{DEFAULT_REF}\" is required for 'release' type"
@@ -25,6 +26,7 @@ module Build
       sui_desc       = "Repo URL containing the ManageIQ service UI code"
       upload_desc    = "Upload appliance builds to the website"
       only_desc      = "Build only specific image types.  Example: --only ovirt openstack.  Defaults to all images."
+      v2v_desc       = "Repo URL containing the v2v conversion host appliance kickstart file"
 
       @options = Optimist.options(args) do
         banner "Usage: build.rb [options]"
@@ -43,6 +45,8 @@ module Build
         opt :sui_url,       sui_desc,       :type => :string,  :short => "S", :default => SUI_URL
         opt :type,          type_desc,      :type => :string,  :short => "t", :default => DEFAULT_TYPE
         opt :upload,        upload_desc,    :type => :boolean, :short => "u", :default => false
+        opt :v2v_ref,       git_ref_desc,   :type => :string,  :short => "v", :default => DEFAULT_REF
+        opt :v2v_url,       v2v_desc,       :type => :string,  :short => "V", :default => V2V_URL
       end
 
       options[:type] &&= options[:type].strip
@@ -52,7 +56,7 @@ module Build
       end
 
       # --reference overrides all other reference arguments
-      [:manageiq_ref, :appliance_ref, :build_ref, :sui_ref].each do |ref|
+      [:manageiq_ref, :appliance_ref, :build_ref, :sui_ref, :v2v_ref].each do |ref|
         options[ref] = (options[:reference] || options[ref]).to_s.strip
       end
       Optimist.die(:manageiq_ref, git_ref_desc) if options[:manageiq_ref].to_s.empty?
