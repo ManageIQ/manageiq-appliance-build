@@ -203,7 +203,7 @@ Dir.chdir(IMGFAC_DIR) do
     $log.info "Generating Image Checksums in #{destination_directory} ..."
     Dir.chdir(destination_directory) do
       $log.info `/usr/bin/sha256sum * > SHA256SUM`
-      $log.info `/usr/bin/gpg --batch --no-tty --passphrase-file #{passphrase_file} -b SHA256SUM`
+      $log.info `/usr/bin/gpg --batch --no-tty --passphrase-file #{passphrase_file} --pinentry-mode loopback -b SHA256SUM`
       FileUtils.cp(public_key_file, destination_directory)
     end
   end
