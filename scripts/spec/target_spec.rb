@@ -24,6 +24,10 @@ describe Build::Target do
     expect(described_class.new("openstack").compression_type).to eql nil
   end
 
+  it "#image_size" do
+    expect(described_class.new("openstack").image_size).to eql "66"
+  end
+
   it "#sort" do
     targets = [described_class.new("vsphere"), described_class.new("openstack")]
     expect(targets.sort.collect(&:name)).to eql %w(openstack vsphere)

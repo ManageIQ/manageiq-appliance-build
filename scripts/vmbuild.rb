@@ -1,4 +1,4 @@
-require 'pathname'
+require 'erb'
 require 'fileutils'
 require 'logger'
 require 'pathname'
@@ -107,10 +107,12 @@ Dir.chdir(IMGFAC_DIR) do
     imgfac_target = target.imagefactory_type
     ova_format    = target.ova_format
     compression   = target.compression_type
+    image_size    = target.image_size
     $log.info "Building for #{target}:"
 
-    tdl_name = target.name == "azure" ? "base_azure.tdl" : "base.tdl"
-    tdl_file = CFG_DIR.join(tdl_name)
+    tdl_file = CFG_DIR.join("generated", "base_#{target}.tdl")
+    File.write(tdl_file, ERB.new(File.read(CFG_DIR.join("base.tdl.erb")), 0, '-').result(binding))
+
     $log.info "Using inputs: puddle: #{puddle}, build_label: #{build_label}"
     $log.info "              tdl_file: #{tdl_file}, ova_file: #{ova_file}."
 
