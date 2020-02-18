@@ -1,5 +1,4 @@
-epel-release       # http://dl.fedoraproject.org/pub/epel/7/x86_64/epel-release-7-5.noarch.rpm
-nodesource-release
+epel-release
 
 createrepo
 freeipmi
@@ -21,6 +20,7 @@ openssl-devel
 readline-devel
 zlib-devel
 
+ansible
 ansible-runner
 chrony
 cifs-utils
@@ -29,7 +29,8 @@ cockpit
 cronie
 http-parser                      # libhttp_parser.so.2 needed by nodejs
 libcurl-devel                    # For curb gem
-libssh2-devel                    # For rugged SSH support
+# WORKAROUND: installed in %post as the rpm isn't currently available for CentOS 8
+#libssh2-devel                    # For rugged SSH support
 libxml2-devel                    # For nokogiri gem
 libxslt-devel                    # For nokogiri gem
 logrotate
@@ -41,6 +42,7 @@ nmap-ncat
 net-snmp
 net-snmp-libs
 net-snmp-utils
+network-scripts
 nfs-utils
 nodejs                           # used for asset pipeline asset compilation - From epel
 OpenIPMI
@@ -49,14 +51,14 @@ postfix                          # smtp server for sending email using localhost
 postgresql                       # appliance section
 postgresql-devel                 # for pg gem
 postgresql-server                # appliance section
-python-devel                     # for building python modules in post
+python3-devel                    # for building python modules in post
 repmgr10
 smem                             # for PSS, USS with forked processes
-screen
 socat                            # for proxying remote consoles
 sqlite-devel
 telnet
 tree
+v2v-conversion-host-ansible
 vim-enhanced
 wget                             # build requires
 yum-utils
@@ -67,7 +69,6 @@ c-ares
 ipa-client
 sssd-dbus
 mod_intercept_form_submit
-mod_auth_kerb
 mod_auth_gssapi
 mod_authnz_pam
 mod_lookup_identity
@@ -110,17 +111,11 @@ hyperv-daemons
 <% when "libvirt" %>
 qemu-guest-agent
 <% when "ovirt" %>
-ovirt-guest-agent
+qemu-guest-agent
 glusterfs-fuse
 <% when "vsphere" %>
 open-vm-tools
 <% end %>
-
-# Chinese and Japanese fonts for PDF reports
-cjkuni-ukai-fonts
-cjkuni-uming-fonts
-vlgothic-fonts
-vlgothic-p-fonts
 
 # For cockpit integration
 cockpit-ws

@@ -22,13 +22,12 @@ authconfig --enableshadow --passalgo=sha512
 selinux --enforcing
 timezone --utc America/New_York
 
-device mptbase
-device mptscsih
-device mptspi
-
 <%= render_partial "main/bootloader" %>
 <%= render_partial "main/disk_layout" %>
 <%= render_partial "main/db_fs" %>
+
+module --name mod_auth_openidc
+module --name nodejs --stream 12
 
 reboot
 
@@ -69,6 +68,9 @@ unset DEBUG
 # since rails 5 mem_cache_store tries to connect to a not running memcached.
 # See: https://github.com/ManageIQ/manageiq/pull/6751
 export RAILS_USE_MEMORY_STORE="true"
+
+# ensure /usr/local/bin is on the path (for ruby and virtualenv)
+export PATH=$PATH:/usr/local/bin
 
 <%= render_partial "post/firewalld" %>
 
@@ -130,7 +132,7 @@ drivers="mptspi vmw_pvscsi"
 <% else %>
 drivers="mptbase mptscsih mptspi"
 <% end %>
-/sbin/dracut --force --add-drivers "$drivers" $ramfsfile $kversion
+dracut --force --add-drivers "$drivers" $ramfsfile $kversion
 
 <%= render_partial "post/ec2" if @target == "ec2" %>
 <%= render_partial "post/azure" if @target == "azure" %>

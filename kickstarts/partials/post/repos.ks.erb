@@ -2,16 +2,18 @@
 # yum update uses these repos to update and reinstall packages.
 # Please also add to "build time repos" main/repos partial
 
+yum config-manager --set-enabled PowerTools
+
 pushd /etc/yum.repos.d/
-  wget https://copr.fedorainfracloud.org/coprs/manageiq/ManageIQ-Master/repo/epel-7/manageiq-ManageIQ-Master-epel-7.repo
-  wget https://releases.ansible.com/ansible-runner/ansible-runner.el7.repo
+  wget https://copr.fedorainfracloud.org/coprs/manageiq/ManageIQ-Master/repo/epel-8/manageiq-ManageIQ-Master-epel-8.repo
+  wget https://releases.ansible.com/ansible-runner/ansible-runner.el8.repo
 popd
 
 <% if @target == "gce" %>
-cat > /etc/yum.repos.d/google-cloud-compute.repo <<EOF
-[google-cloud-compute]
-name=Google Cloud Compute
-baseurl=https://packages.cloud.google.com/yum/repos/google-cloud-compute-el7-x86_64
+cat > /etc/yum.repos.d/google-cloud.repo << EOF
+[google-compute-engine]
+name=Google Compute Engine
+baseurl=https://packages.cloud.google.com/yum/repos/google-compute-engine-el8-x86_64-stable
 enabled=1
 gpgcheck=1
 repo_gpgcheck=1

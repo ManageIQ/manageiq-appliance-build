@@ -1,16 +1,14 @@
 # build time repos - these repos are used to install the initial packages
-repo --name=base    --baseurl=http://mirror.centos.org/centos/7/os/x86_64/
-repo --name=updates --baseurl=http://mirror.centos.org/centos/7/updates/x86_64/
-repo --name=extras  --baseurl=http://mirror.centos.org/centos/7/extras/x86_64/
-repo --name=epel    --baseurl=http://dl.fedoraproject.org/pub/epel/7/x86_64/
-
-# repos to install packages not found in the os
-repo --name=nodesource --baseurl=https://rpm.nodesource.com/pub_10.x/el/7/x86_64/
+repo --name=BaseOS     --baseurl=http://mirror.centos.org/centos/8/BaseOS/x86_64/os/
+repo --name=AppStream  --baseurl=http://mirror.centos.org/centos/8/AppStream/x86_64/os/
+repo --name=PowerTools --baseurl=http://mirror.centos.org/centos/8/PowerTools/x86_64/os/
+repo --name=extras     --baseurl=http://mirror.centos.org/centos/8/extras/x86_64/os/
+repo --name=playground-mirror --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=playground-epel8&arch=x86_64
 
 <% if @target == "gce" %>
-repo --name=google-cloud-compute --baseurl=https://packages.cloud.google.com/yum/repos/google-cloud-compute-el7-x86_64/
+repo --name=google-cloud-compute --baseurl=https://packages.cloud.google.com/yum/repos/google-compute-engine-el8-x86_64-stable
 <% end %>
 
 # Please also add to "post install repos" post/repos partial
-repo --name=ansible-runner --baseurl=https://releases.ansible.com/ansible-runner/rpm/epel-7-x86_64/
-repo --name=manageiq-ManageIQ-Master --baseurl=https://copr-be.cloud.fedoraproject.org/results/manageiq/ManageIQ-Master/epel-7-x86_64/
+repo --name=ansible-runner --baseurl=https://releases.ansible.com/ansible-runner/rpm/epel-8-x86_64/
+repo --name=manageiq-ManageIQ-Master --baseurl=https://copr-be.cloud.fedoraproject.org/results/manageiq/ManageIQ-Master/epel-8-x86_64/
