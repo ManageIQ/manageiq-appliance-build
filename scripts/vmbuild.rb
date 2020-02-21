@@ -118,8 +118,8 @@ Dir.chdir(IMGFAC_DIR) do
 
     input_file  = ks_gen.gen_file_path("base-#{target}.ks")
 
-    if target.name == "v2v"
-      `curl -L #{cli_options[:v2v_url]}/#{cli_options[:v2v_ref]}/appliance/uci_image.ks -o #{input_file}`
+    if target.name == "v2v_conv_host"
+      `curl -L #{cli_options[:v2v_conv_host_kickstart]}/#{cli_options[:v2v_conv_host_ref]}/appliance/uci_image.ks -o #{input_file}`
     end
 
     output_file = ks_gen.gen_file_path("base-#{target}-#{build_label}-#{timestamp}.ks")
@@ -160,7 +160,7 @@ Dir.chdir(IMGFAC_DIR) do
     $log.info "Built #{target} with final UUID: #{uuid}"
 
     FileUtils.mkdir_p(destination_directory)
-    if target.name == "v2v"
+    if target.name == "v2v_conv_host"
       file_name = "v2v-conversion-host-appliance-#{build_label}-#{timestamp}.#{target.file_extension}"
     else
       file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{target.file_extension}"
