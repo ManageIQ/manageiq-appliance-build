@@ -5,13 +5,14 @@ require_relative 'target'
 module Build
   class Cli
     attr_reader :options
-    ALLOWED_TYPES = %w(nightly release test)
-    DEFAULT_TYPE  = "nightly"
-    DEFAULT_REF   = "master"
-    MANAGEIQ_URL  = "https://github.com/ManageIQ/manageiq.git"
-    APPLIANCE_URL = "https://github.com/ManageIQ/manageiq-appliance.git"
-    BUILD_URL     = "https://github.com/ManageIQ/manageiq-appliance-build.git"
-    SUI_URL       = "https://github.com/ManageIQ/manageiq-ui-service.git"
+    ALLOWED_TYPES           = %w(nightly release test)
+    DEFAULT_TYPE            = "nightly"
+    DEFAULT_REF             = "master"
+    MANAGEIQ_URL            = "https://github.com/ManageIQ/manageiq.git"
+    APPLIANCE_URL           = "https://github.com/ManageIQ/manageiq-appliance.git"
+    BUILD_URL               = "https://github.com/ManageIQ/manageiq-appliance-build.git"
+    SUI_URL                 = "https://github.com/ManageIQ/manageiq-ui-service.git"
+    V2V_CONV_HOST_KICKSTART = "https://raw.github.com/ManageIQ/manageiq-v2v-conversion_host-build"
 
     def parse(args = ARGV)
       git_ref_desc   = "provide a git reference such as a branch or tag, non \"#{DEFAULT_REF}\" is required for 'release' type"
@@ -25,24 +26,27 @@ module Build
       sui_desc       = "Repo URL containing the ManageIQ service UI code"
       upload_desc    = "Upload appliance builds to the website"
       only_desc      = "Build only specific image types.  Example: --only ovirt openstack.  Defaults to all images."
+      v2v_desc       = "Repo containing the v2v conversion host appliance kickstart raw file"
 
       @options = Optimist.options(args) do
         banner "Usage: build.rb [options]"
-        opt :appliance_ref, git_ref_desc,   :type => :string,  :short => "a", :default => DEFAULT_REF
-        opt :appliance_url, appliance_desc, :type => :string,  :short => "A", :default => APPLIANCE_URL
-        opt :build_ref,     git_ref_desc,   :type => :string,  :short => "b", :default => DEFAULT_REF
-        opt :build_url,     build_desc,     :type => :string,  :short => "B", :default => BUILD_URL
-        opt :reference,     git_ref_desc,   :type => :string,  :short => "r", :default => nil
-        opt :copy_dir,      dir_desc,       :type => :string,  :short => "d", :default => DEFAULT_REF
-        opt :fileshare,     share_desc,     :type => :boolean, :short => "f", :default => true
-        opt :local,         local_desc,     :type => :boolean, :short => "l", :default => false
-        opt :manageiq_ref,  git_ref_desc,   :type => :string,  :short => "m", :default => DEFAULT_REF
-        opt :manageiq_url,  manageiq_desc,  :type => :string,  :short => "M", :default => MANAGEIQ_URL
-        opt :only,          only_desc,      :type => :strings, :short => "o", :default => Target.default_types
-        opt :sui_ref,       git_ref_desc,   :type => :string,  :short => "s", :default => DEFAULT_REF
-        opt :sui_url,       sui_desc,       :type => :string,  :short => "S", :default => SUI_URL
-        opt :type,          type_desc,      :type => :string,  :short => "t", :default => DEFAULT_TYPE
-        opt :upload,        upload_desc,    :type => :boolean, :short => "u", :default => false
+        opt :appliance_ref,           git_ref_desc,   :type => :string,  :short => "a", :default => DEFAULT_REF
+        opt :appliance_url,           appliance_desc, :type => :string,  :short => "A", :default => APPLIANCE_URL
+        opt :build_ref,               git_ref_desc,   :type => :string,  :short => "b", :default => DEFAULT_REF
+        opt :build_url,               build_desc,     :type => :string,  :short => "B", :default => BUILD_URL
+        opt :reference,               git_ref_desc,   :type => :string,  :short => "r", :default => nil
+        opt :copy_dir,                dir_desc,       :type => :string,  :short => "d", :default => DEFAULT_REF
+        opt :fileshare,               share_desc,     :type => :boolean, :short => "f", :default => true
+        opt :local,                   local_desc,     :type => :boolean, :short => "l", :default => false
+        opt :manageiq_ref,            git_ref_desc,   :type => :string,  :short => "m", :default => DEFAULT_REF
+        opt :manageiq_url,            manageiq_desc,  :type => :string,  :short => "M", :default => MANAGEIQ_URL
+        opt :only,                    only_desc,      :type => :strings, :short => "o", :default => Target.default_types
+        opt :sui_ref,                 git_ref_desc,   :type => :string,  :short => "s", :default => DEFAULT_REF
+        opt :sui_url,                 sui_desc,       :type => :string,  :short => "S", :default => SUI_URL
+        opt :type,                    type_desc,      :type => :string,  :short => "t", :default => DEFAULT_TYPE
+        opt :upload,                  upload_desc,    :type => :boolean, :short => "u", :default => false
+        opt :v2v_conv_host_ref,       git_ref_desc,   :type => :string,  :short => "v", :default => DEFAULT_REF
+        opt :v2v_conv_host_kickstart, v2v_desc,       :type => :string,  :short => "V", :default => V2V_CONV_HOST_KICKSTART
       end
 
       options[:type] &&= options[:type].strip
@@ -52,7 +56,7 @@ module Build
       end
 
       # --reference overrides all other reference arguments
-      [:manageiq_ref, :appliance_ref, :build_ref, :sui_ref].each do |ref|
+      [:manageiq_ref, :appliance_ref, :build_ref, :sui_ref, :v2v_conv_host_ref].each do |ref|
         options[ref] = (options[:reference] || options[ref]).to_s.strip
       end
       Optimist.die(:manageiq_ref, git_ref_desc) if options[:manageiq_ref].to_s.empty?
