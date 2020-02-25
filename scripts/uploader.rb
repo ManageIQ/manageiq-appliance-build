@@ -39,7 +39,7 @@ module Build
 
         upload_headers = headers.merge("ETag" => source_hash)
         if nightly?
-          image_date = destination_name.split("-")[-2]
+          image_date = destination_name.match(/.*([0-9]{8}).*/)[1]
           delete_at  = (DateTime.parse(image_date) + NIGHTLY_BUILD_RETENTION_TIME)
           upload_headers["X-Delete-At"] = delete_at.to_i.to_s
         end
