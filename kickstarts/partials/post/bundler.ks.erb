@@ -13,11 +13,6 @@ gem install bundler -v ">=1.8.4"
 
 ln -s ${APPLIANCE_SOURCE_DIRECTORY}/manageiq-appliance-dependencies.rb /var/www/miq/vmdb/bundler.d/manageiq-appliance-dependencies.rb
 
-# WORKAROUND for libssh2-devel
-wget https://copr-be.cloud.fedoraproject.org/results/manageiq/ManageIQ-Master/epel-8-x86_64/01173713-libssh2/libssh2-1.9.0-3.el8.x86_64.rpm
-wget https://copr-be.cloud.fedoraproject.org/results/manageiq/ManageIQ-Master/epel-8-x86_64/01173713-libssh2/libssh2-devel-1.9.0-3.el8.x86_64.rpm
-yum -y install libssh2*.rpm
-
 pushd /var/www/miq/vmdb
   bundle install --with qpid_proton --jobs 4 --retry 3
   bundle clean --force
