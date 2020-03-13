@@ -10,6 +10,7 @@ require_relative 'git_checkout'
 require_relative 'cli'
 require_relative 'uploader'
 require_relative 'target'
+require_relative 'target_disk_converter'
 
 $log = Logger.new(STDOUT)
 
@@ -138,7 +139,7 @@ Dir.chdir(IMGFAC_DIR) do
 
     if target.name == "azure"
       $log.info "Resizing and converting Azure image, #{uuid}"
-      $log.info `ruby #{__dir__}/fix_azure_disk.rb #{STORAGE_DIR}/#{uuid}.body`
+      Build::TargetDiskConverter.new("#{STORAGE_DIR}/#{uuid}.body").fix_azure_disk
     else
       params = "--parameters #{target_file}"
       $log.info "Running #{target} target_image #{imgfac_target} using parameters: #{params}"
