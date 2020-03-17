@@ -4,8 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-
-## Unreleased as of Srint 120 ending 2019-09-16
+## Jansa-1 Alpha-1
 
 ### Fixed
 - Explicitly depend on enabled postfix package [(#349)](https://github.com/ManageIQ/manageiq-appliance-build/pull/349)
