@@ -26,7 +26,7 @@ Below are instructions on configuring a dedicated build machine to generate appl
   boot
   ```
 ## Download CentOS 8 ISO
-  * Download latest CentOS 8 ISO from https://www.centos.org/download/
+  * Download latest CentOS 8 ISO from http://isoredirect.centos.org/centos/8/isos/x86_64/
     ```
     curl -L http://isoredirect.centos.org/centos/8/isos/x86_64/CentOS-8.1.1911-x86_64-dvd1.iso \
       -o /build/isos/CentOS-8.1.1911-x86_64-dvd1.iso
