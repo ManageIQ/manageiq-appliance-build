@@ -25,7 +25,13 @@ Below are instructions on configuring a dedicated build machine to generate appl
   initrd http://pxeserver.example.com/sources/centos/8/initrd.img
   boot
   ```
-
+## Download CentOS 8 ISO
+  * Download latest CentOS 8 ISO from http://isoredirect.centos.org/centos/8/isos/x86_64/
+    ```
+    curl -L http://isoredirect.centos.org/centos/8/isos/x86_64/CentOS-8.1.1911-x86_64-dvd1.iso \
+      -o /build/isos/CentOS-8.1.1911-x86_64-dvd1.iso
+    ```
+    
 ## Setup docker for container build
 
   * Install docker and start service
