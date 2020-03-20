@@ -7,7 +7,7 @@ module Build
       'ovirt'         => ImagefactoryMetadata.new('rhevm', nil, 'qc2', 'qemu-qcow2', '66'),
       'openstack'     => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2', nil, '66'),
       'hyperv'        => ImagefactoryMetadata.new('hyperv', nil, 'vhd', 'zip', '66'),
-      'azure'         => ImagefactoryMetadata.new('hyperv', nil, 'vhd', 'zip', '61'),
+      'azure'         => ImagefactoryMetadata.new(nil, nil, 'vhd', 'zip', '61'),
       'vagrant'       => ImagefactoryMetadata.new('vsphere', 'vagrant-virtualbox', 'box', nil, '66'),
       'libvirt'       => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2', nil, '66'),
       'gce'           => ImagefactoryMetadata.new('gce', nil, 'tar.gz', nil, '66'),

@@ -10,6 +10,7 @@ require_relative 'git_checkout'
 require_relative 'cli'
 require_relative 'uploader'
 require_relative 'target'
+require_relative 'target_disk_converter'
 
 $log = Logger.new(STDOUT)
 
@@ -136,15 +137,20 @@ Dir.chdir(IMGFAC_DIR) do
     $log.info "#{target} base_image complete, uuid: #{uuid}"
     temp_file_uuid = [uuid]
 
-    params = "--parameters #{target_file}"
-    $log.info "Running #{target} target_image #{imgfac_target} using parameters: #{params}"
+    if target.name == "azure"
+      $log.info "Resizing and converting Azure image, #{uuid}"
+      Build::TargetDiskConverter.new("#{STORAGE_DIR}/#{uuid}.body").fix_azure_disk
+    else
+      params = "--parameters #{target_file}"
+      $log.info "Running #{target} target_image #{imgfac_target} using parameters: #{params}"
 
-    output = `./imagefactory --config #{IMGFAC_CONF} target_image #{params} --id #{uuid} #{imgfac_target}`
-    uuid   = verify_run(output)
-    next if uuid.nil?
+      output = `./imagefactory --config #{IMGFAC_CONF} target_image #{params} --id #{uuid} #{imgfac_target}`
+      uuid   = verify_run(output)
+      next if uuid.nil?
 
-    $log.info "#{target} target_image #{imgfac_target} complete, uuid: #{uuid}"
-    temp_file_uuid << uuid
+      $log.info "#{target} target_image #{imgfac_target} complete, uuid: #{uuid}"
+      temp_file_uuid << uuid
+    end
 
     if ova_format
       params = "--parameters #{ova_file} --parameter #{imgfac_target}_ova_format #{ova_format}"
