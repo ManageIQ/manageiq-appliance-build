@@ -8,9 +8,14 @@ module Build
     attr_reader :container, :directory, :type
 
     NIGHTLY_BUILD_RETENTION_TIME = 8.weeks
+    CONFIG_FILE = Pathname.new(__dir__).join("../config/upload.yml")
 
     def self.upload(directory, type)
-      new(directory, type).run
+      if File.exist?(CONFIG_FILE)
+        new(directory, type).run
+      else
+        puts "#{CONFIG_FILE} doesn't exist, not uploading images"
+      end
     end
 
     def initialize(directory, type)
@@ -84,7 +89,7 @@ module Build
     end
 
     def config
-      @config ||= YAML.load_file("#{__dir__}/../config/upload.yml")
+      @config ||= YAML.load_file(CONFIG_FILE)
     end
 
     def login
