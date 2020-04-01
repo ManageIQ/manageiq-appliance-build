@@ -5,6 +5,14 @@ export LANGUAGE=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
+# Add the git based gem bin path to $PATH
+ruby_gem_path="$(gem env gemdir)/bin"
+echo "export PATH=\$PATH:$ruby_gem_path" >> /etc/default/evm
+
+cat /etc/default/evm
+
+echo "gem: --no-ri --no-rdoc --no-document" > /root/.gemrc
+
 [[ -s /etc/default/evm ]] && source /etc/default/evm
 mkdir -p $(gem env gemdir)/cache
 mount -t tmpfs tmpfs $(gem env gemdir)/cache
