@@ -2,6 +2,7 @@
 # yum update uses these repos to update and reinstall packages.
 # Please also add to "build time repos" main/repos partial
 
+yum-config-manager --setopt=epel.exclude=*qpid-proton* --save
 pushd /etc/yum.repos.d/
   wget https://copr.fedorainfracloud.org/coprs/manageiq/ManageIQ-Ivanchuk/repo/epel-7/manageiq-ManageIQ-Ivanchuk-epel-7.repo
   wget https://releases.ansible.com/ansible-runner/ansible-runner.el7.repo
