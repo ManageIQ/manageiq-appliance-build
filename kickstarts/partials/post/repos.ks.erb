@@ -3,6 +3,7 @@
 # Please also add to "build time repos" main/repos partial
 
 yum config-manager --set-enabled PowerTools
+yum config-manager --setopt=epel.exclude=*qpid-proton* --save
 
 pushd /etc/yum.repos.d/
   wget https://copr.fedorainfracloud.org/coprs/manageiq/ManageIQ-Jansa/repo/epel-8/manageiq-ManageIQ-Jansa-epel-8.repo
