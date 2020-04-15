@@ -1,3 +1,8 @@
+manageiq-appliance
+manageiq-appliance-tools
+
+## Review and remove packages that are required by manageiq-* rpms
+
 epel-release
 
 createrepo
@@ -5,17 +10,6 @@ freeipmi
 fuse-libs
 httpd
 ipmitool
-
-# TODO - remove packages needed only to compile ruby
-automake
-gcc
-gdbm-devel
-libffi-devel
-libyaml-devel
-ncurses-devel
-openssl-devel
-readline-devel
-zlib-devel
 
 ansible
 ansible-runner
@@ -25,10 +19,6 @@ cmake                            # For rugged gem
 cockpit
 cronie
 http-parser                      # libhttp_parser.so.2 needed by nodejs
-libcurl-devel                    # For curb gem
-libssh2-devel                    # For rugged SSH support
-libxml2-devel                    # For nokogiri gem
-libxslt-devel                    # For nokogiri gem
 logrotate
 lshw                             # From epel
 lvm2
@@ -45,14 +35,12 @@ OpenIPMI
 openscap-scanner
 postfix                          # smtp server for sending email using localhost:25
 postgresql                       # appliance section
-postgresql-devel                 # for pg gem
 postgresql-server                # appliance section
 python3-devel                    # for building python modules in post
 repmgr10
 ruby
 smem                             # for PSS, USS with forked processes
 socat                            # for proxying remote consoles
-sqlite-devel
 telnet
 tree
 v2v-conversion-host-ansible
@@ -121,4 +109,4 @@ cockpit-ssh
 # Qpid Proton libs for Nuage provider
 cyrus-sasl
 cyrus-sasl-plain
-qpid-proton-c-devel
+qpid-proton-c
