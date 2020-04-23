@@ -43,6 +43,7 @@ module Build
           upload_options[:expires] = delete_at
         end
 
+        digital_ocean_client.upload(source_name, destination_name, upload_options)
         rackspace_client.upload(source_name, destination_name, upload_options)
 
         next unless master?(appliance)
@@ -50,6 +51,7 @@ module Build
         if nightly?
           devel = devel_filename(destination_name)
 
+          digital_ocean_client.copy(destination_name, devel)
           rackspace_client.copy(destination_name, devel)
         end
       end
@@ -138,8 +140,66 @@ module Build
       end
     end
 
+    class DigitalOcean
+      attr_reader :access_key, :secret_key, :endpoint, :bucket
+
+      def initialize(config)
+        @bucket     = "releases-manageiq-org"
+        @access_key = config[:access_key]
+        @secret_key = config[:secret_key]
+        @endpoint   = config[:endpoint]
+      end
+
+      def upload(source, destination, options)
+        appliance = File.basename(source)
+        puts "Uploading #{appliance} to DigitalOcean as #{destination}..."
+
+        put_options = {
+          :acl    => "public-read",
+          :bucket => bucket,
+          :key    => destination,
+        }.tap { |h| h[:expires] = options[:expires] if options[:expires] }
+
+        response = File.open(source, 'rb') do |content|
+          client.put_object(put_options.merge(:body => content))
+        end
+
+        status = response.etag == options[:source_hash] ? "complete" : "checksum-mismatch"
+        puts "Uploading #{appliance} to DigitalOcean as #{destination}...#{status}"
+      end
+
+      def copy(source, destination)
+        appliance = File.basename(source)
+        puts "Copying   #{appliance} to #{destination} on DigitalOcean..."
+
+        copy_options = {
+          :acl         => "public-read",
+          :bucket      => bucket,
+          :copy_source => File.join(bucket, source),
+          :key         => destination,
+        }
+
+        client.copy_object(copy_options)
+
+        puts "Copying   #{appliance} to #{destination} on DigitalOcean...complete"
+      end
+
+      private
+
+      def client
+        @client ||= begin
+          require 'aws-sdk-s3'
+          Aws::S3::Client.new(:access_key_id => access_key, :secret_access_key => secret_key, :endpoint => endpoint, :region => 'us-east-1')
+        end
+      end
+    end
+
     def rackspace_client
       @rackspace_client ||= Rackspace.new(config[:rackspace])
+    end
+
+    def digital_ocean_client
+      @digital_ocean_client ||= DigitalOcean.new(config[:digital_ocean])
     end
 
     def master?(filename)
