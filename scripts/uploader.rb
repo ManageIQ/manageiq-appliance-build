@@ -49,15 +49,8 @@ module Build
 
         if nightly?
           devel = devel_filename(destination_name)
-          puts "Copying   #{appliance} to #{devel}..."
 
-          RestClient::Request.execute(
-            :method  => :copy,
-            :url     => destination_url,
-            :headers => token_headers.merge("Destination" => "/#{container}/#{devel}")
-          )
-
-          puts "Copying   #{appliance} to #{devel}...complete"
+          rackspace_client.copy(destination_name, devel)
         end
       end
     end
@@ -109,6 +102,19 @@ module Build
         )
 
         puts "Uploading #{appliance} to Rackspace as #{destination}...complete: #{destination_url}"
+      end
+
+      def copy(source, destination)
+        appliance = File.basename(source)
+        puts "Copying   #{appliance} to #{destination} on Rackspace..."
+
+        RestClient::Request.execute(
+          :method  => :copy,
+          :url     => url(source),
+          :headers => token_headers.merge("Destination" => "/#{container}/#{destination}")
+        )
+
+        puts "Copying   #{appliance} to #{destination} on Rackspace...complete"
       end
 
       private
