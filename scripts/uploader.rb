@@ -5,7 +5,7 @@ require 'yaml'
 
 module Build
   class Uploader
-    attr_reader :container, :directory, :type
+    attr_reader :directory, :type
 
     NIGHTLY_BUILD_RETENTION_TIME = 8.weeks
     CONFIG_FILE = Pathname.new(__dir__).join("../config/upload.yml")
@@ -19,13 +19,12 @@ module Build
     end
 
     def initialize(directory, type)
-      @container = "release"
       @directory = directory
       @type      = type
     end
 
     def run
-      login
+      rackspace_client.login
 
       Dir.glob("#{directory}/*").each do |appliance|
         # Skip files without date
@@ -35,27 +34,16 @@ module Build
         end
 
         destination_name = uploaded_filename(appliance)
-        source_name = File.expand_path(appliance)
+        source_name      = File.expand_path(appliance)
+        upload_options   = {:source_hash => Digest::MD5.file(source_name).hexdigest}
 
-        puts "Uploading #{appliance} as #{destination_name}..."
-
-        destination_url = url(destination_name)
-        source_hash = Digest::MD5.file(source_name).hexdigest
-
-        upload_headers = headers.merge("ETag" => source_hash)
         if nightly?
           image_date = destination_name.match(/.*([0-9]{8}).*/)[1]
           delete_at  = (DateTime.parse(image_date) + NIGHTLY_BUILD_RETENTION_TIME)
-          upload_headers["X-Delete-At"] = delete_at.to_i.to_s
+          upload_options[:expires] = delete_at
         end
 
-        RestClient.put(
-          destination_url,
-          File.read(source_name),
-          upload_headers
-        )
-
-        puts "Uploading #{appliance} as #{destination_name}...complete: #{destination_url}"
+        rackspace_client.upload(source_name, destination_name, upload_options)
 
         next unless master?(appliance)
 
@@ -76,6 +64,78 @@ module Build
 
     private
 
+    class Rackspace
+      attr_reader :username, :api_key, :region, :container
+
+      def initialize(config)
+        @container = "release"
+        @username  = config[:username]
+        @api_key   = config[:api_key]
+        @region    = config[:region]
+      end
+
+      def login
+        @login ||= begin
+          login_response = RestClient.post(
+            "https://identity.api.rackspacecloud.com/v2.0/tokens",
+            {
+              "auth" => {
+                "RAX-KSKEY:apiKeyCredentials" => {
+                  "username" => username,
+                  "apiKey"   => api_key
+                }
+              }
+            }.to_json,
+            :content_type => :json
+          )
+
+          JSON.parse(login_response.body)
+        end
+      end
+
+      def upload(source, destination, options)
+        appliance = File.basename(source)
+        puts "Uploading #{appliance} to Rackspace as #{destination}..."
+
+        upload_headers = headers.merge("ETag" => options[:source_hash])
+        upload_headers["X-Delete-At"] = options[:expires].to_i.to_s if options[:expires]
+
+        destination_url = url(destination)
+
+        RestClient.put(
+          destination_url,
+          File.read(source),
+          upload_headers
+        )
+
+        puts "Uploading #{appliance} to Rackspace as #{destination}...complete: #{destination_url}"
+      end
+
+      private
+
+      def url(file = nil)
+        parts = [public_url, container]
+        parts << URI.encode(file) if file
+        parts.join("/")
+      end
+
+      def public_url
+        @public_url ||= login["access"]["serviceCatalog"].detect { |i| i["name"] == "cloudFiles" }["endpoints"].detect { |i| i["region"] == region.to_s.upcase }["publicURL"]
+      end
+
+      def headers
+        @headers ||= token_headers.merge("X-Detect-Content-Type" => "True").freeze
+      end
+
+      def token_headers
+        @token_headers ||= {"X-Auth-Token" => login["access"]["token"]["id"]}.freeze
+      end
+    end
+
+    def rackspace_client
+      @rackspace_client ||= Rackspace.new(config[:rackspace])
+    end
+
     def master?(filename)
       filename.include?("-master-")
     end
@@ -90,43 +150,6 @@ module Build
 
     def config
       @config ||= YAML.load_file(CONFIG_FILE)
-    end
-
-    def login
-      @login ||= begin
-        login_response = RestClient.post(
-          "https://identity.api.rackspacecloud.com/v2.0/tokens",
-          {
-            "auth" => {
-              "RAX-KSKEY:apiKeyCredentials" => {
-                "username" => config[:rackspace_username],
-                "apiKey"   => config[:rackspace_api_key]
-              }
-            }
-          }.to_json,
-          :content_type => :json
-        )
-
-        JSON.parse(login_response.body)
-      end
-    end
-
-    def headers
-      @headers ||= token_headers.merge("X-Detect-Content-Type" => "True").freeze
-    end
-
-    def token_headers
-      @token_headers ||= {"X-Auth-Token" => login["access"]["token"]["id"]}.freeze
-    end
-
-    def url(file = nil)
-      parts = [public_url, container]
-      parts << URI.encode(file) if file
-      parts.join("/")
-    end
-
-    def public_url
-      @public_url ||= login["access"]["serviceCatalog"].detect { |i| i["name"] == "cloudFiles" }["endpoints"].detect { |i| i["region"] == config[:rackspace_region].to_s.upcase }["publicURL"]
     end
 
     # prerelease: manageiq-ovirt-anand-1-rc1.ova
