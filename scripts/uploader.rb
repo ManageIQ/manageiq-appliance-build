@@ -164,7 +164,7 @@ module Build
           client.put_object(put_options.merge(:body => content))
         end
 
-        status = response.etag == options[:source_hash] ? "complete" : "checksum-mismatch"
+        status = response.etag.tr("\\\"", "") == options[:source_hash] ? "complete" : "checksum-mismatch"
         puts "Uploading #{appliance} to DigitalOcean as #{destination}...#{status}"
       end
 
