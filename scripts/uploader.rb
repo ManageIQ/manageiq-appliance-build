@@ -150,6 +150,9 @@ module Build
         @endpoint   = config[:endpoint]
       end
 
+      def login
+      end
+
       def upload(source, destination, options)
         appliance = File.basename(source)
         puts "Uploading #{appliance} to DigitalOcean as #{destination}..."
