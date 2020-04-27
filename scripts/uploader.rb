@@ -24,7 +24,7 @@ module Build
     end
 
     def run
-      rackspace_client.login
+      clients.each(&:login)
 
       Dir.glob("#{directory}/*").each do |appliance|
         # Skip files without date
@@ -43,16 +43,14 @@ module Build
           upload_options[:expires] = delete_at
         end
 
-        digital_ocean_client.upload(source_name, destination_name, upload_options)
-        rackspace_client.upload(source_name, destination_name, upload_options)
+        clients.each { |c| c.upload(source_name, destination_name, upload_options) }
 
         next unless master?(appliance)
 
         if nightly?
           devel = devel_filename(destination_name)
 
-          digital_ocean_client.copy(destination_name, devel)
-          rackspace_client.copy(destination_name, devel)
+          clients.each { |c| c.copy(destination_name, devel) }
         end
       end
     end
@@ -203,6 +201,10 @@ module Build
 
     def digital_ocean_client
       @digital_ocean_client ||= DigitalOcean.new(config[:digital_ocean])
+    end
+
+    def clients
+      @clients ||= [digital_ocean_client, rackspace_client]
     end
 
     def master?(filename)
