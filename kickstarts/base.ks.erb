@@ -134,9 +134,6 @@ echo "" >> /etc/ssh/sshd_config
 # Remove packages not needed
 yum -C -y --noplugins remove linux-firmware doxygen
 
-# Clean the logs
-rm -vf /var/www/miq/vmdb/log/*.log
-
 # CentOS 7.3 isn't clearing out spaces during install.
 # Add a workaround to write zeros and manually clear out.
 partitions="/ /var /var/log /var/log/audit /tmp /home"
