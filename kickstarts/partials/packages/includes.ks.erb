@@ -6,25 +6,16 @@ manageiq-appliance-tools
 epel-release
 
 createrepo
-freeipmi
 fuse-libs
-ipmitool
 
-cifs-utils
 cmake                            # For rugged gem
 cronie
 http-parser                      # libhttp_parser.so.2 needed by nodejs
 logrotate
 lshw                             # From epel
 nmap-ncat
-network-scripts
-nfs-utils
-nodejs                           # used for asset pipeline asset compilation - From epel
-OpenIPMI
-openscap-scanner
 python3-devel                    # for building python modules in post
 telnet
-v2v-conversion-host-ansible
 zip                              # build requires
 
 # IPA RPMs for certificate support
@@ -37,8 +28,6 @@ openldap-clients
 <% if @target != "azure" && @target != "gce" %>
 cloud-init
 <% end %>
-
-wmi
 
 <% case @target
    when "azure" %>
@@ -55,8 +44,3 @@ glusterfs-fuse
 <% when "vsphere" %>
 open-vm-tools
 <% end %>
-
-# Qpid Proton libs for Nuage provider
-cyrus-sasl
-cyrus-sasl-plain
-qpid-proton-c
