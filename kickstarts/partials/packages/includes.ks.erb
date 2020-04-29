@@ -10,27 +10,19 @@ freeipmi
 fuse-libs
 ipmitool
 
-ansible
-ansible-runner
 cifs-utils
 cmake                            # For rugged gem
-cockpit
 cronie
 http-parser                      # libhttp_parser.so.2 needed by nodejs
 logrotate
 lshw                             # From epel
 nmap-ncat
-net-snmp
-net-snmp-libs
-net-snmp-utils
 network-scripts
 nfs-utils
 nodejs                           # used for asset pipeline asset compilation - From epel
 OpenIPMI
 openscap-scanner
 python3-devel                    # for building python modules in post
-ruby
-socat                            # for proxying remote consoles
 telnet
 v2v-conversion-host-ansible
 zip                              # build requires
@@ -63,10 +55,6 @@ glusterfs-fuse
 <% when "vsphere" %>
 open-vm-tools
 <% end %>
-
-# For cockpit integration
-cockpit-ws
-cockpit-ssh
 
 # Qpid Proton libs for Nuage provider
 cyrus-sasl
