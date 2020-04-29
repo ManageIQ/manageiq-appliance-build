@@ -1,22 +1,12 @@
 manageiq-appliance
 manageiq-appliance-tools
 
-## Review and remove packages that are required by manageiq-* rpms
-
 epel-release
 
 createrepo
 fuse-libs
 
-cmake                            # For rugged gem
-http-parser                      # libhttp_parser.so.2 needed by nodejs
-lshw                             # From epel
 python3-devel                    # for building python modules in post
-telnet
-zip                              # build requires
-
-# IPA RPMs for certificate support
-certmonger
 
 <% if @target != "azure" && @target != "gce" %>
 cloud-init
