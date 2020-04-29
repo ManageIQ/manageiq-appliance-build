@@ -9,21 +9,14 @@ createrepo
 fuse-libs
 
 cmake                            # For rugged gem
-cronie
 http-parser                      # libhttp_parser.so.2 needed by nodejs
-logrotate
 lshw                             # From epel
-nmap-ncat
 python3-devel                    # for building python modules in post
 telnet
 zip                              # build requires
 
 # IPA RPMs for certificate support
 certmonger
-
-# External Authentication - LDAP
-openldap-clients
-
 
 <% if @target != "azure" && @target != "gce" %>
 cloud-init
