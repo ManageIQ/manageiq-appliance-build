@@ -8,12 +8,10 @@ epel-release
 createrepo
 freeipmi
 fuse-libs
-httpd
 ipmitool
 
 ansible
 ansible-runner
-chrony
 cifs-utils
 cmake                            # For rugged gem
 cockpit
@@ -21,9 +19,6 @@ cronie
 http-parser                      # libhttp_parser.so.2 needed by nodejs
 logrotate
 lshw                             # From epel
-lvm2
-memcached
-mod_ssl
 nmap-ncat
 net-snmp
 net-snmp-libs
@@ -33,11 +28,7 @@ nfs-utils
 nodejs                           # used for asset pipeline asset compilation - From epel
 OpenIPMI
 openscap-scanner
-postfix                          # smtp server for sending email using localhost:25
-postgresql                       # appliance section
-postgresql-server                # appliance section
 python3-devel                    # for building python modules in post
-repmgr10
 ruby
 smem                             # for PSS, USS with forked processes
 socat                            # for proxying remote consoles
@@ -46,39 +37,14 @@ tree
 v2v-conversion-host-ansible
 vim-enhanced
 wget                             # build requires
-yum-utils
 zip                              # build requires
 
-# IPA Identity RPMs for External Authentication
-c-ares
-ipa-client
-sssd-dbus
-mod_intercept_form_submit
-mod_auth_gssapi
-mod_authnz_pam
-mod_lookup_identity
-realmd
-
 # IPA RPMs for certificate support
-ipa-admintools
 certmonger
-
-# External Authentication - Adding Support for Active Directory
-oddjob
-oddjob-mkhomedir
-sssd
-adcli
-samba-common
-samba-common-tools
 
 # External Authentication - LDAP
 openldap-clients
 
-# External Authentication - SAML
-mod_auth_mellon
-
-# External Authentication - OpenID-Connect
-mod_auth_openidc
 
 <% if @target != "azure" && @target != "gce" %>
 cloud-init
