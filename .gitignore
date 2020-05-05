@@ -4,3 +4,4 @@
 config/generated/base*.tdl
 kickstarts/generated/*.ks
 scripts/Gemfile.dev.rb
+OPTIONS

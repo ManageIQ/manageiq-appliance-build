@@ -19,6 +19,7 @@ DATE_STAMP=`date +"%Y%m%d_%T"`
 LOG_FILE="${LOG_DIR}/${BRANCH}_${DATE_STAMP}.log"
 DOCS_LOG_FILE="${LOG_DIR}/${BRANCH}_${DATE_STAMP}_docs.log"
 CONTAINER_LOG_FILE="${LOG_DIR}/${BRANCH}_${DATE_STAMP}_container.log"
+RPM_LOG_FILE="${LOG_DIR}/${BRANCH}_${DATE_STAMP}_rpm.log"
 BUILD_OPTIONS="--type nightly --upload --reference ${BRANCH} --copy-dir ${BRANCH}"
 
 if [ "${1}" = "--fileshare" -o "${1}" = "--no-fileshare" -o "${1}" = "--local" ]
@@ -29,15 +30,20 @@ fi
 
 if [ "${1}" = "--fg" ]
 then
-  echo "Nightly Build kicked off, Log being saved in ${LOG_FILE} ..."
-
-  time ruby ${BUILD_DIR}/scripts/vmbuild.rb $BUILD_OPTIONS 2>&1 | tee ${LOG_FILE}
   time ruby ${BUILD_DIR}/scripts/docbuild.rb 2>&1 | tee ${DOCS_LOG_FILE}
+
+  echo "Nightly RPM build kicked off, Log being saved in ${RPM_LOG_FILE} ..."
+  ${BUILD_DIR}/bin/rpm-build.sh -t nightly -r $BRANCH 2>&1 |tee ${RPM_LOG_FILE}
+  [ ${PIPESTATUS[0]} -ne 0 ] && exit 1
+
+  echo "Nightly Build kicked off, Log being saved in ${LOG_FILE} ..."
+  time ruby ${BUILD_DIR}/scripts/vmbuild.rb $BUILD_OPTIONS 2>&1 | tee ${LOG_FILE}
   time ${BUILD_DIR}/bin/container-build.sh ${BRANCH} 2>&1 | tee ${CONTAINER_LOG_FILE}
 else
-  nohup time ruby ${BUILD_DIR}/scripts/vmbuild.rb $BUILD_OPTIONS >${LOG_FILE} 2>&1 &
   nohup time ruby ${BUILD_DIR}/scripts/docbuild.rb >${DOCS_LOG_FILE} 2>&1 &
-  nohup time ${BUILD_DIR}/bin/container-build.sh ${BRANCH} >${CONTAINER_LOG_FILE} 2>&1 &
+  ( nohup time ${BUILD_DIR}/bin/rpm-build.sh -t nightly -r $BRANCH > ${RPM_LOG_FILE} 2>&1 &&
+    ( nohup time ruby ${BUILD_DIR}/scripts/vmbuild.rb $BUILD_OPTIONS >${LOG_FILE} 2>&1 &
+      nohup time ${BUILD_DIR}/bin/container-build.sh ${BRANCH} >${CONTAINER_LOG_FILE} 2>&1 ) ) &
 
-  echo "Nightly Build kicked off, Log @ ${LOG_FILE} ..."
+  echo "Nightly Build kicked off, Logs @ ${LOG_DIR}/${BRANCH}_${DATE_STAMP}*.log..."
 fi
