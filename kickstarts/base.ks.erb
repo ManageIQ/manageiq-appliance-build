@@ -80,7 +80,8 @@ export PATH=$PATH:/usr/local/bin
 
 <%= render_partial "post/python_modules" %>
 
-/opt/manageiq/manageiq-appliance/manageiq-setup.sh
+source /etc/default/evm
+$APPLIANCE_SOURCE_DIRECTORY/manageiq-setup.sh
 
 <%= render_partial "post/systemd" %>
 
