@@ -38,7 +38,7 @@ module Build
         upload_options   = {:source_hash => Digest::MD5.file(source_name).hexdigest}
 
         if nightly?
-          image_date = destination_name.match(/.*([0-9]{8}).*/)[1]
+          image_date = destination_name.split("-")[-2]
           delete_at  = (DateTime.parse(image_date) + NIGHTLY_BUILD_RETENTION_TIME)
           upload_options[:expires] = delete_at
         end
