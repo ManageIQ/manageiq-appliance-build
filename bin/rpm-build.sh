@@ -4,8 +4,8 @@ set -ex
 BUILD_DIR="$(dirname "$(readlink -f "$0")")/.."
 
 CONFIG_OPTION=${CONFIG_OPTION:-$BUILD_DIR/OPTIONS}
-COPR_TOKEN=${COPR_TOKEN:-~/.config/copr}
 RPM_BUILD_IMAGE=${RPM_BUILD_IMAGE:-"manageiq/rpm_build"}
+RPM_CACHE_DIR=${RPM_CACHE_DIR:-$BUILD_DIR/rpm_cache}
 
 while getopts "t:r:h" opt; do
   case $opt in
@@ -32,6 +32,6 @@ else
 fi
 RPM_BUILD_IMAGE=$RPM_BUILD_IMAGE:$tag
 
-cmd="build --build-type $BUILD_TYPE --git-ref $REF"
+cmd="build --build-type $BUILD_TYPE --git-ref $REF --update-rpm-repo"
 docker pull $RPM_BUILD_IMAGE
-docker run --rm -v $COPR_TOKEN:/root/.config/copr -v $CONFIG_OPTION:/root/OPTIONS $RPM_BUILD_IMAGE $cmd
+docker run --rm -v $CONFIG_OPTION:/root/OPTIONS -v $RPM_CACHE_DIR:/root/rpm_cache $RPM_BUILD_IMAGE $cmd
