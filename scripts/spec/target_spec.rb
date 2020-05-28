@@ -34,11 +34,11 @@ describe Build::Target do
   end
 
   it ".supported_types" do
-    expect(described_class.supported_types).to match_array %w(openstack ovirt vsphere hyperv azure vagrant libvirt gce ec2 v2v_conv_host)
+    expect(described_class.supported_types).to match_array %w(openstack ovirt vsphere hyperv azure vagrant libvirt gce ec2)
   end
 
   it ".default_types" do
-    expect(described_class.default_types).to match_array %w(openstack ovirt vsphere hyperv azure vagrant libvirt gce ec2 v2v_conv_host)
+    expect(described_class.default_types).to match_array %w(openstack ovirt vsphere hyperv azure vagrant libvirt gce ec2)
   end
 
   it "#to_s" do
