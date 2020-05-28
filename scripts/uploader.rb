@@ -26,9 +26,10 @@ module Build
     def run
       clients.each(&:login)
 
-      Dir.glob("#{directory}/*").each do |appliance|
-        # Skip files without date
-        unless appliance.match?(/.+-[0-9]{12}/)
+      appliances = Dir.glob("#{directory}/manageiq*")
+      appliances.each do |appliance|
+        # Skip badly named appliances, missing git sha: manageiq-openstack-master-201407142000-.qc2
+        unless appliance.match?(/.+-[0-9]{12}-[0-9a-fA-F]+/)
           puts "Skipping #{appliance}"
           next
         end
@@ -38,7 +39,7 @@ module Build
         upload_options   = {:source_hash => Digest::MD5.file(source_name).hexdigest}
 
         if nightly?
-          image_date = destination_name.match(/.*([0-9]{8}).*/)[1]
+          image_date = destination_name.split("-")[-2]
           delete_at  = (DateTime.parse(image_date) + NIGHTLY_BUILD_RETENTION_TIME)
           upload_options[:expires] = delete_at
         end
@@ -237,18 +238,21 @@ module Build
     end
 
     def devel_filename(appliance_name)
-      name = appliance_name.match(/(.*-).*-[0-9]{8}(?:-\h*)?(.*)/)
-      "#{name[1]}devel#{name[2]}"
+      name = appliance_name.split("-")
+      extension = ".#{appliance_name.split(".", 2).last}"
+      (name[0..1] << "devel").join("-") + extension
     end
 
     def nightly_filename(appliance_name)
-      name = appliance_name.match(/(.*)([0-9]{12})(.*)/)
-      "#{name[1]}#{name[2][0, 8]}#{name[3]}"
+      name = appliance_name.split("-")
+      name[-2] = name[-2][0, 8]
+      name.join("-")
     end
 
     def release_filename(appliance_name)
-      name = appliance_name.match(/(.*)-[0-9]{12}(?:-\h*)?(.*)/)
-      "#{name[1]}#{name[2]}"
+      name = appliance_name.split("-")
+      ext = name[-1].sub(/\h*/, '')
+      name[0..-3].join("-") << ext
     end
   end
 end
