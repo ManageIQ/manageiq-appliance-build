@@ -28,12 +28,12 @@ timezone --utc America/New_York
 
 module --name mod_auth_openidc
 module --name nodejs --stream 12
+module --name ruby --stream 2.6
 
 reboot
 
 %packages --excludedocs
 @base --nodefaults
-@development tools
 
 <%= render_partial "packages/includes" %>
 <%= render_partial "packages/excludes" %>
@@ -69,12 +69,10 @@ unset DEBUG
 # See: https://github.com/ManageIQ/manageiq/pull/6751
 export RAILS_USE_MEMORY_STORE="true"
 
-# ensure /usr/local/bin is on the path (for ruby and virtualenv)
+# ensure /usr/local/bin is on the path (for virtualenv)
 export PATH=$PATH:/usr/local/bin
 
 <%= render_partial "post/firewalld" %>
-
-<%= render_partial "post/source_setup" %>
 
 <%= render_partial "post/repos" %>
 
@@ -82,17 +80,8 @@ export PATH=$PATH:/usr/local/bin
 
 <%= render_partial "post/python_modules" %>
 
-<%= render_partial "post/ruby_install" %>
-
-<%= render_partial "post/bundler" %>
-
-# needs to run *after* post/bundler
-<%= render_partial "post/ui_compile" %>
-
-<%= render_partial "post/rake_tasks" %>
-
-# appliance_root="/opt/manageiq/manageiq-appliance" -- in post/source_setup partial
-$appliance_root/manageiq-setup.sh
+source /etc/default/evm
+$APPLIANCE_SOURCE_DIRECTORY/manageiq-setup.sh
 
 <%= render_partial "post/systemd" %>
 
@@ -144,9 +133,6 @@ echo "" >> /etc/ssh/sshd_config
 
 # Remove packages not needed
 yum -C -y --noplugins remove linux-firmware doxygen
-
-# Clean the logs
-rm -vf "$vmdb_root"/log/*.log
 
 # CentOS 7.3 isn't clearing out spaces during install.
 # Add a workaround to write zeros and manually clear out.
