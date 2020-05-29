@@ -19,15 +19,13 @@ puddle    = nil
 directory = cli_options[:copy_dir]
 
 case cli_options[:type]
-when "nightly"
-  build_label = cli_options[:manageiq_ref]
-when "release"
-  build_label = cli_options[:manageiq_ref]
+when "nightly", "release"
+  build_label = cli_options[:reference]
 when nil
   build_label = "test"
 else
   puddle = cli_options[:type]
-  build_label = "#{cli_options[:type]}-#{cli_options[:manageiq_ref]}"
+  build_label = "#{cli_options[:type]}-#{cli_options[:reference]}"
 end
 
 BUILD_BASE          = Pathname.new("/build")
