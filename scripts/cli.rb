@@ -50,7 +50,6 @@ module Build
       # 'release' build requires non DEFAULT_REF reference
       Optimist.die(:reference, git_ref_desc) if options[:type] == "release" && options[:reference] == DEFAULT_REF
 
-
       self
     end
 

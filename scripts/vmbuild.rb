@@ -155,7 +155,7 @@ Dir.chdir(IMGFAC_DIR) do
     $log.info "Built #{target} with final UUID: #{uuid}"
 
     FileUtils.mkdir_p(destination_directory)
-    file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{target.file_extension}"
+    file_name = "#{name}-#{target}-#{build_label}-#{timestamp}.#{target.file_extension}"
     destination = destination_directory.join(file_name)
 
     Dir.chdir(STORAGE_DIR) do
