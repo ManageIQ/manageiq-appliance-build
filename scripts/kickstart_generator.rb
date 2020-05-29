@@ -13,8 +13,9 @@ module Build
 
     attr_reader :targets, :puddle
 
-    def initialize(build_base, targets, puddle)
+    def initialize(build_base, build_type, targets, puddle)
       @build_base         = Pathname.new(build_base)
+      @build_type         = build_type
       @ks_gen_base        = @build_base.join(KS_GEN_DIR)
       @targets            = targets
       @puddle             = puddle # used during ERB evaluation
