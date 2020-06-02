@@ -36,8 +36,8 @@ Below are instructions on configuring a dedicated build machine to generate appl
 
   * Install docker and start service
     ```
-    yum config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
-    yum install docker-ce --nobest
+    dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+    dnf install docker-ce --nobest
     systemctl enable --now docker
     ```
 
@@ -84,7 +84,7 @@ Below are instructions on configuring a dedicated build machine to generate appl
 ## Optional: Setup Apache for sharing built images
 
   ```
-  yum install httpd
+  dnf install httpd
   firewall-cmd --permanent --add-port=80/tcp
   firewall-cmd --permanent --add-port=443/tcp
   firewall-cmd --reload
