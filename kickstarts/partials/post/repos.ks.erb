@@ -1,9 +1,9 @@
 # post install repos
-# yum update uses these repos to update and reinstall packages.
+# dnf update uses these repos to update and reinstall packages.
 # Please also add to "build time repos" main/repos partial
 
-yum config-manager --set-enabled PowerTools
-yum config-manager --setopt=epel.exclude=*qpid-proton* --save
+dnf config-manager --set-enabled PowerTools
+dnf config-manager --setopt=epel.exclude=*qpid-proton* --save
 
 pushd /etc/yum.repos.d/
   wget https://releases.ansible.com/ansible-runner/ansible-runner.el8.repo

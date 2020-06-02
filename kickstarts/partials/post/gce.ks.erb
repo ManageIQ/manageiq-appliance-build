@@ -8,7 +8,7 @@ network_enabled=false
 setup=false
 EOF
 
-yum install -y google-compute-engine python-google-compute-engine
+dnf install -y google-compute-engine python-google-compute-engine
 
 # Delete cfg files used here, so default cfg file will be created on next boot
 rm -f /etc/default/instance_configs.cfg*

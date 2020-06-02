@@ -52,11 +52,11 @@ set -x
 PS4="+ [\t] "
 
 # Don't install doc
-yum-config-manager --setopt=tsflags=nodocs --save > /dev/null
+dnf config-manager --setopt=tsflags=nodocs --save > /dev/null
 
 # Mount tmpfs on /tmp. This will remove about 200MiB of bower and bundler
 # intermediate files from the image. And do the same for /var/cache which saves
-# another 115MiB in yum cache files.
+# another 115MiB in dnf cache files.
 mount -t tmpfs tmpfs /tmp
 mount -t tmpfs tmpfs /var/cache
 
@@ -132,7 +132,7 @@ dracut --force --add-drivers "$drivers" $ramfsfile $kversion
 echo "" >> /etc/ssh/sshd_config
 
 # Remove packages not needed
-yum -C -y --noplugins remove linux-firmware doxygen
+dnf -C -y --noplugins remove linux-firmware doxygen
 
 # CentOS 7.3 isn't clearing out spaces during install.
 # Add a workaround to write zeros and manually clear out.
