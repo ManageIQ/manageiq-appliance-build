@@ -4,6 +4,9 @@
 
 dnf config-manager --set-enabled PowerTools
 dnf config-manager --setopt=epel.exclude=*qpid-proton* --save
+<% if @build_type != "release" %>
+dnf config-manager --enable manageiq-*-nightly
+<% end %>
 
 pushd /etc/yum.repos.d/
   wget https://releases.ansible.com/ansible-runner/ansible-runner.el8.repo

@@ -14,5 +14,6 @@ options = Build::Cli.parse.options
 
 Build::KickstartGenerator.new(
   File.expand_path("..", __dir__),
+  options[:type],
   options[:only],
   nil).run
