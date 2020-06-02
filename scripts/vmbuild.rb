@@ -83,7 +83,7 @@ name            = "manageiq"
 
 targets = cli_options[:only].collect { |only| Build::Target.new(only) }
 
-ks_gen = Build::KickstartGenerator.new(cfg_base, cli_options[:only], puddle)
+ks_gen = Build::KickstartGenerator.new(cfg_base, cli_options[:type], cli_options[:only], puddle)
 ks_gen.run
 
 file_rdu_dir_base = FILE_SERVER_BASE.join(directory)

@@ -8,7 +8,9 @@ repo --name=ovirt      --mirrorlist=https://resources.ovirt.org/pub/yum-repo/mir
 
 repo --name=manageiq-jansa         --baseurl=https://rpm.manageiq.org/release/10-jansa/el$releasever/$basearch
 repo --name=manageiq-jansa-noarch  --baseurl=https://rpm.manageiq.org/release/10-jansa/el$releasever/noarch
+<% if @build_type != "release" %>
 repo --name=manageiq-jansa-nightly --baseurl=https://rpm.manageiq.org/release/10-jansa-nightly/el$releasever/$basearch
+<% end %>
 
 <% if @target == "gce" %>
 repo --name=google-cloud-compute --baseurl=https://packages.cloud.google.com/yum/repos/google-compute-engine-el8-x86_64-stable
