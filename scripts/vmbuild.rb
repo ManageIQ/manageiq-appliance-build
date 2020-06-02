@@ -6,7 +6,6 @@ require 'yaml'
 
 require_relative 'productization'
 require_relative 'kickstart_generator'
-require_relative 'git_checkout'
 require_relative 'cli'
 require_relative 'uploader'
 require_relative 'target'
@@ -20,15 +19,13 @@ puddle    = nil
 directory = cli_options[:copy_dir]
 
 case cli_options[:type]
-when "nightly"
-  build_label = cli_options[:manageiq_ref]
-when "release"
-  build_label = cli_options[:manageiq_ref]
+when "nightly", "release"
+  build_label = cli_options[:reference]
 when nil
   build_label = "test"
 else
   puddle = cli_options[:type]
-  build_label = "#{cli_options[:type]}-#{cli_options[:manageiq_ref]}"
+  build_label = "#{cli_options[:type]}-#{cli_options[:reference]}"
 end
 
 BUILD_BASE          = Pathname.new("/build")
@@ -87,10 +84,7 @@ name            = "manageiq"
 
 targets = cli_options[:only].collect { |only| Build::Target.new(only) }
 
-manageiq_checkout  = Build::GitCheckout.new(:remote => cli_options[:manageiq_url],  :ref => cli_options[:manageiq_ref])
-appliance_checkout = Build::GitCheckout.new(:remote => cli_options[:appliance_url], :ref => cli_options[:appliance_ref])
-sui_checkout       = Build::GitCheckout.new(:remote => cli_options[:sui_url],       :ref => cli_options[:sui_ref])
-ks_gen = Build::KickstartGenerator.new(cfg_base, cli_options[:only], puddle, manageiq_checkout, appliance_checkout, sui_checkout)
+ks_gen = Build::KickstartGenerator.new(cfg_base, cli_options[:only], puddle)
 ks_gen.run
 
 file_rdu_dir_base = FILE_SERVER_BASE.join(directory)
@@ -161,7 +155,7 @@ Dir.chdir(IMGFAC_DIR) do
     $log.info "Built #{target} with final UUID: #{uuid}"
 
     FileUtils.mkdir_p(destination_directory)
-    file_name = "#{name}-#{target}-#{build_label}-#{timestamp}-#{manageiq_checkout.commit_sha}.#{target.file_extension}"
+    file_name = "#{name}-#{target}-#{build_label}-#{timestamp}.#{target.file_extension}"
     destination = destination_directory.join(file_name)
 
     Dir.chdir(STORAGE_DIR) do
