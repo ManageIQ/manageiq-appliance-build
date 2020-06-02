@@ -8,6 +8,8 @@ dnf config-manager --setopt=epel.exclude=*qpid-proton* --save
 dnf config-manager --enable manageiq-*-nightly
 <% end %>
 
+dnf install -y https://resources.ovirt.org/pub/yum-repo/ovirt-release44.rpm
+
 pushd /etc/yum.repos.d/
   wget https://releases.ansible.com/ansible-runner/ansible-runner.el8.repo
 popd
