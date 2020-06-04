@@ -143,6 +143,9 @@ do
   rm -f $partition/tmp_file
 done
 
+# Expire root password so that the appliance admin must change it at next login
+passwd -e root
+
 chvt 1
 ) 2>&1 | tee /dev/tty3
 %end
