@@ -169,17 +169,6 @@ Below are instructions on configuring a dedicated build machine to generate appl
 
     * Note: root will need password-less access to the account listed above.
 
-## Optional: Using local registry for npm/yarn
-
-To use a local registry to download npm/yarn packages, set registry url using `NPM_REGISTRY_OVERRIDE`
-environment variable:
-
-`NPM_REGISTRY_OVERRIDE=https://local.repository`
-
-To clear out the registry override and set to default values at the end of install, use `NPM_REGISTRY_RESET`:
-
-`NPM_REGISTRY_RESET=true`
-
 # Usage
 
 With installs, vnc is not directly available, but can be accessed via local vncviewer
