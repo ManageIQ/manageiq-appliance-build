@@ -1,5 +1,9 @@
 dnf install -y python3-pip libcurl-devel gcc libxml2-devel krb5-devel
 
+if [ `uname -m` = "ppc64le" ]; then
+  dnf install -y libffi-devel libxslt-devel openssl-devel make;
+fi
+
 # For Nuage
 pip3 install vspk==5.3.2
 
