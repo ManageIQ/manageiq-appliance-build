@@ -37,7 +37,7 @@ module Build
         unless release?
           image_date = destination_name.split("-")[-2]
           delete_at  = (DateTime.parse(image_date) + NIGHTLY_BUILD_RETENTION_TIME)
-          upload_options[:expires] = delete_at
+          upload_options[:delete_at] = delete_at
         end
 
         clients.each { |c| c.upload(source_name, destination_name, upload_options) }
@@ -80,7 +80,7 @@ module Build
         puts "Uploading #{appliance} to Rackspace as #{destination}..."
 
         upload_headers = headers.merge("ETag" => options[:source_hash])
-        upload_headers["X-Delete-At"] = options[:expires].to_i.to_s if options[:expires]
+        upload_headers["X-Delete-At"] = options[:delete_at].to_i.to_s if options[:delete_at]
 
         destination_url = url(destination)
 
@@ -148,7 +148,7 @@ module Build
           :acl    => "public-read",
           :bucket => bucket,
           :key    => destination,
-        }.tap { |h| h[:expires] = options[:expires] if options[:expires] }
+        }.tap { |h| h[:metadata]["delete_at"] = options[:delete_at] if options[:delete_at] }
 
         response = File.open(source, 'rb') do |content|
           client.put_object(put_options.merge(:body => content))
