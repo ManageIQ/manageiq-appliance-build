@@ -160,7 +160,7 @@ module Build
           :acl    => "public-read",
           :bucket => bucket,
           :key    => destination,
-        }.tap { |h| h[:metadata]["delete_at"] = options[:delete_at] if options[:delete_at] }
+        }.tap { |h| h[:metadata] = {"delete_at" => options[:delete_at].to_i.to_s} if options[:delete_at] }
 
         response = File.open(source, 'rb') do |content|
           client.put_object(put_options.merge(:body => content))
