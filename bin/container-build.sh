@@ -23,7 +23,7 @@ rm -rf ${PODS_SOURCE_DIR}
 git clone -b ${1} https://github.com/ManageIQ/manageiq-pods ${PODS_SOURCE_DIR}
 
 pushd ${PODS_SOURCE_DIR}
-  env MIQ_REF=${1} SUI_REF=${1} APPLIANCE_REF=${1} BUILD_REF=${1} bin/build -n -p -d images -r manageiq -t ${tag}
+  env BUILD_REF=${1} bin/build -n -p -d images -r manageiq -t ${tag}
   bin/remove_images -r manageiq -t ${tag}
 popd
 
