@@ -58,87 +58,6 @@ module Build
 
     private
 
-    class Rackspace
-      attr_reader :username, :api_key, :region, :container
-
-      def initialize(config)
-        @container = "release"
-        @username  = config[:username]
-        @api_key   = config[:api_key]
-        @region    = config[:region]
-      end
-
-      def login
-        @login ||= begin
-          login_response = RestClient.post(
-            "https://identity.api.rackspacecloud.com/v2.0/tokens",
-            {
-              "auth" => {
-                "RAX-KSKEY:apiKeyCredentials" => {
-                  "username" => username,
-                  "apiKey"   => api_key
-                }
-              }
-            }.to_json,
-            :content_type => :json
-          )
-
-          JSON.parse(login_response.body)
-        end
-      end
-
-      def upload(source, destination, options)
-        appliance = File.basename(source)
-        puts "Uploading #{appliance} to Rackspace as #{destination}..."
-
-        upload_headers = headers.merge("ETag" => options[:source_hash])
-        upload_headers["X-Delete-At"] = options[:delete_at].to_i.to_s if options[:delete_at]
-
-        destination_url = url(destination)
-
-        RestClient.put(
-          destination_url,
-          File.read(source),
-          upload_headers
-        )
-
-        puts "Uploading #{appliance} to Rackspace as #{destination}...complete: #{destination_url}"
-      end
-
-      def copy(source, destination)
-        appliance = File.basename(source)
-        puts "Copying   #{appliance} to #{destination} on Rackspace..."
-
-        RestClient::Request.execute(
-          :method  => :copy,
-          :url     => url(source),
-          :headers => token_headers.merge("Destination" => "/#{container}/#{destination}")
-        )
-
-        puts "Copying   #{appliance} to #{destination} on Rackspace...complete"
-      end
-
-      private
-
-      def url(file = nil)
-        parts = [public_url, container]
-        parts << URI.encode(file) if file
-        parts.join("/")
-      end
-
-      def public_url
-        @public_url ||= login["access"]["serviceCatalog"].detect { |i| i["name"] == "cloudFiles" }["endpoints"].detect { |i| i["region"] == region.to_s.upcase }["publicURL"]
-      end
-
-      def headers
-        @headers ||= token_headers.merge("X-Detect-Content-Type" => "True").freeze
-      end
-
-      def token_headers
-        @token_headers ||= {"X-Auth-Token" => login["access"]["token"]["id"]}.freeze
-      end
-    end
-
     class DigitalOcean
       attr_reader :access_key, :secret_key, :endpoint, :bucket
 
@@ -196,16 +115,12 @@ module Build
       end
     end
 
-    def rackspace_client
-      @rackspace_client ||= Rackspace.new(config[:rackspace])
-    end
-
     def digital_ocean_client
       @digital_ocean_client ||= DigitalOcean.new(config[:digital_ocean])
     end
 
     def clients
-      @clients ||= [digital_ocean_client, rackspace_client]
+      @clients ||= [digital_ocean_client]
     end
 
     def master?(filename)
