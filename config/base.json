@@ -1,4 +1,4 @@
 {
   "generate_icicle": false,
-  "oz_overrides" : "{'libvirt': {'memory': 8192, 'cpus': 4}}"
+  "oz_overrides" : "{'libvirt': {'memory': 2048, 'cpus': 2}}"
 }
