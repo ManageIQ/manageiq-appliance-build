@@ -1,34 +1,50 @@
 #!/bin/bash
-
 set -ex
 
-if [[ $# != 1 ]]; then
-  echo "Wrong number of arguments: $#. Usage example: container-build.sh <branch or tag>"
+while getopts "t:r:h" opt; do
+  case $opt in
+    t) BUILD_TYPE=$OPTARG ;;
+    r) REF=$OPTARG ;;
+    h) echo "Usage: $0 -t BUILD_TYPE -r REF [-h]"; exit 1
+  esac
+done
+
+if [ "$BUILD_TYPE" != "nightly" ] && [ "$BUILD_TYPE" != "release" ]; then
+  echo "Build type (-t) is required, must be either 'nightly' or 'release'"
   exit 1
 fi
 
-BRANCH=${1%%-*}
+if [ -z "$REF" ]; then
+  echo "ref (-r) is required"
+  exit 1
+fi
+
+BRANCH=${REF%%-*}
 PODS_SOURCE_DIR="/build/manageiq-pods-${BRANCH}"
 MANAGEIQ_SOURCE_DIR="/build/manageiq-${BRANCH}"
 
-if [ "${1}" = "master" ]; then
+if [ "${REF}" = "master" ]; then
   tag="latest"
-elif [ "${1}" != "${BRANCH}" ]; then # tag build
-  tag="${1}"
+elif [ "${REF}" != "${BRANCH}" ]; then # tag build
+  tag="${REF}"
 else # branch build
   tag="latest-${BRANCH}"
 fi
 
 rm -rf ${PODS_SOURCE_DIR}
-git clone -b ${1} https://github.com/ManageIQ/manageiq-pods ${PODS_SOURCE_DIR}
+git clone -b ${REF} --depth 1 https://github.com/ManageIQ/manageiq-pods ${PODS_SOURCE_DIR}
 
 pushd ${PODS_SOURCE_DIR}
-  env MIQ_REF=${1} SUI_REF=${1} APPLIANCE_REF=${1} BUILD_REF=${1} bin/build -n -p -d images -r manageiq -t ${tag}
+  build_args="-n -p -d images -r manageiq -t ${tag}"
+  if [ "$BUILD_TYPE" == "release" ]; then
+    build_args+=" -s"
+  fi
+  env BUILD_REF=${REF} bin/build ${build_args}
   bin/remove_images -r manageiq -t ${tag}
 popd
 
 rm -rf ${MANAGEIQ_SOURCE_DIR}
-git clone -b ${1} --depth 1 https://github.com/ManageIQ/manageiq ${MANAGEIQ_SOURCE_DIR}
+git clone -b ${REF} --depth 1 https://github.com/ManageIQ/manageiq ${MANAGEIQ_SOURCE_DIR}
 
 pushd ${MANAGEIQ_SOURCE_DIR}
   docker build --no-cache -t manageiq/manageiq:${tag} --build-arg IMAGE_REF=${tag} .
