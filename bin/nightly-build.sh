@@ -35,11 +35,11 @@ then
 
   echo "Nightly Build kicked off, Log being saved in ${LOG_FILE} ..."
   time ruby ${BUILD_DIR}/scripts/vmbuild.rb $BUILD_OPTIONS 2>&1 | tee ${LOG_FILE}
-  time ${BUILD_DIR}/bin/container-build.sh ${BRANCH} 2>&1 | tee ${CONTAINER_LOG_FILE}
+  time ${BUILD_DIR}/bin/container-build.sh -t nightly -r ${BRANCH} 2>&1 | tee ${CONTAINER_LOG_FILE}
 else
   ( nohup time ${BUILD_DIR}/bin/rpm-build.sh -t nightly -r $BRANCH > ${RPM_LOG_FILE} 2>&1 &&
     ( nohup time ruby ${BUILD_DIR}/scripts/vmbuild.rb $BUILD_OPTIONS >${LOG_FILE} 2>&1 &
-      nohup time ${BUILD_DIR}/bin/container-build.sh ${BRANCH} >${CONTAINER_LOG_FILE} 2>&1 ) ) &
+      nohup time ${BUILD_DIR}/bin/container-build.sh -t nightly -r ${BRANCH} >${CONTAINER_LOG_FILE} 2>&1 ) ) &
 
   echo "Nightly Build kicked off, Logs @ ${LOG_DIR}/${BRANCH}_${DATE_STAMP}*.log..."
 fi
