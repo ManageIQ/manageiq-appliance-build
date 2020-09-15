@@ -15,7 +15,7 @@ pip3 install virtualenv
 
 mkdir -p /var/lib/manageiq/
 pushd /var/lib/manageiq
-  virtualenv venv
+  virtualenv --system-site-packages venv
   source venv/bin/activate
 
   cat > requirements.txt << EOF
