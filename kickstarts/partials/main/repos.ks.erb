@@ -4,16 +4,16 @@ repo --name=AppStream  --baseurl=http://mirror.centos.org/centos/8/AppStream/x86
 repo --name=PowerTools --baseurl=http://mirror.centos.org/centos/8/PowerTools/x86_64/os/
 repo --name=extras     --baseurl=http://mirror.centos.org/centos/8/extras/x86_64/os/
 repo --name=epel       --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=epel-8&arch=x86_64 --excludepkgs=*qpid-proton*
-repo --name=ovirt      --mirrorlist=https://resources.ovirt.org/pub/yum-repo/mirrorlist-ovirt-4.4-el$releasever
+repo --name=ovirt-4.4  --mirrorlist=https://resources.ovirt.org/pub/yum-repo/mirrorlist-ovirt-4.4-el$releasever
 
-repo --name=manageiq-jansa         --baseurl=https://rpm.manageiq.org/release/10-jansa/el$releasever/$basearch
-repo --name=manageiq-jansa-noarch  --baseurl=https://rpm.manageiq.org/release/10-jansa/el$releasever/noarch
+repo --name=manageiq-10-jansa         --baseurl=https://rpm.manageiq.org/release/10-jansa/el$releasever/$basearch
+repo --name=manageiq-10-jansa-noarch  --baseurl=https://rpm.manageiq.org/release/10-jansa/el$releasever/noarch
 <% if @build_type != "release" %>
-repo --name=manageiq-jansa-nightly --baseurl=https://rpm.manageiq.org/release/10-jansa-nightly/el$releasever/$basearch
+repo --name=manageiq-10-jansa-nightly --baseurl=https://rpm.manageiq.org/release/10-jansa-nightly/el$releasever/$basearch
 <% end %>
 
 <% if @target == "gce" %>
-repo --name=google-cloud-compute --baseurl=https://packages.cloud.google.com/yum/repos/google-compute-engine-el8-x86_64-stable
+repo --name=google-compute-engine --baseurl=https://packages.cloud.google.com/yum/repos/google-compute-engine-el8-x86_64-stable
 <% end %>
 
 # Please also add to "post install repos" post/repos partial
