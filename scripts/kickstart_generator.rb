@@ -11,13 +11,14 @@ module Build
     KS_GEN_DIR  = "#{KS_DIR}/generated"
     KS_PART_DIR = "#{KS_DIR}/partials"
 
-    attr_reader :targets, :puddle
+    attr_reader :targets, :product_name, :puddle
 
-    def initialize(build_base, build_type, targets, puddle)
+    def initialize(build_base, build_type, targets, product_name, puddle)
       @build_base         = Pathname.new(build_base)
       @build_type         = build_type
       @ks_gen_base        = @build_base.join(KS_GEN_DIR)
       @targets            = targets
+      @product_name       = product_name
       @puddle             = puddle # used during ERB evaluation
     end
 
@@ -41,19 +42,30 @@ module Build
 
     private
 
-    def evaluate_erb
-      ks_file = Productization.file_for(@build_base, "#{KS_DIR}/base.ks.erb")
-      ERB.new(File.read(ks_file)).result(binding)
-    end
+    def render(dir, filename, raise_on_missing = true)
+      file = Productization.file_for(@build_base, "#{dir}/#{filename}.ks.erb")
 
-    def render_partial(filename)
-      file = Productization.file_for(@build_base, "#{KS_PART_DIR}/#{filename}.ks.erb")
+      if file.nil?
+        if raise_on_missing
+          raise ArgumentError, "partial file #{filename.inspect} not found"
+        else
+          return
+        end
+      end
+
       ERB.new(File.read(file)).result(binding)
     end
 
+    def evaluate_erb
+      render(KS_DIR, "base")
+    end
+
+    def render_partial(filename)
+      render(KS_PART_DIR, filename)
+    end
+
     def render_partial_if_exist(filename)
-      return unless File.file?(filename)
-      ERB.new(File.read(filename)).result(binding)
+      render(KS_PART_DIR, filename, false)
     end
   end
 end

@@ -80,11 +80,9 @@ hour_minute       = Time.now.strftime("%H%M")
 directory_name    = "#{year_month_day}_#{hour_minute}"
 timestamp         = "#{year_month_day}#{hour_minute}"
 
-name            = "manageiq"
-
 targets = cli_options[:only].collect { |only| Build::Target.new(only) }
 
-ks_gen = Build::KickstartGenerator.new(cfg_base, cli_options[:type], cli_options[:only], puddle)
+ks_gen = Build::KickstartGenerator.new(cfg_base, cli_options[:type], cli_options[:only], cli_options[:product_name], puddle)
 ks_gen.run
 
 file_rdu_dir_base = FILE_SERVER_BASE.join(directory)
@@ -155,7 +153,7 @@ Dir.chdir(IMGFAC_DIR) do
     $log.info "Built #{target} with final UUID: #{uuid}"
 
     FileUtils.mkdir_p(destination_directory)
-    file_name = "#{name}-#{target}-#{build_label}-#{timestamp}.#{target.file_extension}"
+    file_name = "#{cli_options[:product_name]}-#{target}-#{build_label}-#{timestamp}.#{target.file_extension}"
     destination = destination_directory.join(file_name)
 
     Dir.chdir(STORAGE_DIR) do
