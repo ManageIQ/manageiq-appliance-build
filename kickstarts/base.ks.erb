@@ -138,6 +138,9 @@ passwd -e root
 # and write a config for eth0 allowing the 'network' service to come up cleanly.
 rm -f /etc/sysconfig/network-scripts/ifcfg-en*
 
+# Remove machine-id
+cat /dev/null > /etc/machine-id
+
 cat <<EOF > /etc/sysconfig/network-scripts/ifcfg-eth0
 DEVICE=eth0
 BOOTPROTO=dhcp
