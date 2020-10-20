@@ -18,3 +18,5 @@ repo --name=google-compute-engine --baseurl=https://packages.cloud.google.com/yu
 
 # Please also add to "post install repos" post/repos partial
 repo --name=ansible-runner --baseurl=https://releases.ansible.com/ansible-runner/rpm/epel-8-x86_64/
+
+<%= render_partial_if_exist "main/repos-extra" %>

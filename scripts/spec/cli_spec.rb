@@ -34,6 +34,14 @@ describe Build::Cli do
       expect(described_class.new.parse(%w(--reference master -b branch_name)).options[:reference]).to eq("master")
     end
 
+    it "product_name (default)" do
+      expect(described_class.new.parse(%w()).options[:product_name]).to eq("manageiq")
+    end
+
+    it "product_name" do
+      expect(described_class.new.parse(%w(--product-name foo)).options[:product_name]).to eq("foo")
+    end
+
     it "release without reference" do
       expect { described_class.new.parse(%w(--type release)) }.to raise_error(SystemExit)
     end

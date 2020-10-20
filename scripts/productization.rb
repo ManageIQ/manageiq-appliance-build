@@ -8,7 +8,7 @@ module Build
       build_dir  = Pathname.new(build_base)
       prod_file  = build_dir.join(PROD_DIR).join(path)
       build_file = build_dir.join(path)
-      File.exist?(prod_file) ? prod_file : build_file
+      [prod_file, build_file].detect { |f| File.exist?(f) }
     end
   end
 end
