@@ -16,4 +16,5 @@ Build::KickstartGenerator.new(
   File.expand_path("..", __dir__),
   options[:type],
   options[:only],
+  options[:product_name],
   nil).run
