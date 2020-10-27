@@ -1,8 +1,7 @@
 ---
 language: ruby
 rvm:
-- 2.5.7
-- 2.6.5
+- 2.6.6
 matrix: {}
 fast_finish: true
 sudo: false
