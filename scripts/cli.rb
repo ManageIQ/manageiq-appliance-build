@@ -21,6 +21,7 @@ module Build
       build_desc     = "Repo URL containing the build config and kickstart"
       upload_desc    = "Upload appliance builds to the website"
       only_desc      = "Build only specific image types.  Example: --only ovirt openstack.  Defaults to all images."
+      delete_desc    = "Delete artifacts from fileshare after upload"
 
       @options = Optimist.options(args) do
         banner "Usage: build.rb [options]"
@@ -34,6 +35,7 @@ module Build
         opt :only,          only_desc,      :type => :strings, :short => "o", :default => Target.default_types
         opt :type,          type_desc,      :type => :string,  :short => "t", :default => DEFAULT_TYPE
         opt :upload,        upload_desc,    :type => :boolean, :short => "u", :default => false
+        opt :delete,        delete_desc,    :type => :boolean, :short => "e", :default => false
       end
 
       options[:type] &&= options[:type].strip

@@ -5,22 +5,23 @@ require 'yaml'
 
 module Build
   class Uploader
-    attr_reader :directory, :type
+    attr_reader :directory, :type, :delete_after_upload
 
     NIGHTLY_BUILD_RETENTION_TIME = 8.weeks
     CONFIG_FILE = Pathname.new(__dir__).join("../config/upload.yml")
 
-    def self.upload(directory, type)
+    def self.upload(directory, type, delete_after_upload)
       if File.exist?(CONFIG_FILE)
-        new(directory, type).run
+        new(directory, type, delete_after_upload).run
       else
         puts "#{CONFIG_FILE} doesn't exist, not uploading images"
       end
     end
 
-    def initialize(directory, type)
-      @directory = directory
-      @type      = type
+    def initialize(directory, type, delete_after_upload)
+      @directory           = directory
+      @type                = type
+      @delete_after_upload = delete_after_upload
     end
 
     def run
@@ -44,7 +45,7 @@ module Build
           upload_options[:delete_at] = delete_at
         end
 
-        clients.each { |c| c.upload(source_name, destination_name, upload_options) }
+        clients.each { |c| c.upload(source_name, destination_name, upload_options, delete_after_upload) }
 
         next unless master?(appliance)
 
@@ -71,7 +72,7 @@ module Build
       def login
       end
 
-      def upload(source, destination, options)
+      def upload(source, destination, options, delete_after_upload)
         appliance = File.basename(source)
         puts "Uploading #{appliance} to DigitalOcean as #{destination}..."
 
@@ -87,6 +88,8 @@ module Build
 
         status = response.etag.tr("\\\"", "") == options[:source_hash] ? "complete" : "checksum-mismatch"
         puts "Uploading #{appliance} to DigitalOcean as #{destination}...#{status}"
+
+        FileUtils.rm_f(source) if delete_after_upload && status == "complete"
       end
 
       def copy(source, destination)
