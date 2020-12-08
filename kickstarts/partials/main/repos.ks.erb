@@ -1,6 +1,6 @@
 # build time repos - these repos are used to install the initial packages
-repo --name=BaseOS     --baseurl=http://mirror.centos.org/centos/8/BaseOS/x86_64/os/
-repo --name=AppStream  --baseurl=http://mirror.centos.org/centos/8/AppStream/x86_64/os/
+repo --name=baseos     --baseurl=http://mirror.centos.org/centos/8/BaseOS/x86_64/os/
+repo --name=appstream  --baseurl=http://mirror.centos.org/centos/8/AppStream/x86_64/os/
 repo --name=extras     --baseurl=http://mirror.centos.org/centos/8/extras/x86_64/os/
 repo --name=epel       --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=epel-8&arch=x86_64 --excludepkgs=*qpid-proton*
 repo --name=ovirt-4.4  --mirrorlist=https://resources.ovirt.org/pub/yum-repo/mirrorlist-ovirt-4.4-el$releasever
