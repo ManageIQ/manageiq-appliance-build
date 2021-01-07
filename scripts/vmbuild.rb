@@ -234,5 +234,5 @@ if cli_options[:type] == "nightly" || cli_options[:type] == "release"
     $log.info("Created release ref link: #{result}")
   end
 
-  Build::Uploader.upload(destination_directory, cli_options[:type]) if cli_options[:upload]
+  Build::Uploader.upload(destination_directory, cli_options[:type], cli_options[:delete]) if cli_options[:upload]
 end

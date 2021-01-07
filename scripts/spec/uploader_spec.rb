@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'uploader'
 
 describe Build::Uploader do
-  subject { described_class.new("directory", "type") }
+  subject { described_class.new("directory", "type", false) }
 
   it "#devel_filename" do
     expect(subject.send(:devel_filename, "manageiq-vsphere-master-20200213.ova")).to eq("manageiq-vsphere-devel.ova")
