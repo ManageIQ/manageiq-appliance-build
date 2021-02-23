@@ -1,4 +1,4 @@
-<% if @target == "ec2" || @target == "azure" || @target == "openstack" %>
+<% if @target == "ec2" || @target == "azure" %>
 network --bootproto=dhcp --device=link --activate --onboot=on --noipv6
 <% elsif @target == "gce" %>
 network --bootproto=dhcp --device=link --activate --onboot=on --noipv6 --mtu=1460
