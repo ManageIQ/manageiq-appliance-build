@@ -20,9 +20,7 @@ WALinuxAgent
 dracut-config-generic
 <% when "hyperv" %>
 hyperv-daemons
-<% when "libvirt" %>
-qemu-guest-agent
-<% when "ovirt" %>
+<% when "libvirt", "ovirt" %>
 qemu-guest-agent
 <% when "vsphere" %>
 open-vm-tools
