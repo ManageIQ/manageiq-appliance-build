@@ -1,6 +1,6 @@
 # ManageIQ Appliance Build
 
-[![Build Status](https://api.travis-ci.com/ManageIQ/manageiq-appliance-build.svg)](https://travis-ci.com/ManageIQ/manageiq-appliance-build)
+[![Build Status](https://api.travis-ci.com/ManageIQ/manageiq-appliance-build.svg?branch=lasker)](https://travis-ci.com/ManageIQ/manageiq-appliance-build)
 [![License](http://img.shields.io/badge/license-APACHE2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 # Introduction
