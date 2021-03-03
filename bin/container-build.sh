@@ -35,7 +35,7 @@ rm -rf ${PODS_SOURCE_DIR}
 git clone -b ${REF} --depth 1 https://github.com/ManageIQ/manageiq-pods ${PODS_SOURCE_DIR}
 
 pushd ${PODS_SOURCE_DIR}
-  build_args="-n -p -d images -r manageiq -t ${tag}"
+  build_args="-n -p -d . -r manageiq -t ${tag}"
   if [ "$BUILD_TYPE" == "release" ]; then
     build_args+=" -s"
   fi
