@@ -35,7 +35,7 @@ rm -rf ${PODS_SOURCE_DIR}
 git clone -b ${REF} --depth 1 https://github.com/ManageIQ/manageiq-pods ${PODS_SOURCE_DIR}
 
 pushd ${PODS_SOURCE_DIR}
-  build_args="-n -p -d . -r manageiq -t ${tag}"
+  build_args="-n -p -d . -r docker.io/manageiq -t ${tag}"
   if [ "$BUILD_TYPE" == "release" ]; then
     build_args+=" -s"
   fi
@@ -47,7 +47,7 @@ rm -rf ${MANAGEIQ_SOURCE_DIR}
 git clone -b ${REF} --depth 1 https://github.com/ManageIQ/manageiq ${MANAGEIQ_SOURCE_DIR}
 
 pushd ${MANAGEIQ_SOURCE_DIR}
-  docker build --no-cache -t manageiq/manageiq:${tag} --build-arg IMAGE_REF=${tag} .
-  docker push manageiq/manageiq:${tag}
-  docker rmi manageiq/manageiq:${tag}
+  docker build --no-cache -t docker.io/manageiq/manageiq:${tag} --build-arg IMAGE_REF=${tag} .
+  docker push docker.io/manageiq/manageiq:${tag}
+  docker rmi docker.io/manageiq/manageiq:${tag}
 popd
