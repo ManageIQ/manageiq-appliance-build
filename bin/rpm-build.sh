@@ -34,4 +34,4 @@ RPM_BUILD_IMAGE=$RPM_BUILD_IMAGE:$tag
 
 cmd="build --build-type $BUILD_TYPE --git-ref $REF --update-rpm-repo"
 docker pull $RPM_BUILD_IMAGE
-docker run --rm -v $CONFIG_OPTION:/root/OPTIONS -v $RPM_CACHE_DIR:/root/rpm_cache $RPM_BUILD_IMAGE $cmd
+docker run --rm -v $CONFIG_OPTION:/root/OPTIONS:Z -v $RPM_CACHE_DIR:/root/rpm_cache:Z $RPM_BUILD_IMAGE $cmd
