@@ -30,7 +30,7 @@ module Build
         opt :reference,     git_ref_desc,   :type => :string,  :short => "r", :default => DEFAULT_REF
         opt :product_name,  product_desc,   :type => :string,  :short => "p", :default => DEFAULT_PRODUCT
         opt :copy_dir,      dir_desc,       :type => :string,  :short => "d", :default => DEFAULT_REF
-        opt :fileshare,     share_desc,     :type => :boolean, :short => "f", :default => true
+        opt :fileshare,     share_desc,     :type => :boolean, :short => "f", :default => false
         opt :local,         local_desc,     :type => :boolean, :short => "l", :default => false
         opt :only,          only_desc,      :type => :strings, :short => "o", :default => Target.default_types
         opt :type,          type_desc,      :type => :string,  :short => "t", :default => DEFAULT_TYPE
