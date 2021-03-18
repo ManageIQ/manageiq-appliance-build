@@ -3,7 +3,6 @@
 #
 # repo:      ManageIQ/manageiq.git
 # branch:    kasparov
-# fileshare: true
 #
 
 BUILD_DIR="$(dirname "$(readlink -f "$0")")/.."
