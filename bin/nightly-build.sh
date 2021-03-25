@@ -3,7 +3,6 @@
 #
 # repo:      ManageIQ/manageiq.git
 # branch:    jansa
-# fileshare: true
 #
 
 BUILD_DIR="$(dirname "$(readlink -f "$0")")/.."
