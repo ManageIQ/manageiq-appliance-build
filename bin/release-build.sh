@@ -14,9 +14,9 @@ fi
 build_ref=${1}
 shift
 
-rpm_log_file="/build/logs/${1}_rpm.log"
-log_file="/build/logs/${1}.log"
-container_log_file="/build/logs/${1}_container.log"
+rpm_log_file="/build/logs/${build_ref}_rpm.log"
+log_file="/build/logs/${build_ref}.log"
+container_log_file="/build/logs/${build_ref}_container.log"
 
 ( nohup time ${BUILD_DIR}/bin/rpm-build.sh -t release -r $build_ref > $rpm_log_file 2>&1;
   nohup time ruby ${BUILD_DIR}/scripts/vmbuild.rb --type release --upload --reference $build_ref --copy-dir ${build_ref%%-*} $@ > $log_file 2>&1 &
