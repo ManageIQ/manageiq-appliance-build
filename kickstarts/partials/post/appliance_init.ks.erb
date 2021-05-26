@@ -5,6 +5,8 @@ cat > /bin/appliance-initialize.sh <<EOF
 [[ -s /etc/default/evm ]] && source /etc/default/evm
 echo "Initializing Appliance, please wait ..." > /dev/tty1
 appliance_console_cli --region 0 --internal --password smartvm --key
+chmod 440 /var/www/miq/vmdb/certs/v2_key
+chgrp manageiq /var/www/miq/vmdb/certs/v2_key
 appliance_console_cli --message-server-config --message-server-use-ipaddr --message-keystore-username="admin" --message-keystore-password="smartvm"
 EOF
 chmod 755 /bin/appliance-initialize.sh

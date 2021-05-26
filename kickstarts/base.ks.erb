@@ -17,6 +17,8 @@ keyboard us
 
 # Root password: smartvm
 rootpw  --iscrypted $1$DZprqvCu$mhqFBjfLTH/PVvZIompVP/
+user --name=manageiq --groups=wheel --iscrypted --password $1$DZprqvCu$mhqFBjfLTH/PVvZIompVP/
+usermod -a -G manageiq root
 
 authconfig --enableshadow --passalgo=sha512
 selinux --enforcing
