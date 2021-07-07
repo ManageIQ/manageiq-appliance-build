@@ -20,16 +20,16 @@ Below are instructions on configuring a dedicated build machine to generate appl
   ```
   #!ipxe
 
-  kernel http://pxeserver.example.com/sources/centos/8/vmlinuz inst.ks=http://pxeserver.example.com/ipxe/mac/centos8_build_machine.ks net.ifnames=0 biosdevname=0
+  kernel http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/isolinux/vmlinuz inst.ks=http://pxeserver.example.com/ipxe/mac/centos8_build_machine.ks net.ifnames=0 biosdevname=0
   #ramdisk_size=10000
-  initrd http://pxeserver.example.com/sources/centos/8/initrd.img
+  initrd http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/isolinux/initrd.img
   boot
   ```
 ## Download CentOS 8 ISO
-  * Download latest CentOS 8 ISO from http://isoredirect.centos.org/centos/8/isos/x86_64/
+  * Download latest CentOS 8 ISO from http://isoredirect.centos.org/centos/8-stream/isos/x86_64/
     ```
-    curl -L http://isoredirect.centos.org/centos/8/isos/x86_64/CentOS-8.1.1911-x86_64-dvd1.iso \
-      -o /build/isos/CentOS-8.1.1911-x86_64-dvd1.iso
+    curl -L http://isoredirect.centos.org/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210608-dvd1.iso \
+      -o /build/isos/CentOS-Stream-8-x86_64-20210608-dvd1.iso
     ```
     
 ## Setup docker for container build
