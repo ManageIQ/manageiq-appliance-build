@@ -117,6 +117,9 @@ echo "" >> /etc/ssh/sshd_config
 # Remove packages not needed
 dnf -C -y --noplugins remove linux-firmware doxygen
 
+# Ensure packages are up to date
+dnf -y update
+
 /usr/bin/generate_rpm_manifest.sh
 
 # CentOS 7.3 isn't clearing out spaces during install.
