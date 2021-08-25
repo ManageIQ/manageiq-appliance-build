@@ -1,6 +1,7 @@
 .rubocop-*
 /pkg
 /productization
+Gemfile.lock
 config/generated/base*.tdl
 kickstarts/generated/*.ks
 scripts/Gemfile.dev.rb
