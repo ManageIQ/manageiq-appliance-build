@@ -5,10 +5,10 @@ repo --name=extras     --baseurl=http://mirror.centos.org/centos/8-stream/extras
 repo --name=epel       --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=epel-8&arch=x86_64 --excludepkgs=*qpid-proton*
 repo --name=ovirt-4.4  --mirrorlist=https://resources.ovirt.org/pub/yum-repo/mirrorlist-ovirt-4.4-el$releasever
 
-repo --name=manageiq-13-morphy         --baseurl=https://rpm.manageiq.org/release/13-morphy/el$releasever/$basearch
-repo --name=manageiq-13-morphy-noarch  --baseurl=https://rpm.manageiq.org/release/13-morphy/el$releasever/noarch
+repo --name=manageiq-14-najdorf         --baseurl=https://rpm.manageiq.org/release/14-najdorf/el$releasever/$basearch
+repo --name=manageiq-14-najdorf-noarch  --baseurl=https://rpm.manageiq.org/release/14-najdorf/el$releasever/noarch
 <% if @build_type != "release" %>
-repo --name=manageiq-13-morphy-nightly --baseurl=https://rpm.manageiq.org/release/13-morphy-nightly/el$releasever/$basearch
+repo --name=manageiq-14-najdorf-nightly --baseurl=https://rpm.manageiq.org/release/14-najdorf-nightly/el$releasever/$basearch
 <% end %>
 
 <% if @target == "gce" %>
