@@ -17,6 +17,9 @@ namespace :release do
 
     root = Pathname.new(__dir__).join("../..")
 
+    branch_number = branch[0].ord - 96
+    rpm_repo_name = "#{branch_number}-#{branch}"
+
     # Modify nightly-build.sh
     nightly_build = root.join("bin", "nightly-build.sh")
     content = nightly_build.read
@@ -27,8 +30,15 @@ namespace :release do
     content = vsphere_ova.read
     vsphere_ova.write(content.sub(/("vsphere_product_version": ")[^"]+(")/, "\\1#{branch}\\2"))
 
+    # Modify main kickstart repos
+    main_ks_repos = root.join("kickstarts", "partials", "main", "repos.ks.erb")
+    content = main_ks_repos.read
+    content.gsub!(/(manageiq-)\d+-\w+/, "\\1#{rpm_repo_name}")
+    content.gsub!(%r{(/rpm.manageiq.org/release/)\d+-\w+}, "\\1#{rpm_repo_name}")
+    main_ks_repos.write(content)
+
     # Commit
-    files_to_update = [nightly_build, vsphere_ova]
+    files_to_update = [nightly_build, vsphere_ova, main_ks_repos]
     exit $?.exitstatus unless system("git add #{files_to_update.join(" ")}")
     exit $?.exitstatus unless system("git commit -m 'Changes for new branch #{branch}'")
 
