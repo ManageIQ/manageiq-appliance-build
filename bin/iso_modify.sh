@@ -29,6 +29,10 @@ rm -rf $WORKING
 
 implantisomd5 $DESTINATION
 
+ORIGINAL=$(echo $SOURCE | cut -d "." -f 1)-original.iso
+mv $SOURCE $ORIGINAL
+mv $DESTINATION $SOURCE
+
 set +e
 
 echo "Complete!"
