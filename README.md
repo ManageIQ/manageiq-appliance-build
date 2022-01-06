@@ -31,7 +31,13 @@ Below are instructions on configuring a dedicated build machine to generate appl
     curl -L http://isoredirect.centos.org/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210608-dvd1.iso \
       -o /build/isos/CentOS-Stream-8-x86_64-20210608-dvd1.iso
     ```
-    
+
+  * Add "-joliet-long" option to `genisoimage` command in `/usr/lib/python3.6/site-packages/oz/RedHat.py` to avoid the following error:
+    ```
+    genisoimage: Error: /var/lib/oz/isocontent/factory-build-244d0db5-0be5-4948-b20a-d4eaf74b814e-iso/AppStream/Packages/clang-resource-filesystem-13.0.0-2.module_el8.6.0+1029+6594c364.i686.rpm and /var/lib/oz/isocontent/factory-build-244d0db5-0be5-4948-b20a-d4eaf74b814e-iso/AppStream/Packages/clang-resource-filesystem-13.0.0-2.module_el8.6.0+1029+6594c364.x86_64.rpm have the same Joliet name
+    Joliet tree sort failed. The -joliet-long switch may help you.
+    ```
+
 ## Setup docker for container build
 
   * Install docker and start service
