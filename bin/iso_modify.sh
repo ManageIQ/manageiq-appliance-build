@@ -1,8 +1,17 @@
 #!/bin/bash
 
+SOURCE=$1
+
+# Check if the ISO is already modified
+if [ -n "$ENSURE_ISO_KICKSTART_LOGGING_DISABLED" -a -z "$(isoinfo -J -i $SOURCE -x /isolinux/isolinux.cfg | grep append | grep -v "inst\.nosave=all")" ]; then
+  echo "'$SOURCE' has already been modified."
+  exit 0
+fi
+
 set -e
 
-SOURCE=$1
+echo "Modifying '$SOURCE'..."
+
 WORKING=/tmp/remaster_iso_working
 DESTINATION=$(echo $SOURCE | cut -d "." -f 1)-modified.iso
 
@@ -35,4 +44,4 @@ mv $DESTINATION $SOURCE
 
 set +e
 
-echo "Complete!"
+echo "Modifying '$SOURCE'...Complete!"
