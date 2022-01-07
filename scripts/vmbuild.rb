@@ -30,16 +30,28 @@ end
 
 BUILD_BASE          = Pathname.new("/build")
 GPG_DIR             = Pathname.new("/root/.gnupg")
-CFG_DIR             = Pathname.new(__dir__).join("../config")
+SCRIPT_DIR          = Pathname.new(__dir__)
+BIN_DIR             = SCRIPT_DIR.join("../bin")
+CFG_DIR             = SCRIPT_DIR.join("../config")
 FILESHARE_DIR       = BUILD_BASE.join("fileshare")
 REFS_DIR            = BUILD_BASE.join("references")
 IMGFAC_DIR          = BUILD_BASE.join("imagefactory")
 IMGFAC_CONF         = CFG_DIR.join("imagefactory.conf")
 STORAGE_DIR         = BUILD_BASE.join("storage")
+ISOS_DIR            = BUILD_BASE.join("isos")
+ISO_FILE            = ISOS_DIR.glob("CentOS-Stream-8-x86_64-*-dvd1.iso").sort.last.expand_path
 
 FILE_SERVER         = ENV["BUILD_FILE_SERVER"]             # SSH Server to host files
 FILE_SERVER_ACCOUNT = ENV["BUILD_FILE_SERVER_ACCOUNT"]     # Account to SSH as
 FILE_SERVER_BASE    = Pathname.new(ENV["BUILD_FILE_SERVER_BASE"] || ".") # Subdirectory of Account where to store builds
+
+# Ensure that the ISO has all modifications applied
+if system("#{BIN_DIR.join("iso_modify.sh")} #{ISO_FILE}")
+  $log.info("Using ISO: #{ISO_FILE}")
+else
+  $log.error("The ISO '#{ISO_FILE}' was not able to be modified")
+  exit 1
+end
 
 if !cli_options[:local] && cli_options[:build_url]
   build_repo = cli_options[:build_url]
@@ -100,11 +112,11 @@ Dir.chdir(IMGFAC_DIR) do
     imgfac_target = target.imagefactory_type
     ova_format    = target.ova_format
     compression   = target.compression_type
-    image_size    = target.image_size
+    image_size    = target.image_size # Used by base.tdl.erb
     $log.info "Building for #{target}:"
 
     tdl_file = CFG_DIR.join("generated", "base_#{target}.tdl")
-    File.write(tdl_file, ERB.new(File.read(CFG_DIR.join("base.tdl.erb")), 0, '-').result(binding))
+    File.write(tdl_file, ERB.new(CFG_DIR.join("base.tdl.erb").read, 0, '-').result(binding))
 
     $log.info "Using inputs: puddle: #{puddle}, build_label: #{build_label}"
     $log.info "              tdl_file: #{tdl_file}, ova_file: #{ova_file}."
