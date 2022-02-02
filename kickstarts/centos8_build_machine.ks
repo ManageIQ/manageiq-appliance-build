@@ -21,11 +21,11 @@ reboot
 graphical
 
 # Use network installation
-url --url="http://mirror.centos.org/centos/8/BaseOS/x86_64/os/"
-repo --name="AppStream" --baseurl=http://mirror.centos.org/centos/8/AppStream/x86_64/os/
-repo --name="PowerTools" --baseurl=http://mirror.centos.org/centos/8/PowerTools/x86_64/os/
-repo --name="extras" --baseurl=http://mirror.centos.org/centos/8/extras/x86_64/os/
-repo --name="epel" --baseurl=https://mirror.atl.genesisadaptive.com/epel//8/Everything/x86_64/
+url --url="http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/"
+repo --name="AppStream" --baseurl=http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/
+repo --name="PowerTools" --baseurl=http://mirror.centos.org/centos/8-stream/PowerTools/x86_64/os/
+repo --name="extras" --baseurl=http://mirror.centos.org/centos/8-stream/extras/x86_64/os/
+repo --name="epel" --baseurl=https://mirror.atl.genesisadaptive.com/epel/8/Everything/x86_64/
 repo --name="ManageIQ-Build" --baseurl=https://copr-be.cloud.fedoraproject.org/results/manageiq/ManageIQ-Build/epel-8-x86_64/
 
 keyboard --vckeymap=us --xlayouts='us'
