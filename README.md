@@ -1,6 +1,6 @@
 # ManageIQ Appliance Build
 
-[![Build Status](https://api.travis-ci.com/ManageIQ/manageiq-appliance-build.svg)](https://travis-ci.com/ManageIQ/manageiq-appliance-build)
+[![CI](https://github.com/ManageIQ/manageiq-appliance-build/actions/workflows/ci.yaml/badge.svg)](https://github.com/ManageIQ/manageiq-appliance-build/actions/workflows/ci.yaml)
 [![License](http://img.shields.io/badge/license-APACHE2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 # Introduction
