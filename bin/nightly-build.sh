@@ -13,7 +13,7 @@ stop_on_existing_build
 LOG_DIR=/build/logs
 mkdir -p ${LOG_DIR}
 
-BRANCH=master
+BRANCH=najdorf
 DATE_STAMP=`date +"%Y%m%d_%T"`
 LOG_FILE="${LOG_DIR}/${BRANCH}_${DATE_STAMP}.log"
 CONTAINER_LOG_FILE="${LOG_DIR}/${BRANCH}_${DATE_STAMP}_container.log"
