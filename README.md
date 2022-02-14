@@ -1,6 +1,6 @@
 # ManageIQ Appliance Build
 
-[![CI](https://github.com/ManageIQ/manageiq-appliance-build/actions/workflows/ci.yaml/badge.svg)](https://github.com/ManageIQ/manageiq-appliance-build/actions/workflows/ci.yaml)
+[![CI](https://github.com/ManageIQ/manageiq-appliance-build/actions/workflows/ci.yaml/badge.svg?branch=najdorf)](https://github.com/ManageIQ/manageiq-appliance-build/actions/workflows/ci.yaml)
 [![License](http://img.shields.io/badge/license-APACHE2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 # Introduction
