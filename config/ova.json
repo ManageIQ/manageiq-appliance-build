@@ -1,7 +1,7 @@
 {
   "generate_icicle": false,
   "ovf_cpu_count": "4",
-  "ovf_memory_mb": "6144",
+  "ovf_memory_mb": "16384",
   "vsphere_network_controller_type": "VmxNet3",
   "vsphere_os_type": "centos64Guest",
   "vsphere_product_name": "ManageIQ",
