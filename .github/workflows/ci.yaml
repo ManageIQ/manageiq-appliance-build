@@ -24,5 +24,6 @@ jobs:
         ruby-version: ${{ matrix.ruby-version }}
         working-directory: scripts
         bundler-cache: true
+      timeout-minutes: 30
     - name: Run tests
       run: bundle exec rake
