@@ -1,3 +1,0 @@
-part pv.2             --ondrive=vda                     --size=10240 --grow
-volgroup vg_data      --pesize=4096 pv.2
-logvol /var/lib/pgsql --name=lv_pg --vgname=vg_data --size=8192 --grow --fstype=xfs
