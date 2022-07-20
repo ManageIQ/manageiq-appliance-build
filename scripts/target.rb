@@ -3,15 +3,15 @@ module Build
     ImagefactoryMetadata = Struct.new(:imagefactory_type, :ova_format, :file_extension, :compression_type, :image_size)
 
     TYPES = {
-      'vsphere'   => ImagefactoryMetadata.new('vsphere', 'vsphere', 'ova', nil, '66'),
-      'ovirt'     => ImagefactoryMetadata.new('rhevm', nil, 'qc2', 'qemu-qcow2', '66'),
-      'openstack' => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2', nil, '66'),
-      'hyperv'    => ImagefactoryMetadata.new('hyperv', nil, 'vhd', 'zip', '66'),
-      'azure'     => ImagefactoryMetadata.new(nil, nil, 'vhd', 'zip', '61'),
-      'vagrant'   => ImagefactoryMetadata.new('vsphere', 'vagrant-virtualbox', 'box', nil, '66'),
-      'libvirt'   => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2', nil, '66'),
-      'gce'       => ImagefactoryMetadata.new('gce', nil, 'tar.gz', nil, '66'),
-      'ec2'       => ImagefactoryMetadata.new('ec2', nil, 'vhd', 'zip', '66'),
+      'vsphere'   => ImagefactoryMetadata.new('vsphere', 'vsphere', 'ova', nil, '58'),
+      'ovirt'     => ImagefactoryMetadata.new('rhevm', nil, 'qc2', 'qemu-qcow2', '58'),
+      'openstack' => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2', nil, '58'),
+      'hyperv'    => ImagefactoryMetadata.new('hyperv', nil, 'vhd', 'zip', '58'),
+      'azure'     => ImagefactoryMetadata.new(nil, nil, 'vhd', 'zip', '53'),
+      'vagrant'   => ImagefactoryMetadata.new('vsphere', 'vagrant-virtualbox', 'box', nil, '58'),
+      'libvirt'   => ImagefactoryMetadata.new('openstack-kvm', nil, 'qc2', nil, '58'),
+      'gce'       => ImagefactoryMetadata.new('gce', nil, 'tar.gz', nil, '58'),
+      'ec2'       => ImagefactoryMetadata.new('ec2', nil, 'vhd', 'zip', '58'),
     }
 
     attr_reader :name
