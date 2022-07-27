@@ -25,7 +25,7 @@ describe Build::Target do
   end
 
   it "#image_size" do
-    expect(described_class.new("openstack").image_size).to eql "66"
+    expect(described_class.new("openstack").image_size).to eql "58"
   end
 
   it "#sort" do
