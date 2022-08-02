@@ -80,8 +80,6 @@ $APPLIANCE_SOURCE_DIRECTORY/manageiq-setup.sh
 
 <%= render_partial "post/systemd" %>
 
-<%= render_partial "post/appliance_init" %>
-
 # Disable zeroconfig to allow access to meta-data service by cloud-init
 cat >> /etc/sysconfig/network << EOF
 NETWORKING=yes
