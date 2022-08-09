@@ -1,11 +1,11 @@
-dnf install -y python3-pip libcurl-devel gcc libxml2-devel krb5-devel
+dnf install -y python38-pip python38-devel libcurl-devel libffi-devel libxml2-devel libxslt-devel krb5-devel openssl-devel gcc
 
 if [ `uname -m` = "ppc64le" ]; then
-  dnf install -y libffi-devel libxslt-devel openssl-devel make;
+  dnf install -y make;
 fi
 
 # For embedded ansible
-pip3 install virtualenv
+pip3.8 install virtualenv psutil==5.4.3
 
 mkdir -p /var/lib/manageiq/
 pushd /var/lib/manageiq
@@ -58,7 +58,7 @@ boto3==1.6.2
 botocore==1.9.3
 cachetools==3.0.0
 certifi==2018.1.18
-cffi==1.11.5
+cffi==1.14.6
 chardet==3.0.4
 colorama==0.3.9
 cryptography==2.6.1
@@ -126,7 +126,7 @@ urllib3==1.24.3
 xmltodict==0.11.0
 EOF
 
-  pip3 install -r requirements.txt
+  pip3.8 install -r requirements.txt
 
   deactivate
 popd
