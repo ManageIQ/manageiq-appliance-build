@@ -1,8 +1,4 @@
-dnf install -y python38-pip python38-devel libcurl-devel libffi-devel libxml2-devel libxslt-devel krb5-devel openssl-devel gcc
-
-if [ `uname -m` = "ppc64le" ]; then
-  dnf install -y make;
-fi
+dnf install -y python38-pip python38-devel libcurl-devel libffi-devel libxml2-devel libxslt-devel krb5-devel openssl-devel gcc make
 
 # For embedded ansible
 pip3.8 install virtualenv psutil==5.4.3
