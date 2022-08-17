@@ -4,10 +4,10 @@ repo --name=appstream  --baseurl=http://mirror.centos.org/centos/8-stream/AppStr
 repo --name=extras     --baseurl=http://mirror.centos.org/centos/8-stream/extras/x86_64/os/
 repo --name=epel       --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=epel-8&arch=x86_64 --excludepkgs=*qpid-proton*
 
-repo --name=manageiq-15-oparin         --baseurl=https://rpm.manageiq.org/release/15-oparin/el$releasever/$basearch
-repo --name=manageiq-15-oparin-noarch  --baseurl=https://rpm.manageiq.org/release/15-oparin/el$releasever/noarch
+repo --name=manageiq-16-petrosian         --baseurl=https://rpm.manageiq.org/release/16-petrosian/el$releasever/$basearch
+repo --name=manageiq-16-petrosian-noarch  --baseurl=https://rpm.manageiq.org/release/16-petrosian/el$releasever/noarch
 <% if @build_type != "release" %>
-repo --name=manageiq-15-oparin-nightly --baseurl=https://rpm.manageiq.org/release/15-oparin-nightly/el$releasever/$basearch
+repo --name=manageiq-16-petrosian-nightly --baseurl=https://rpm.manageiq.org/release/16-petrosian-nightly/el$releasever/$basearch
 <% end %>
 
 <% if @target == "gce" %>
