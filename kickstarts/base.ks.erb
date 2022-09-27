@@ -48,8 +48,8 @@ set -x
 # Show timestamps on log entries for build performance tuning.
 PS4="+ [\t] "
 
-# Don't install doc
-dnf config-manager --setopt=tsflags=nodocs --save > /dev/null
+# Don't install doc nor weak dependencies
+dnf config-manager --setopt=tsflags=nodocs --setopt=install_weak_deps=False --save > /dev/null
 
 # Mount tmpfs on /tmp. This will remove about 200MiB of bower and bundler
 # intermediate files from the image. And do the same for /var/cache which saves
