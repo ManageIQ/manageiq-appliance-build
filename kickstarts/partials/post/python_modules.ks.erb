@@ -1,7 +1,10 @@
-dnf install -y python38-pip python38-devel libcurl-devel libffi-devel libxml2-devel libxslt-devel krb5-devel openssl-devel gcc make
+# Find all intalled pythons and be sure psutil is installed in all of them
+psutils=$((for p in $(find /usr/lib -type d -name python3.* | grep -v python3.6); do basename $p | tr -d '.' | echo "$(cat -)-psutil"; done) | xargs echo)
+
+dnf install -y $psutils python38-pip python38-devel libcurl-devel libffi-devel libxml2-devel libxslt-devel krb5-devel openssl-devel gcc make
 
 # For embedded ansible
-pip3.8 install virtualenv psutil==5.6.6
+pip3.8 install virtualenv
 
 mkdir -p /var/lib/manageiq/
 pushd /var/lib/manageiq
