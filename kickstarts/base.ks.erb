@@ -25,7 +25,8 @@ timezone --utc America/New_York
 <%= render_partial "main/disk_layout" %>
 
 module --name mod_auth_openidc
-module --name ruby --stream 2.7
+module --name ruby --stream 3.0
+module --name postgresql --stream 13
 
 reboot
 
@@ -48,8 +49,8 @@ set -x
 # Show timestamps on log entries for build performance tuning.
 PS4="+ [\t] "
 
-# Don't install doc
-dnf config-manager --setopt=tsflags=nodocs --save > /dev/null
+# Don't install doc nor weak dependencies
+dnf config-manager --setopt=tsflags=nodocs --setopt=install_weak_deps=False --save > /dev/null
 
 # Mount tmpfs on /tmp. This will remove about 200MiB of bower and bundler
 # intermediate files from the image. And do the same for /var/cache which saves
@@ -72,8 +73,6 @@ export PATH=$PATH:/usr/local/bin
 <%= render_partial "post/firewalld" %>
 
 <%= render_partial "post/repos" %>
-
-<%= render_partial "post/python_modules" %>
 
 source /etc/default/evm
 $APPLIANCE_SOURCE_DIRECTORY/manageiq-setup.sh

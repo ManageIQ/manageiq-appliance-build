@@ -1,27 +1,26 @@
+---
 name: CI
-
 on:
   push:
   pull_request:
   schedule:
-  - cron: '0 0 * * *'
-
+  - cron: 0 0 * * *
 jobs:
   ci:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         ruby-version:
-        - '2.6'
         - '2.7'
+        - '3.0'
     env:
       BUNDLE_PATH: scripts/vendor/bundle
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: ${{ matrix.ruby-version }}
+        ruby-version: "${{ matrix.ruby-version }}"
         working-directory: scripts
         bundler-cache: true
       timeout-minutes: 30
