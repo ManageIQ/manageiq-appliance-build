@@ -7,10 +7,6 @@ dnf config-manager --setopt=epel.exclude=*qpid-proton* --save
 dnf config-manager --enable manageiq-*-nightly
 <% end %>
 
-pushd /etc/yum.repos.d/
-  wget https://releases.ansible.com/ansible-runner/ansible-runner.el8.repo
-popd
-
 <% if @target == "gce" %>
 cat > /etc/yum.repos.d/google-cloud.repo << EOF
 [google-compute-engine]
