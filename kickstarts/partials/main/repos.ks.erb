@@ -14,7 +14,4 @@ repo --name=manageiq-15-oparin-nightly --baseurl=https://rpm.manageiq.org/releas
 repo --name=google-compute-engine --baseurl=https://packages.cloud.google.com/yum/repos/google-compute-engine-el8-x86_64-stable
 <% end %>
 
-# Please also add to "post install repos" post/repos partial
-repo --name=ansible-runner --baseurl=https://releases.ansible.com/ansible-runner/rpm/epel-8-x86_64/
-
 <%= render_partial_if_exist "main/repos-extra" %>
