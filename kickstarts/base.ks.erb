@@ -112,7 +112,7 @@ echo "" >> /etc/ssh/sshd_config
 dnf -C -y --noplugins remove linux-firmware doxygen
 
 # Ensure packages are up to date
-dnf -y update
+dnf -y update --nobest
 
 /usr/bin/generate_rpm_manifest.sh
 
