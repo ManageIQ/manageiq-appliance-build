@@ -33,17 +33,12 @@ GPG_DIR             = Pathname.new("/root/.gnupg")
 SCRIPT_DIR          = Pathname.new(__dir__)
 BIN_DIR             = SCRIPT_DIR.join("../bin")
 CFG_DIR             = SCRIPT_DIR.join("../config")
-FILESHARE_DIR       = BUILD_BASE.join("fileshare")
 REFS_DIR            = BUILD_BASE.join("references")
 IMGFAC_DIR          = BUILD_BASE.join("imagefactory")
 IMGFAC_CONF         = CFG_DIR.join("imagefactory.conf")
 STORAGE_DIR         = BUILD_BASE.join("storage")
 ISOS_DIR            = BUILD_BASE.join("isos")
 ISO_FILE            = ISOS_DIR.glob("CentOS-Stream-8-x86_64-*-dvd1.iso").sort.last.expand_path
-
-FILE_SERVER         = ENV["BUILD_FILE_SERVER"]             # SSH Server to host files
-FILE_SERVER_ACCOUNT = ENV["BUILD_FILE_SERVER_ACCOUNT"]     # Account to SSH as
-FILE_SERVER_BASE    = Pathname.new(ENV["BUILD_FILE_SERVER_BASE"] || ".") # Subdirectory of Account where to store builds
 
 # Ensure that the ISO has all modifications applied
 if system("#{BIN_DIR.join("iso_modify.sh")} #{ISO_FILE}")
@@ -96,9 +91,6 @@ targets = cli_options[:only].collect { |only| Build::Target.new(only) }
 
 ks_gen = Build::KickstartGenerator.new(cfg_base, cli_options[:type], cli_options[:only], cli_options[:product_name], puddle)
 ks_gen.run
-
-file_rdu_dir_base = FILE_SERVER_BASE.join(directory)
-file_rdu_dir      = file_rdu_dir_base.join(directory_name)
 
 fileshare_dir         = BUILD_BASE.join("fileshare")
 stream_directory      = fileshare_dir.join(directory)
@@ -191,18 +183,6 @@ Dir.chdir(IMGFAC_DIR) do
       end
     end
 
-    if !File.exist?(destination)
-      $log.warn "Cannot find the target file #{destination}"
-    else
-      # Let's copy the file to the file server
-      if cli_options[:fileshare] && FILE_SERVER && File.size(destination)
-        $log.info "Creating File server #{FILE_SERVER} directory #{file_rdu_dir} ..."
-        $log.info `ssh #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER} mkdir -p #{file_rdu_dir}`
-        $log.info "Copying file #{destination} to #{FILE_SERVER}:#{file_rdu_dir}/ ..."
-        $log.info `scp #{destination} #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER}:#{file_rdu_dir}`
-      end
-    end
-
     # The final image is moved out of STORAGE_DIR at this point, delete all other files created during build
     temp_file_uuid.each { |file_uuid| FileUtils.rm_f(Dir.glob("#{STORAGE_DIR}/#{file_uuid}.*"), :verbose => true) }
   end
@@ -233,12 +213,6 @@ if cli_options[:type] == "nightly" || cli_options[:type] == "release"
 
   result = FileUtils.ln_s(directory_name, link, :verbose => true)
   $log.info("Created symlink: #{result}")
-
-  if cli_options[:fileshare] && FILE_SERVER
-    $log.info "Updating #{symlink_name} symlink on #{FILE_SERVER} ..."
-    ssh_cmd = "cd #{file_rdu_dir_base}; rm -f #{symlink_name}; ln -s #{directory_name} #{symlink_name}"
-    $log.info `ssh #{FILE_SERVER_ACCOUNT}@#{FILE_SERVER} "#{ssh_cmd}"`
-  end
 
   # Also create relese ref symlink (e.g. gaprindashvili-1)
   if cli_options[:type] == "release"
