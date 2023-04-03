@@ -12,9 +12,29 @@ jobs:
       run: |
         git clone https://www.github.com/bdunne/imagefactory.git /build/gha/$GITHUB_RUN_ID/imagefactory
   build_appliances:
+    strategy:
+      max-parallel: 2
+      matrix:
+        target:
+        - azure
+        - ec2
+        - gce
+        - hyperv
+        - libvirt
+        - openstack
+        - ovirt
+        - vagrant
+        - vsphere
     runs-on: self-hosted
     needs: setup
+    env:
+      TARGET_PLATFORM: ${{ matrix.target }}
     steps:
     - uses: actions/checkout@v3
     - name: Build appliance images
-      run: "bin/nightly-build.sh"
+      env:
+        S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+        S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+        S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+      run: |
+        ruby scripts/vmbuild.rb --type nightly --reference $GITHUB_REF_NAME --copy-dir $GITHUB_REF_NAME --only $TARGET_PLATFORM --upload --delete | tee -a /build/logs/${GITHUB_REF_NAME}_$(date +'%Y%m%d')_${GITHUB_RUN_ID}.log

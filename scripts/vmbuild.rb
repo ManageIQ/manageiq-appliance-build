@@ -28,7 +28,7 @@ else
   build_label = "#{cli_options[:type]}-#{cli_options[:reference]}"
 end
 
-BUILD_BASE          = Pathname.new("/build")
+BUILD_BASE          = ENV["GITHUB_ACTIONS"] ? Pathname.new("/build/gha/#{ENV['GITHUB_RUN_ID']}") : Pathname.new("/build")
 GPG_DIR             = Pathname.new("/root/.gnupg")
 SCRIPT_DIR          = Pathname.new(__dir__)
 BIN_DIR             = SCRIPT_DIR.join("../bin")
@@ -37,20 +37,29 @@ REFS_DIR            = BUILD_BASE.join("references")
 IMGFAC_DIR          = BUILD_BASE.join("imagefactory")
 IMGFAC_CONF         = CFG_DIR.join("imagefactory.conf")
 STORAGE_DIR         = BUILD_BASE.join("storage")
-ISOS_DIR            = BUILD_BASE.join("isos")
+ISOS_DIR            = Pathname.new("/build/isos") # NOTE: We are not using run-specific BUILD_BASE in order to share the source iso across builds
+IMAGES_DIR          = BUILD_BASE.join("images")
 ISO_FILE            = ISOS_DIR.glob("CentOS-Stream-8-x86_64-*-dvd1.iso").sort.last.expand_path
 
-# Ensure that the ISO has all modifications applied
-if system("#{BIN_DIR.join("iso_modify.sh")} #{ISO_FILE}")
-  $log.info("Using ISO: #{ISO_FILE}")
-else
-  $log.error("The ISO '#{ISO_FILE}' was not able to be modified")
-  exit 1
-end
+FileUtils.mkdir_p(BIN_DIR)
+FileUtils.mkdir_p(BUILD_BASE)
+FileUtils.mkdir_p(CFG_DIR)
+FileUtils.mkdir_p(IMAGES_DIR)
+FileUtils.mkdir_p(IMGFAC_DIR)
+FileUtils.mkdir_p(ISOS_DIR)
+FileUtils.mkdir_p(REFS_DIR)
+FileUtils.mkdir_p(STORAGE_DIR)
+
+# Set Storage directory in imagefactory config
+imagefactory_config = CFG_DIR.join("imagefactory.conf")
+require 'json'
+json = JSON.load_file(imagefactory_config)
+json["image_manager_args"]["storage_path"] = STORAGE_DIR
+File.write(imagefactory_config, json.to_json)
 
 if !cli_options[:local] && cli_options[:build_url]
   build_repo = cli_options[:build_url]
-  cfg_base = REFS_DIR.join(cli_options[:build_ref])
+  cfg_base = REFS_DIR.join(ENV["RUNNER_NAME"].to_s, cli_options[:build_ref])
   FileUtils.rm_rf(cfg_base)
   FileUtils.mkdir_p(cfg_base)
   Dir.chdir(cfg_base) do
