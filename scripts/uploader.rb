@@ -59,16 +59,16 @@ module Build
 
     private
 
-    class DigitalOcean
+    class IBMCloud
       attr_reader :access_key, :secret_key, :endpoint, :bucket, :display_name, :region
 
       def initialize(config)
         @bucket       = "releases-manageiq-org"
-        @display_name = "DigitalOcean"
-        @access_key   = config[:access_key] || env["DIGITAL_OCEAN_ACCESS_KEY"]
-        @secret_key   = config[:secret_key] || env["DIGITAL_OCEAN_SECRET_KEY"]
-        @endpoint     = config[:endpoint]   || env["DIGITAL_OCEAN_ENDPOINT"]
-        @region       = "us-east-1"
+        @display_name = "IBM Cloud"
+        @access_key   = env["IBM_CLOUD_ACCESS_KEY"] || config[:access_key]
+        @secret_key   = env["IBM_CLOUD_SECRET_KEY"] || config[:secret_key]
+        @endpoint     = env["IBM_CLOUD_ENDPOINT"] || config[:endpoint]
+        @region       = "us-east"
       end
 
       def login
@@ -120,27 +120,12 @@ module Build
       end
     end
 
-    class IBMCloud < DigitalOcean
-      def initialize(config)
-        @bucket       = "releases-manageiq-org"
-        @display_name = "IBM Cloud"
-        @access_key   = config[:access_key] || env["IBM_CLOUD_ACCESS_KEY"]
-        @secret_key   = config[:secret_key] || env["IBM_CLOUD_SECRET_KEY"]
-        @endpoint     = config[:endpoint]   || env["IBM_CLOUD_ENDPOINT"]
-        @region       = "us-east"
-      end
-    end
-
-    def digital_ocean_client
-      @digital_ocean_client ||= DigitalOcean.new(config[:digital_ocean])
-    end
-
     def ibm_cloud_client
       @ibm_cloud_client ||= IBMCloud.new(config[:ibm_cloud])
     end
 
     def clients
-      @clients ||= [digital_ocean_client, ibm_cloud_client]
+      @clients ||= [ibm_cloud_client]
     end
 
     def master?(filename)
