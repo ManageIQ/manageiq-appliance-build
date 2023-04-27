@@ -59,14 +59,16 @@ module Build
 
     private
 
-    class DigitalOcean
-      attr_reader :access_key, :secret_key, :endpoint, :bucket
+    class IBMCloud
+      attr_reader :access_key, :secret_key, :endpoint, :bucket, :display_name, :region
 
       def initialize(config)
-        @bucket     = "releases-manageiq-org"
-        @access_key = config[:access_key]
-        @secret_key = config[:secret_key]
-        @endpoint   = config[:endpoint]
+        @bucket       = "releases-manageiq-org"
+        @display_name = "IBM Cloud"
+        @access_key   = env["IBM_CLOUD_ACCESS_KEY"] || config[:access_key]
+        @secret_key   = env["IBM_CLOUD_SECRET_KEY"] || config[:secret_key]
+        @endpoint     = env["IBM_CLOUD_ENDPOINT"] || config[:endpoint]
+        @region       = "us-east"
       end
 
       def login
@@ -74,7 +76,7 @@ module Build
 
       def upload(source, destination, options, delete_after_upload)
         appliance = File.basename(source)
-        puts "Uploading #{appliance} to DigitalOcean as #{destination}..."
+        puts "Uploading #{appliance} to #{display_name} as #{destination}..."
 
         put_options = {
           :acl    => "public-read",
@@ -87,14 +89,14 @@ module Build
         end
 
         status = response.etag.tr("\\\"", "") == options[:source_hash] ? "complete" : "checksum-mismatch"
-        puts "Uploading #{appliance} to DigitalOcean as #{destination}...#{status}"
+        puts "Uploading #{appliance} to #{display_name} as #{destination}...#{status}"
 
         FileUtils.rm_f(source) if delete_after_upload && status == "complete"
       end
 
       def copy(source, destination)
         appliance = File.basename(source)
-        puts "Copying   #{appliance} to #{destination} on DigitalOcean..."
+        puts "Copying   #{appliance} to #{destination} on #{display_name}..."
 
         copy_options = {
           :acl         => "public-read",
@@ -105,7 +107,7 @@ module Build
 
         client.copy_object(copy_options)
 
-        puts "Copying   #{appliance} to #{destination} on DigitalOcean...complete"
+        puts "Copying   #{appliance} to #{destination} on #{display_name}...complete"
       end
 
       private
@@ -113,17 +115,17 @@ module Build
       def client
         @client ||= begin
           require 'aws-sdk-s3'
-          Aws::S3::Client.new(:access_key_id => access_key, :secret_access_key => secret_key, :endpoint => endpoint, :region => 'us-east-1')
+          Aws::S3::Client.new(:access_key_id => access_key, :secret_access_key => secret_key, :endpoint => endpoint, :region => region)
         end
       end
     end
 
-    def digital_ocean_client
-      @digital_ocean_client ||= DigitalOcean.new(config[:digital_ocean])
+    def ibm_cloud_client
+      @ibm_cloud_client ||= IBMCloud.new(config[:ibm_cloud])
     end
 
     def clients
-      @clients ||= [digital_ocean_client]
+      @clients ||= [ibm_cloud_client]
     end
 
     def master?(filename)
