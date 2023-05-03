@@ -65,9 +65,9 @@ module Build
       def initialize(config)
         @bucket       = "releases-manageiq-org"
         @display_name = "IBM Cloud"
-        @access_key   = env["IBM_CLOUD_ACCESS_KEY"] || config[:access_key]
-        @secret_key   = env["IBM_CLOUD_SECRET_KEY"] || config[:secret_key]
-        @endpoint     = env["IBM_CLOUD_ENDPOINT"] || config[:endpoint]
+        @access_key   = ENV["IBM_CLOUD_ACCESS_KEY"] || config[:access_key]
+        @secret_key   = ENV["IBM_CLOUD_SECRET_KEY"] || config[:secret_key]
+        @endpoint     = ENV["IBM_CLOUD_ENDPOINT"] || config[:endpoint]
         @region       = "us-east"
       end
 
