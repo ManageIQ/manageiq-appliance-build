@@ -1,0 +1,20 @@
+name: Build Appliances
+on:
+  repository_dispatch:
+    types:
+    - build
+  workflow_dispatch:
+jobs:
+  setup:
+    runs-on: self-hosted
+    steps:
+    - name: Clone Imagefactory
+      run: |
+        git clone https://www.github.com/bdunne/imagefactory.git /build/gha/$GITHUB_RUN_ID/imagefactory
+  build_appliances:
+    runs-on: self-hosted
+    needs: setup
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build appliance images
+      run: "bin/nightly-build.sh"
