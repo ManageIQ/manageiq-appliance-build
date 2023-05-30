@@ -147,34 +147,6 @@ Below are instructions on configuring a dedicated build machine to generate appl
   ln -s /build/bin/nightly-build.sh /etc/cron.daily
   ```
 
-## Optional: Copying builds to a File Share via SSH
-
-  * `vi /etc/hosts`
-    `a.b.c.d   your.file.server.com`
-
-  * Make sure root can ssh/scp to personal account on your.file.server.com
-
-    ```
-    su -
-    ssh-keygen
-    # Press Enter key till you get the prompt
-
-    ssh-copy-id -i your_id@your.file.server.com
-    # It will once ask for the password of the host system
-
-    ssh your_id@your.file.server.com
-    ```
-
-  * Define the following in Root's .bashrc
-
-    ```
-    export BUILD_FILE_SERVER="your.file.server.com"
-    export BUILD_FILE_SERVER_ACCOUNT="your_id"
-    export BUILD_FILE_SERVER_BASE="public_html"  # subdirectory off your_id's home where to scp files to
-    ```
-
-    * Note: root will need password-less access to the account listed above.
-
 # Usage
 
 With installs, vnc is not directly available, but can be accessed via local vncviewer
