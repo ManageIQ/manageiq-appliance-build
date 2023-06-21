@@ -11,11 +11,7 @@ module Build
     CONFIG_FILE = Pathname.new(__dir__).join("../config/upload.yml")
 
     def self.upload(directory, type, delete_after_upload)
-      if File.exist?(CONFIG_FILE)
-        new(directory, type, delete_after_upload).run
-      else
-        puts "#{CONFIG_FILE} doesn't exist, not uploading images"
-      end
+      new(directory, type, delete_after_upload).run
     end
 
     def initialize(directory, type, delete_after_upload)
@@ -65,9 +61,9 @@ module Build
       def initialize(config)
         @bucket       = "releases-manageiq-org"
         @display_name = "IBM Cloud"
-        @access_key   = ENV["IBM_CLOUD_ACCESS_KEY"] || config[:access_key]
-        @secret_key   = ENV["IBM_CLOUD_SECRET_KEY"] || config[:secret_key]
-        @endpoint     = ENV["IBM_CLOUD_ENDPOINT"] || config[:endpoint]
+        @access_key   = ENV["S3_ACCESS_KEY"] || config[:access_key]
+        @secret_key   = ENV["S3_SECRET_KEY"] || config[:secret_key]
+        @endpoint     = ENV["S3_ENDPOINT"] || config[:endpoint]
         @region       = "us-east"
       end
 
@@ -121,7 +117,7 @@ module Build
     end
 
     def ibm_cloud_client
-      @ibm_cloud_client ||= IBMCloud.new(config[:ibm_cloud])
+      @ibm_cloud_client ||= IBMCloud.new(config[:ibm_cloud] || {})
     end
 
     def clients
@@ -141,7 +137,11 @@ module Build
     end
 
     def config
-      @config ||= YAML.load_file(CONFIG_FILE)
+      @config ||= begin
+        YAML.load_file(CONFIG_FILE)
+      rescue Errno::ENOENT
+        {}
+      end
     end
 
     # prerelease: manageiq-ovirt-anand-1-rc1.ova
