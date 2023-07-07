@@ -53,7 +53,7 @@ FileUtils.mkdir_p(STORAGE_DIR)
 # Set Storage directory in imagefactory config
 imagefactory_config = CFG_DIR.join("imagefactory.conf")
 require 'json'
-json = JSON.load_file(imagefactory_config)
+json = JSON.load(imagefactory_config.read)
 json["image_manager_args"]["storage_path"] = STORAGE_DIR
 File.write(imagefactory_config, json.to_json)
 
