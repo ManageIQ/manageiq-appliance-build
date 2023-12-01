@@ -2,7 +2,6 @@
 # dnf update uses these repos to update and reinstall packages.
 # Please also add to "build time repos" main/repos partial
 
-dnf config-manager --setopt=epel.exclude=*qpid-proton* --save
 <% if @build_type != "release" %>
 dnf config-manager --enable manageiq-*-nightly
 <% end %>
