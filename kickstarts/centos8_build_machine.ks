@@ -76,7 +76,7 @@ pushd /build/imagefactory/scripts
 popd
 
 pushd /build/manageiq-appliance-build/scripts
-  gem install bundler
+  gem install bundler -v '< 2.5'
   export PATH="/usr/local/bin:${PATH}"
   bundle install
 popd
