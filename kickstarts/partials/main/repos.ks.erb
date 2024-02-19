@@ -1,8 +1,8 @@
 # build time repos - these repos are used to install the initial packages
-repo --name=baseos     --baseurl=http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/
-repo --name=appstream  --baseurl=http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/
-repo --name=extras     --baseurl=http://mirror.centos.org/centos/8-stream/extras/x86_64/os/
-repo --name=epel       --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=epel-8&arch=x86_64
+repo --name=baseos     --baseurl=https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/
+repo --name=appstream  --baseurl=https://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/
+repo --name=crb        --baseurl=https://mirror.stream.centos.org/9-stream/CRB/x86_64/os/
+repo --name=epel       --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=epel-9&arch=x86_64
 
 repo --name=manageiq-18-radjabov         --baseurl=https://rpm.manageiq.org/release/18-radjabov/el$releasever/$basearch
 repo --name=manageiq-18-radjabov-noarch  --baseurl=https://rpm.manageiq.org/release/18-radjabov/el$releasever/noarch
@@ -11,7 +11,7 @@ repo --name=manageiq-18-radjabov-nightly --baseurl=https://rpm.manageiq.org/rele
 <% end %>
 
 <% if @target == "gce" %>
-repo --name=google-compute-engine --baseurl=https://packages.cloud.google.com/yum/repos/google-compute-engine-el8-x86_64-stable
+repo --name=google-compute-engine --baseurl=https://packages.cloud.google.com/yum/repos/google-compute-engine-el9-x86_64-stable
 <% end %>
 
 <%= render_partial_if_exist "main/repos-extra" %>

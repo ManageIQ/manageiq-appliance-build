@@ -39,7 +39,7 @@ IMGFAC_CONF         = CFG_DIR.join("imagefactory.conf")
 STORAGE_DIR         = BUILD_BASE.join("storage")
 ISOS_DIR            = Pathname.new("/build/isos") # NOTE: We are not using run-specific BUILD_BASE in order to share the source iso across builds
 IMAGES_DIR          = BUILD_BASE.join("images")
-ISO_FILE            = ISOS_DIR.glob("CentOS-Stream-8-x86_64-*-dvd1.iso").sort.last.expand_path
+ISO_FILE            = ISOS_DIR.glob("CentOS-Stream-9-*-x86_64-dvd1.iso").sort.last.expand_path
 
 FileUtils.mkdir_p(BIN_DIR)
 FileUtils.mkdir_p(BUILD_BASE)
