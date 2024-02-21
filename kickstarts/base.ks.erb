@@ -3,7 +3,7 @@
 # By default run the text based installer to see dependency info in screenshots
 <%= ENV['KS_GUI'] ? "" : "text" %>
 
-logging --level=debug
+logging
 
 #version=DEVEL
 cdrom
@@ -15,7 +15,7 @@ keyboard us
 <%= render_partial "main/network" %>
 
 # Root password: smartvm
-rootpw  --iscrypted $1$DZprqvCu$mhqFBjfLTH/PVvZIompVP/
+rootpw --allow-ssh --iscrypted $1$DZprqvCu$mhqFBjfLTH/PVvZIompVP/
 
 selinux --enforcing
 timezone --utc America/New_York
@@ -23,10 +23,7 @@ timezone --utc America/New_York
 <%= render_partial "main/bootloader" %>
 <%= render_partial "main/disk_layout" %>
 
-module --name mod_auth_openidc
-module --name ruby --stream 3.0
-module --name postgresql --stream 13
-
+module --name ruby --stream 3.1
 reboot
 
 %packages --excludedocs
@@ -99,8 +96,8 @@ drivers="mptbase mptscsih mptspi"
 <% end %>
 dracut --force --add-drivers "$drivers" $ramfsfile $kversion
 
-<%= render_partial "post/ec2" if @target == "ec2" %>
 <%= render_partial "post/azure" if @target == "azure" %>
+<%= render_partial "post/ec2" if @target == "ec2" %>
 <%= render_partial "post/gce" if @target == "gce" %>
 <%= render_partial "post/vagrant" if @target == "vagrant" %>
 
@@ -111,7 +108,7 @@ echo "" >> /etc/ssh/sshd_config
 dnf -C -y --noplugins remove linux-firmware doxygen
 
 # Ensure packages are up to date
-dnf -y update --nobest
+dnf -y update
 
 /usr/bin/generate_rpm_manifest.sh
 
