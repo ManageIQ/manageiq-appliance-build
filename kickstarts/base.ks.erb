@@ -124,6 +124,9 @@ done
 # Expire root password so that the appliance admin must change it at next login
 passwd -e root
 
+# Remove root from the cockpit disallowed-users list
+sed -i s/root//g /etc/cockpit/disallowed-users
+
 # During the image build, dracut sets up ifcfg-en<whatever> for the device.
 # On the appliances we expect eth0, so remove all the ifcfg-en<whatever> device configurations
 # and write a config for eth0 allowing the 'network' service to come up cleanly.
