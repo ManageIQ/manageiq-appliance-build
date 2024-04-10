@@ -244,43 +244,9 @@ sleep 5
 
 
 #### Basic Smoke tests
-echo "=== Checking RPM Version..."
-rpm_version=$(sshpass -p $newpassword ssh -tt root@$ip_address "rpm -q --qf %{VERSION} ${product_name}-core")
-echo "--- Found: ${rpm_version}"
-[[ $product_version_number != $(echo $rpm_version | cut -d. -f1) ]] && exit 1
-
-echo "=== Checking evmserverd..."
-evmserverd_active=$(sshpass -p $newpassword ssh -tt root@$ip_address "systemctl is-active evmserverd")
-echo "--- Expected: active  Found: ${evmserverd_active}"
-# [[ $evmserverd_active =~ "active" ]] && exit 1 ### TODO: for some reason this is failing string and regex matching
-
-echo -n "=== Checking API Ping..."
-ping_success="no"
-for (( i=0; i<48; ++i)); do
-  ping_response=$(curl --fail -k --silent https://$ip_address/api/ping)
-  if [[ $ping_response == "pong" ]]; then
-    ping_success="yes"
-    break
-  fi
-  echo -n "x"
-  sleep 5
+for testfile in "${script_directory}"/smoke_test/*; do
+  source ${testfile}
 done
-[[ $ping_success != "yes" ]] && exit 1
-echo $ping_response
-
-echo -n "=== Checking UI Ping..."
-ping_success="no"
-for (( i=0; i<48; ++i)); do
-  ping_response=$(curl --fail -k --silent https://$ip_address/ping)
-  if [[ $ping_response == "pong" ]]; then
-    ping_success="yes"
-    break
-  fi
-  echo -n "x"
-  sleep 5
-done
-[[ $ping_success != "yes" ]] && exit 1
-echo $ping_response
 
 
 ### Cleanup
