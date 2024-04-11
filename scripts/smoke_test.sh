@@ -74,132 +74,35 @@ spawn sshpass -p $newpassword ssh -tt root@$ip_address appliance_console
 match_max 100000
 expect "Press any key to continue.\r"
 send -- " "
-expect -exact "\[H\[2J\[3JAdvanced Setting\r
-\r
-1) Create Database Backup\r
-2) Create Database Dump\r
-3) Restore Database From Backup\r
-4) Configure Application\r
-5) Configure Database Replication\r
-6) Logfile Configuration\r
-7) Control Application Database Failover Monitor\r
-8) Configure External Authentication (httpd)\r
-9) Update External Authentication Options\r
-10) Generate Custom Encryption Key\r
-11) Stop EVM Server Processes\r
-12) Start EVM Server Processes\r
-13) Restart Appliance\r
-14) Shut Down Appliance\r
-15) Summary Information\r
-16) Quit\r
-\r
-Choose the advanced setting: "
+expect "Choose the advanced setting: "
 send -- "4\r"
-expect -exact "4\r
-\[H\[2J\[3JConfigure Application\r
-\r
-No encryption key found.\r
-For migrations, copy encryption key from a hardened appliance.\r
-For worker and multi-region setups, copy key from another appliance.\r
-If this is your first appliance, just generate one now.\r
-\r
-Encryption Key\r
-\r
-1) Create key\r
-2) Fetch key from remote machine\r
-(1) \r
-Choose the encryption key: |1| "
+expect "Choose the encryption key: |1| "
 send -- "1\r"
-expect -exact "1\r
-\r
-Encryption key now configured.\r
-\r
-Database Operation\r
-\r
-1) Create Internal Database\r
-2) Create Region in External Database\r
-3) Join Region in External Database\r
-4) Reset Configured Database\r
-5) Make No Database Changes\r
-\r
-Choose the database operation: "
+expect "Choose the database operation: "
 send -- "1\r"
-expect -exact "1\r
-\[H\[2J\[3JConfigure Messaging\r
-\r
-1) Configure this appliance as a messaging server\r
-2) Connect to an external messaging system\r
-3) Make No messaging changes\r
-\r
-Choose the configure messaging: "
+expect "Choose the configure messaging: "
 send -- "1\r"
-expect -exact "1\r
-\[H\[2J\[3J\r
-Stopping ManageIQ Server...\r
-database disk\r
-\r
-1) /dev/vdb: 2048 MB\r
-2) Don't partition the disk\r
-(1) \r
-Choose the database disk: |1| "
+expect "Choose the database disk: |1| "
 send -- "1\r"
-expect -exact "1\r
-\[H\[2J\[3J\r
-Should this appliance run as a standalone database server?\r
-\r
-NOTE:\r
-* The ManageIQ application will not be running.\r
-* This is required when using highly available database deployments.\r
-* CAUTION: This is not reversible.\r
-\r
-? (Y/N): |N| "
+expect "? (Y/N): |N| "
 send -- "n\r"
-expect -exact "n\r
-\[H\[2J\[3JEach database region number must be unique.\r
-Enter the database region number: \[?2004h"
+expect "Enter the database region number: \[?2004h"
 send -- "55\r"
 expect "Enter the database password on localhost: "
 send -- "smartvm\r"
 expect "Enter the database password again: "
 send -- "smartvm\r"
-expect -exact "\r
-\[H\[2J\[3JActivating the configuration using the following settings...\r
-Host:     localhost\r
-Username: root\r
-Database: vmdb_production\r
-Region:   55\r
-\r
-Initialize postgresql disk starting\r
-Initialize postgresql disk complete\r
-Initialize postgresql starting\r
-Initialize postgresql complete\r
-Checking for connections to the database...\r
-\r
-Create region starting\r
-Create region complete\r
-\r
-Configuration activated successfully.\r
-Configure Application\r
-\r
-Installed file /opt/kafka/config/server.properties found.\r
-\r
-Already configured on this Appliance, Un-Configure first? (Y/N): "
+expect "Already configured on this Appliance, Un-Configure first? (Y/N): "
 send -- "y\r"
-expect -exact "y\r
-Remove Installed Files\r
-Unconfigure Firewall\r
-Deactivate Services\r
-\r
-Proceed with Configuration? (Y/N): "
+expect "Proceed with Configuration? (Y/N): "
 send -- "y\r"
 expect "Enter the Message Server Hostname or IP address: "
 send -- "\r"
-expect -exact "\[?2004l\rEnter the Message Keystore Username: |admin| \[?2004h"
+expect "\[?2004l\rEnter the Message Keystore Username: |admin| \[?2004h"
 send -- "\r"
-expect -exact "\[?2004l\rEnter the Message Keystore Password: "
+expect "\[?2004l\rEnter the Message Keystore Password: "
 send -- "smartvm\r"
-expect -exact "\r
-Configure a new persistent disk volume? (Y/N): "
+expect "Configure a new persistent disk volume? (Y/N): "
 send -- "n\r"
 expect "Proceed? (Y/N): "
 send -- "y\r"
@@ -209,26 +112,7 @@ send -- " "
 expect "Press any key to continue.\r
 "
 send -- " "
-expect -exact "\[H\[2J\[3JAdvanced Setting\r
-\r
-1) Create Database Backup\r
-2) Create Database Dump\r
-3) Restore Database From Backup\r
-4) Configure Application\r
-5) Configure Database Replication\r
-6) Logfile Configuration\r
-7) Control Application Database Failover Monitor\r
-8) Configure External Authentication (httpd)\r
-9) Update External Authentication Options\r
-10) Generate Custom Encryption Key\r
-11) Stop EVM Server Processes\r
-12) Start EVM Server Processes\r
-13) Restart Appliance\r
-14) Shut Down Appliance\r
-15) Summary Information\r
-16) Quit\r
-\r
-Choose the advanced setting: "
+expect "Choose the advanced setting: "
 send -- "16\r"
 expect eof
 EOF
