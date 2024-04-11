@@ -16,15 +16,7 @@ product_version_name=${BASH_REMATCH[4]}      #quinteros?
 product_version_remainder=${BASH_REMATCH[5]} #-1-20240403
 # Fill in product version number if missing
 if [[ -z "$product_version_number" ]]; then
-  letters=({a..z})
-  letter=${product_version_name::1}
-  for (( i=0; ; i++ ))
-  do
-    if [[ ${letters[$i]} == $letter ]]; then
-      product_version_number=$(($i + 1))
-      break
-    fi
-  done
+  product_version_number=$(($(printf '%d' "'${product_version_name::1}") - 96))
 fi
 
 script_directory=$(dirname -- "$( readlink -f -- "$0"; )")
