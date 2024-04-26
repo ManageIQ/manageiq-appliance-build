@@ -1,4 +1,5 @@
 #!/bin/bash
+# Dependencies: qemu-kvm libvirt virt-install expect
 
 if [[ -z $1 ]]; then
   echo "Missing test image!"
@@ -33,7 +34,7 @@ db_disk="/var/lib/libvirt/images/${vm_name}-db.qc2"
 qemu-img create -f qcow2 $db_disk 2G
 
 echo "=== Creating VM..."
-virt-install -n $vm_name --memory 4096 --vcpus 2 --cpu host --disk $disk_image --disk $db_disk --network default --graphics spice --osinfo centos-stream9 --import --noautoconsole
+virt-install -n $vm_name --memory 4096 --vcpus 2 --cpu host --boot hd --disk $disk_image --disk $db_disk --network default --graphics vnc --osinfo centos-stream9 --import --noautoconsole
 
 echo "=== Waiting for VM to boot..."
 sleep 30
@@ -67,8 +68,8 @@ EOF
 
 ### Configure the appliance
 echo "=== Configuring the appliance..."
-sshpass -p $newpassword ssh -tt root@$ip_address "hostnamectl hostname ${ip_address}.xip.io"
-sshpass -p $newpassword ssh -tt root@$ip_address "echo '${ip_address} ${ip_address}.xip.io 192' >> /etc/hosts"
+sshpass -p $newpassword ssh -tt root@$ip_address "hostnamectl hostname ${ip_address}.local"
+sshpass -p $newpassword ssh -tt root@$ip_address "echo '${ip_address} ${ip_address}.local 192' >> /etc/hosts"
 /usr/bin/expect <<EOF;
 spawn sshpass -p $newpassword ssh -tt root@$ip_address appliance_console
 match_max 100000
