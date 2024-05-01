@@ -5,5 +5,5 @@ bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet
 <% elsif @target == "gce" %>
 bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet net.ifnames=0 biosdevname=0 console=ttyS0,38400n8"
 <% else %>
-bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet net.ifnames=0 biosdevname=0"
+bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet net.ifnames=0 biosdevname=0 console=ttyS0,115200 console=tty0"
 <% end %>
