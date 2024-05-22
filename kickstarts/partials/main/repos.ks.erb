@@ -4,10 +4,10 @@ repo --name=appstream  --baseurl=https://mirror.stream.centos.org/9-stream/AppSt
 repo --name=crb        --baseurl=https://mirror.stream.centos.org/9-stream/CRB/x86_64/os/
 repo --name=epel       --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=epel-9&arch=x86_64
 
-repo --name=manageiq-19-spassky         --baseurl=https://rpm.manageiq.org/release/19-spassky/el$releasever/$basearch
-repo --name=manageiq-19-spassky-noarch  --baseurl=https://rpm.manageiq.org/release/19-spassky/el$releasever/noarch
+repo --name=manageiq-18-radjabov         --baseurl=https://rpm.manageiq.org/release/18-radjabov/el$releasever/$basearch
+repo --name=manageiq-18-radjabov-noarch  --baseurl=https://rpm.manageiq.org/release/18-radjabov/el$releasever/noarch
 <% if @build_type != "release" %>
-repo --name=manageiq-19-spassky-nightly --baseurl=https://rpm.manageiq.org/release/19-spassky-nightly/el$releasever/$basearch
+repo --name=manageiq-18-radjabov-nightly --baseurl=https://rpm.manageiq.org/release/18-radjabov-nightly/el$releasever/$basearch
 <% end %>
 
 <% if @target == "gce" %>
