@@ -1,7 +1,7 @@
 # build time repos - these repos are used to install the initial packages
-repo --name=baseos     --baseurl=http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/
-repo --name=appstream  --baseurl=http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/
-repo --name=extras     --baseurl=http://mirror.centos.org/centos/8-stream/extras/x86_64/os/
+repo --name=baseos     --baseurl=https://vault.centos.org/centos/8-stream/BaseOS/x86_64/os/
+repo --name=appstream  --baseurl=https://vault.centos.org/centos/8-stream/AppStream/x86_64/os/
+repo --name=extras     --baseurl=https://vault.centos.org/centos/8-stream/extras/x86_64/os/
 repo --name=epel       --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=epel-8&arch=x86_64 --excludepkgs=*qpid-proton*
 
 repo --name=manageiq-17-quinteros         --baseurl=https://rpm.manageiq.org/release/17-quinteros/el$releasever/$basearch
