@@ -1,9 +1,9 @@
 <% if @target == "ec2" || @target == "openstack" %>
-bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet net.ifnames=0 biosdevname=0 console=tty0 console=ttyS0,115200n8"
+bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet console=tty0 console=ttyS0,115200n8"
 <% elsif @target == "azure" %>
-bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet net.ifnames=0 biosdevname=0 console=ttyS0 earlyprintk=ttyS0 rootdelay=300"
+bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet console=ttyS0 earlyprintk=ttyS0 rootdelay=300"
 <% elsif @target == "gce" %>
-bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet net.ifnames=0 biosdevname=0 console=ttyS0,38400n8"
+bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet console=ttyS0,38400n8"
 <% else %>
-bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet net.ifnames=0 biosdevname=0 console=ttyS0,115200 console=tty0"
+bootloader --location=mbr --driveorder=vda --append="crashkernel=auto rhgb quiet console=ttyS0,115200 console=tty0"
 <% end %>
