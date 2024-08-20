@@ -24,6 +24,8 @@ hyperv-daemons
 qemu-guest-agent
 <% when "vsphere" %>
 open-vm-tools
+<% when "gce" %>
+google-guest-agent
 <% end %>
 
 <%= render_partial_if_exist "packages/includes-extra" %>
