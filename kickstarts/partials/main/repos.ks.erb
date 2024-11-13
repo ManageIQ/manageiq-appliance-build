@@ -3,9 +3,6 @@ repo --name=baseos     --baseurl=https://vault.centos.org/centos/8-stream/BaseOS
 repo --name=appstream  --baseurl=https://vault.centos.org/centos/8-stream/AppStream/x86_64/os/
 repo --name=extras     --baseurl=https://vault.centos.org/centos/8-stream/extras/x86_64/os/
 repo --name=epel       --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=epel-8&arch=x86_64 --excludepkgs=*qpid-proton*
-repo --name=ubi-8-baseos-rpms --baseurl https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/$basearch/baseos/os --excludepkgs=rpm*
-repo --name=ubi-8-appstream-rpms --baseurl https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/$basearch/appstream/os --excludepkgs=rpm*
-repo --name=ubi-8-codeready-builder-rpms --baseurl https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/$basearch/codeready-builder/os --excludepkgs=rpm*
 
 repo --name=manageiq-17-quinteros         --baseurl=https://rpm.manageiq.org/release/17-quinteros/el$releasever/$basearch
 repo --name=manageiq-17-quinteros-noarch  --baseurl=https://rpm.manageiq.org/release/17-quinteros/el$releasever/noarch
