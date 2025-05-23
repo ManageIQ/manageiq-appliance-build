@@ -4,10 +4,10 @@ repo --name=appstream  --baseurl=https://mirror.stream.centos.org/9-stream/AppSt
 repo --name=crb        --baseurl=https://mirror.stream.centos.org/9-stream/CRB/x86_64/os/
 repo --name=epel       --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=epel-9&arch=x86_64
 
-repo --name=manageiq-20-tal         --baseurl=https://rpm.manageiq.org/release/20-tal/el$releasever/$basearch
-repo --name=manageiq-20-tal-noarch  --baseurl=https://rpm.manageiq.org/release/20-tal/el$releasever/noarch
+repo --name=manageiq-19-spassky         --baseurl=https://rpm.manageiq.org/release/19-spassky/el$releasever/$basearch
+repo --name=manageiq-19-spassky-noarch  --baseurl=https://rpm.manageiq.org/release/19-spassky/el$releasever/noarch
 <% if @build_type != "release" %>
-repo --name=manageiq-20-tal-nightly --baseurl=https://rpm.manageiq.org/release/20-tal-nightly/el$releasever/$basearch
+repo --name=manageiq-19-spassky-nightly --baseurl=https://rpm.manageiq.org/release/19-spassky-nightly/el$releasever/$basearch
 <% end %>
 
 <% if @target == "gce" %>
