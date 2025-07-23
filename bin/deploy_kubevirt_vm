@@ -1,0 +1,728 @@
+#!/bin/bash
+
+#######################################################################
+# environment variables needed:
+#   accessKeyId -- use to access image
+#   secretKey   -- secret key to get the image if needed
+#   SSH_KEY     -- base64 encoded public key to ssh to im console
+#                  Otherwise use the root password to login
+#
+#
+#######################################################################
+set -Eeo pipefail
+
+verify_prereq() {
+    command -v oc > /dev/null 2>&1 || (echo "ERROR: oc cli required.\n" && exit 1)
+
+    oc get pods > /dev/null 2>&1 || (echo "ERROR: need connection to OCP cluster" && exit 1)
+
+    command -v virtctl > /dev/null 2>&1 || (echo "ERROR: You need virtctl to access the MIQ console." && exit 1)
+}
+
+# setup variables used in the script
+env_setup() {
+    # Assign values for IMAGE_NAME, NAMESPACE, NEWPASSWORD and SECRET_NAME
+    export NAMESPACE="miq-appliance"
+    export NEWPASSWORD="smartvm123"
+    export SECRET_NAME="miq-appliance-secret"
+
+    #   accessKeyId -- use to access image if needed
+    #   secretKey   -- secret key to get the image if needed
+    export accessKeyId=dummy
+    export secretKey=dummypassword
+
+    # SSH_KEY - base64 encoded public key can be used to ssh to im console. If not provided, use the dummy one below and you login using root password
+    export SSH_KEY="QUFBQUIzTnphQzF5YzJFQUFBQURBUUFCQUFBQ0FRRFBGMyt0Y1Z1SlI3aVhVN0IzSytLY1dDK0NVaXpWNTc3UUhmelVmY0VoK2s5RnhnbjVrTWI1aUxQcms2bTY3bnc4RVFoWTI0dlVWem9NV1pSZTAwdk95SUJCNkdSdTFPZzlONXdqMjBVMEIyZVAxRFc4SXRTVDd1YXhkV1BIU2l4WEFERnRvSm91eUppeHA5WVBpcWxqU25Cb2hrc1d3QkJpWTB1QUl3aE1jLzBxemhXNWZEaW00eGYrLzQ2NkZUVENNU2YyQmhkelNtejJNNitUQWhtVTllMUw1UW1sRnFQcFNHSFJnY0FCVmtKTkE3L0dNM2Q2U2RkUDRpODNHOEN6VWkzSjNseEtXZkxHazBsc3dSWlEzbEVPa2lSMGFWdjFUUDRnc0ZSRmhQUytjYnpUTnAyK01odFA2dHlvcXJUS29qZU1IRnAxMm9GdXRLZTUvSlNGekdHcStFK09Lc1I2V1FRc2pJUUJTaXlzNnZGKzJVQkFDVGprQ2ROUENGRWJ1RkcyQUhFTzRNT0swR1RvUS9od3g2Z0RiQ0xVUDJvRXZXNkJqREdDdi94dlFxT0ZuUUdqOU5ERjJ6MTFwejhBdGc2SmF1UzF2T3NMcFRqb3pOczdKZ2pIQ2N1aWcvUS9nb0theGZuNFpPL3FDL3AwU0cxeTFDOWZLS2JXUmxacnExTUJ2OGoySHNIYUxwN0lIZEVCUnpJMGxqdmRiTVpFMWVvY2s4bTQvaW9rTzRPV3ZyMjhraWFhSldtTGhOQjA1V1ByblZkczZIclFkOG8zSmhYaW5VWTkxTGlhMXIwUW1hUHJNMW0vc0dqbXR2d2VhOUpYTG8rME9uRm5pSzhWM2FuYjg4LzNlSjRFNGNPWmdBWjNqZnhJbFViSFdWLzBGaFIrSTRUL2N3PT0="
+
+    # VM_NAME -- The name of VM created. It consists of lower-case alphanumeric characters, or -. No . allowed in the name
+    export VM_NAME=manageiq-ovirt-master-20250601
+
+    # IMAGE_NAME -- http link to the Red Hat virtualization MIQ image.
+    export IMAGE_NAME=https://releases.manageiq.org/manageiq-ovirt-master-20250601.qc2
+
+    # CLUSTER_URL
+    export CLUSTER_URL=$(oc whoami --show-server | cut -d ':' -f 1,2)
+    export CLUSTER_HOST=${CLUSTER_URL#https://api.}
+
+    read -p "Installing MIQ appliance using image url: ${IMAGE_NAME} Confirm or crtl-C to cancel" xx
+
+    RUNDATE=$(date '+%Y%m%d-%H%M%S')
+    export LOG_FILE="/tmp/miq_appliance_configure_${RUNDATE}.log"
+
+    # remove kubevirt_host_files
+    /bin/rm -f /root/.ssh/kubevirt_known_hosts
+}
+
+# Function to log messages with timestamps
+log_timestamp() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"  >> $LOG_FILE
+}
+
+# Function to log errors with timestamps
+log_error_timestamp() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR: $1" | tee -a $LOG_FILE >&2
+}
+
+# Function to log messages with timestamps and also to the conosle
+log_timestamp_console() {
+    datevalue=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[${datevalue}] $1" >> $LOG_FILE
+    echo "[${datevalue}] $1"
+}
+
+# Function to check if a command was successful and retry up to 3 times
+check_command() {
+    local retries=3
+    local success=0
+    for ((i=0; i<$retries; i++)); do
+        if [[ $? -eq 0 ]]; then
+            success=1
+            break
+        else
+            log_timestamp "Command failed. Retrying in 5 seconds... (Attempt $((i+1)) of $retries)"
+            sleep 5
+        fi
+    done
+
+    if [[ $success -ne 1 ]]; then
+        log_error_timestamp "$1"
+        return 1
+    fi
+    return 0
+}
+
+# Function to check if a resource exists
+resource_exists() {
+    local resource_kind=$1
+    local resource_name=$2
+
+    log_timestamp "Checking if $resource_kind/$resource_name exists..."
+    if ! oc get "$resource_kind" "$resource_name" &>/dev/null; then
+        log_timestamp "Resource $resource_kind/$resource_name does not exist."
+        return 1
+    fi
+    log_timestamp "Resource $resource_kind/$resource_name exists."
+    return 0
+}
+
+create_datavolume_cr() {
+    cat << EOF | oc apply -f -
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: "${VM_NAME}"
+spec:
+  pvc:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 80Gi
+  source:
+    http:
+      url: "${IMAGE_NAME}"
+      secretRef: ${SECRET_NAME}
+EOF
+    return $?
+}
+
+create_datavolume_cr_2() {
+    cat << EOF | oc apply -f -
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: "${VM_NAME}-database"
+spec:
+  source:
+    blank: {}
+  pvc:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
+EOF
+    return $?
+}
+
+create_vm_cr() {
+    cat << EOF | oc apply -f -
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  labels:
+    kubevirt.io/os: linux
+  name: "${VM_NAME}"
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: "${VM_NAME}"
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          disks:
+          - disk:
+              bus: virtio
+            name: disk0
+          - disk:
+              bus: virtio
+            name: disk1
+          - cdrom:
+              bus: sata
+              readonly: true
+            name: cloudinitdisk
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 8Gi
+      volumes:
+      - name: disk0
+        persistentVolumeClaim:
+          claimName: "${VM_NAME}"
+      - name: disk1
+        persistentVolumeClaim:
+          claimName: "${VM_NAME}-database"
+      - cloudInitNoCloud:
+          userData: |
+            #cloud-config
+            hostname: "${VM_NAME}"
+            ssh_pwauth: True
+            disable_root: false
+            ssh_authorized_keys:
+            - ${SSH_KEY}
+        name: cloudinitdisk
+EOF
+    return $?
+}
+
+create_appliance_cockpit_route() {
+    cat << EOF | oc apply -f -
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: miq-appliance-cockpit
+spec:
+  host: miq-appliance-cockpit.apps.${CLUSTER_HOST}
+  port:
+    targetPort: 9090
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: passthrough
+  to:
+    kind: Service
+    name: "${VM_NAME}-cockpit"
+    weight: 100
+  wildcardPolicy: None
+EOF
+    return $?
+}
+
+create_appliance_route() {
+    cat << EOF | oc apply -f -
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: miq-appliance
+spec:
+  host: miq-appliance.apps.${CLUSTER_HOST}
+  port:
+    targetPort: 443
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: passthrough
+  to:
+    kind: Service
+    name: "${VM_NAME}-https"
+    weight: 100
+  wildcardPolicy: None
+EOF
+    return $?
+}
+
+# Function to install Kubevirt into the cluster
+install_kubevirt() {
+    log_timestamp_console "Installing Kubevirt..."
+
+    log_timestamp "Creating Kubevirt operator..."
+    oc create -f https://github.com/kubevirt/kubevirt/releases/latest/download/kubevirt-operator.yaml > /dev/null 2>&1
+    check_command "Failed to create Kubevirt operator." || return 1
+
+    log_timestamp "Creating Kubevirt CR..."
+    oc create -f https://github.com/kubevirt/kubevirt/releases/latest/download/kubevirt-cr.yaml > /dev/null 2>&1
+    check_command "Failed to create Kubevirt CR." || return 1
+
+    log_timestamp "Creating Kubevirt config map..."
+    oc create configmap kubevirt-config --from-literal feature-gates=DataVolumes -n kube-system > /dev/null 2>&1
+    check_command "Failed to create Kubevirt config map." || return 1
+
+    log_timestamp_console "Waiting for Kubevirt deployment..."
+    local timeout=600
+    local start_time=$(date +%s)
+    while true; do
+        kubevirt_status=$(oc get kubevirt.kubevirt.io/kubevirt -o=jsonpath='{.status.phase}' -n kubevirt)
+        log_timestamp "Current Kubevirt status: $kubevirt_status"
+        if [[ "$kubevirt_status" == "Deployed" ]]; then
+            break
+        fi
+        if [ $(($(date +%s) - start_time)) -ge $timeout ]; then
+            log_error_timestamp "Kubevirt deployment timed out after ${timeout} seconds."
+            return 1
+        fi
+        sleep 5
+    done
+
+    log_timestamp "Kubevirt deployed successfully."
+    return 0
+}
+
+# Function to install CDI (Containerized Data Importer) into the cluster
+install_cdi() {
+    log_timestamp_console "Installing CDI..."
+
+    log_timestamp "Creating CDI operator..."
+    oc create -f https://github.com/kubevirt/containerized-data-importer/releases/latest/download/cdi-operator.yaml > /dev/null 2>&1
+    check_command "Failed to create CDI operator." || return 1
+
+    log_timestamp "Creating CDI CR..."
+    oc create -f https://github.com/kubevirt/containerized-data-importer/releases/latest/download/cdi-cr.yaml > /dev/null 2>&1
+    check_command "Failed to create CDI CR." || return 1
+
+    log_timestamp_console "Waiting for CDI deployment..."
+    local timeout=600
+    local start_time=$(date +%s)
+    while true; do
+        cdi_status=$(oc get cdi -n cdi -o=jsonpath='{.items[0].status.phase}')
+        log_timestamp "Current CDI status: $cdi_status"
+        if [[ "$cdi_status" == "Deployed" ]]; then
+            break
+        fi
+        if [ $(($(date +%s) - start_time)) -ge $timeout ]; then
+            log_error_timestamp "CDI deployment timed out after ${timeout} seconds."
+            return 1
+        fi
+        sleep 5
+    done
+
+    log_timestamp "CDI deployed successfully."
+    return 0
+}
+
+# Function to create Namespace and Secret
+create_namespace_and_secret(){
+    log_timestamp_console "Creating Namespace and Secret..."
+
+    # Check if VM_NAME, NAMESPACE and SECRET_NAME is set
+    if [[ -z "$VM_NAME" ]] || [[ -z "$NAMESPACE" ]] || [[ -z "$SECRET_NAME" ]]; then
+        log_error_timestamp "One or more required variables (VM_NAME, NAMESPACE, SECRET_NAME) are missing. Exiting..."
+        return 1
+    fi
+
+    # Check if namespace exists
+    if ! oc get namespace "$NAMESPACE" >/dev/null 2>&1; then
+        log_timestamp "Namespace $NAMESPACE does not exist. Creating..."
+        if ! oc create namespace "$NAMESPACE"; then
+            log_error_timestamp "Namespace $NAMESPACE could not be created."
+            return 1
+        fi
+        log_timestamp "Namespace $NAMESPACE created successfully."
+    else
+        log_timestamp "Namespace $NAMESPACE already exists."
+    fi
+
+    # Switch to namespace
+    log_timestamp "Switching to namespace $NAMESPACE..."
+    if ! oc project "$NAMESPACE" >/dev/null 2>&1; then
+        log_error_timestamp "Could not switch to namespace $NAMESPACE."
+        return 1
+    fi
+    log_timestamp "Now in namespace $NAMESPACE."
+
+    # Check if secret exists in the namespace
+    if ! oc get secret "$SECRET_NAME" -n "$NAMESPACE" >/dev/null 2>&1; then
+        log_timestamp "Secret $SECRET_NAME does not exist in namespace $NAMESPACE. Creating..."
+        if ! oc create secret generic "$SECRET_NAME" --from-literal=accessKeyId="$accessKeyId" --from-literal=secretKey="$secretKey" -n "$NAMESPACE"; then
+            log_error_timestamp "Secret $SECRET_NAME could not be created in namespace $NAMESPACE."
+            return 1
+        fi
+        log_timestamp "Secret $SECRET_NAME created successfully in namespace $NAMESPACE."
+    else
+        log_timestamp "Secret $SECRET_NAME already exists in namespace $NAMESPACE."
+    fi
+    return 0
+}
+
+# Function to create DataVolume for Image and DB Disk
+create_datavolume_and_pvc() {
+    log_timestamp_console "Creating DataVolume and PVC..."
+
+    for ((i=1; i<=3; i++)); do
+        log_timestamp "Attempt $i to create DataVolume and PVC..."
+
+        log_timestamp "Applying DataVolume CR..."
+        create_datavolume_cr
+        check_command "Failed to create_datavolume_cr." || continue
+
+        log_timestamp "Applying DataVolume 2 CR..."
+        create_datavolume_cr_2
+        check_command "Failed to create_datavolume_cr_2." || continue
+
+        log_timestamp_console "Waiting for data volume to be bound..."
+        local timeout=2400
+        local start_time=$(date +%s)
+        while true; do
+            pvc_status=$(oc get pvc $VM_NAME -n $NAMESPACE -o=jsonpath='{.status.phase}')
+
+            log_timestamp "PVC status: $pvc_status, Database PVC status: $database_pvc_status"
+            database_pvc_status=$(oc get pvc $VM_NAME-database -n $NAMESPACE -o=jsonpath='{.status.phase}')
+
+            if [[ "$pvc_status" == "Bound" && "$database_pvc_status" == "Bound" ]]; then
+                log_timestamp "PVCs are bound successfully."
+                return 0
+            fi
+
+            if [ $(($(date +%s) - start_time)) -ge $timeout ]; then
+                log_error_timestamp "PVC binding timed out after ${timeout} seconds."
+                break
+            fi
+            sleep 5
+        done
+
+        log_timestamp_console "PVCs are not bound. Cleaning up and retrying..."
+        oc delete pvc $VM_NAME -n $NAMESPACE
+        oc delete pvc $VM_NAME-database -n $NAMESPACE
+        sleep 30
+    done
+
+    log_error_timestamp "Failed to bind PVCs after 3 attempts. Exiting..."
+    return 1
+}
+
+# Function to create VirtualMachine fetch IP and VMI Name
+create_virtualmachine_and_fetch_ip() {
+    log_timestamp_console "Fetching SSH key from $SECRET_NAME..."
+
+    if [ -z "$SSH_KEY" ]; then
+        log_error_timestamp "Failed to fetch SSH key from the secret."
+        return 1
+    fi
+    DECODED_SSH_KEY=$(echo "$SSH_KEY" | base64 --decode)
+    log_timestamp "SSH key fetched successfully."
+
+    log_timestamp "Creating VirtualMachine..."
+
+    log_timestamp "Calling create_vm_cr ..."
+    create_vm_cr
+    check_command "Failed to create VirtualMachine." || return 1
+
+    log_timestamp_console "Waiting for VirtualMachineInstance (VMI) to be running..."
+    local timeout=600
+    local start_time=$(date +%s)
+    while true; do
+        vmi_status=$(oc get vmi $VM_NAME -o=jsonpath='{.status.phase}' -n $NAMESPACE)
+        log_timestamp "Current VMI status: $vmi_status"
+        if [[ "$vmi_status" == "Running" ]]; then
+            break
+        fi
+        if [ $(($(date +%s) - start_time)) -ge $timeout ]; then
+            log_error_timestamp "VMI startup timed out after ${timeout} seconds."
+            return 1
+        fi
+        sleep 5
+    done
+
+    # Get VMI name
+    vmi_name=$(oc get vm $VM_NAME -o=jsonpath='{.metadata.name}' -n $NAMESPACE)
+    if [[ -z "$vmi_name" ]]; then
+        log_error_timestamp "Failed to get VirtualMachine (VM) name. Exiting..."
+        return 1
+    fi
+
+    log_timestamp_console "VirtualMachine (VM) Name: $vmi_name"
+
+    # Get VM IP
+    log_timestamp_console "Getting VirtualMachineInstance (VMI) IP address..."
+    local ip_timeout=600
+
+    local ip_start_time=$(date +%s)
+    while true; do
+        vmi_ip=$(oc get vmi $VM_NAME -o=jsonpath='{.status.interfaces[0].ipAddress}' -n $NAMESPACE)
+        if [[ -n "$vmi_ip" ]]; then
+            break
+        fi
+        if [ $(($(date +%s) - ip_start_time)) -ge $ip_timeout ]; then
+            log_error_timestamp "Failed to get VMI IP address after ${ip_timeout} seconds. Exiting..."
+            return 1
+        fi
+        sleep 5
+    done
+
+    log_timestamp_console "VM IP Address: $vmi_ip"
+    return 0
+}
+
+# Function to create services for https, cockpit and SSH
+create_services() {
+    log_timestamp_console "Creating services..."
+
+    create_service_if_not_exists "$VM_NAME-https" "443" || return 1
+    create_service_if_not_exists "$VM_NAME-cockpit" "9090" || return 1
+    create_service_if_not_exists "$VM_NAME-ssh" "20222" || return 1
+    return 0
+}
+
+# Function to create a service if it does not exist
+create_service_if_not_exists() {
+    local service_name="$1"
+    local service_port="$2"
+
+    if ! resource_exists "svc" "$service_name"; then
+
+        log_timestamp "Creating service $service_name..."
+        virtctl expose vmi $VM_NAME --port="$service_port" --name="$service_name" -n $NAMESPACE
+        if ! check_command "Failed to expose service $service_name."; then
+            return 1
+        fi
+        log_timestamp_console "Service $service_name created successfully."
+    else
+        log_timestamp_console "Service $service_name already exists. Skipping creation."
+    fi
+    return 0
+}
+
+# Function to create routes
+create_routes() {
+    log_timestamp_console "Creating routes..."
+
+    # Print the extracted cluster name
+    log_timestamp_console "Cluster host: $CLUSTER_HOST"
+
+    # Ensure CLUSTER_HOST is set
+    if [[ -z "$CLUSTER_HOST" ]]; then
+        log_error_timestamp_console "CLUSTER_HOST variable is missing. Exiting..."
+        return 1
+    fi
+
+    # Create route for cockpit service
+    log_timestamp_console "Creating route for cockpit service..."
+
+    create_appliance_cockpit_route
+    create_appliance_route
+
+    log_timestamp_console "Routes are created successfully."
+    return 0
+}
+
+# Function to wait for SSH service to be ready and SSH into VM
+ssh_into_vm() {
+    log_timestamp_console "Waiting for SSH service to be ready..."
+    sleep 60
+
+    log_timestamp_console "SSH into the VM $vmi_name..."
+    expect <<EOF | tee -a $LOG_FILE
+        set timeout -1
+        spawn virtctl ssh -l root $vmi_name -n $NAMESPACE
+        match_max 32000
+        expect {
+            "Are you sure you want to continue connecting (yes/no)?" {
+                send "yes\r"
+                exp_continue
+            }
+            "root@vmi/${vmi_name}.${NAMESPACE}'s password:" {
+                send "smartvm\r"
+                exp_continue
+            }
+            "New password:" {
+                send "$NEWPASSWORD\r"
+                exp_continue
+            }
+            "Retype new password:" {
+                send "$NEWPASSWORD\r"
+                exp_continue
+            }
+            "#" {
+                send "exit\r"
+            }
+            eof
+        }
+EOF
+
+    # Capture output of change password
+    password_change_status=$?
+
+    # Check if evmserverd is active
+    if [ $password_change_status -eq 0 ]; then
+        log_timestamp_console "SSH into VM succeeded and password is changed."
+    else
+        log_error_timestamp "SSH into VM failed"
+        return 1
+    fi
+    return 0
+}
+
+# Function to configure the appliance
+configure_appliance() {
+
+    log_timestamp_console "Configuring the appliance on VM $vmi_name..."
+    expect <<EOF
+        set timeout -1
+        spawn virtctl ssh -l root $vmi_name -n $NAMESPACE
+        match_max 32000
+        expect {
+            "Are you sure you want to continue connecting (yes/no)? " {
+                send "yes\r"
+                exp_continue
+            }
+            "root@vmi/${vmi_name}.${NAMESPACE}'s password: " {
+                send "$NEWPASSWORD\r"
+                exp_continue
+            }
+            "#" {
+                send "hostnamectl set-hostname ${vmi_ip}.local\r"
+                send "echo '${vmi_ip} ${vmi_ip}.local 192' >> /etc/hosts\r"
+                send "appliance_console\r"
+                expect "Press any key to continue.\r"
+                send " "
+                expect "Choose the advanced setting: "
+                send "4\r"
+                expect "Choose the encryption key: |1| "
+                send "1\r"
+                expect "Choose the database operation: "
+                send "1\r"
+                expect "Choose the configure messaging: "
+                send "1\r"
+                expect "Choose the database disk: |1| "
+                send "1\r"
+                expect "? (Y/N): |N| "
+                send "n\r"
+                expect "Enter the database region number: *"
+                send "55\r"
+                expect "Enter the database password on localhost: "
+                send "smartvm\r"
+                expect "Enter the database password on localhost: "
+                send "smartvm\r"
+                expect "Already configured on this Appliance, Un-Configure first? (Y/N): "
+                send "y\r"
+                expect "Proceed with Configuration? (Y/N): "
+                send "y\r"
+                expect "Enter the Message Server Hostname: |${vmi_ip}.local| "
+                send "\r"
+                expect "\[?2004l\rEnter the Message Keystore Username: |admin| \[?2004h"
+                send "\r"
+                expect "\[?2004l\rEnter the Message Keystore Password: "
+                send "smartvm\r"
+                expect "\[?2004l\rEnter the Message Keystore Password: "
+                send "smartvm\r"
+                expect "Configure a new persistent disk volume? (optional) (Y/N): "
+                send "n\r"
+                expect "Proceed? (Y/N): "
+                send "y\r"
+                expect "Press any key to continue.\r"
+                send " "
+                expect "Press any key to continue.\r"
+                send " "
+                expect "Choose the advanced setting: "
+                send "16\r"
+                expect "#" {
+                    send "exit\r"
+                    expect eof
+                }
+            }
+        }
+EOF
+    # Capture exit status of expect
+    configure_status=$?
+
+    # Check if appliance is configure
+    if [ $configure_status -eq 0 ]; then
+        sleep 600
+        log_timestamp_console "Configuration on VM $vmi_name completed successfully."
+    else
+        log_error_timestamp "Appliance Configurations failed"
+        return 1
+    fi
+    return 0
+}
+
+# Function to check evmserverd status
+check_evmserverd() {
+    log_timestamp_console "=== Checking evmserverd status..."
+    expect <<EOF | tee -a $LOG_FILE
+    spawn virtctl ssh -l root $VM_NAME -n $NAMESPACE
+    expect "root@vmi/$VM_NAME.${NAMESPACE}'s password: "
+    send "$NEWPASSWORD\r"
+    expect "#"
+    send "systemctl is-active evmserverd\r"
+    expect "#"
+    send "exit\r"
+    expect eof
+EOF
+
+    # Capture exit status of expect
+    evmserverd_active=$?
+
+    # Check if evmserverd is active
+    if [ $evmserverd_active -eq 0 ]; then
+        log_timestamp_console "evmserverd is active"
+    else
+        log_error_timestamp "evmserverd is inactive"
+        return 1
+    fi
+    return 0
+}
+
+# Function to get and validate the route host
+get_route_host() {
+
+    route_host=$(oc get route appliance -o=jsonpath='{.spec.host}' -n $NAMESPACE)
+    if [[ -z "$route_host" ]]; then
+        log_error_timestamp "Appliance route not found."
+        return 1
+    fi
+
+    echo "$route_host"
+    return 0
+}
+
+# Function to configure MIQ appliance (Main Function)
+appliance_configure() {
+    log_timestamp_console "Starting appliance configuration..."
+    install_kubevirt || { log_error_timestamp "install_kubevirt failed"; return 1; }
+    install_cdi || { log_error_timestamp "install_cdi failed"; return 1; }
+    create_namespace_and_secret || { log_error_timestamp "create_namespace_and_secret failed"; return 1; }
+    create_datavolume_and_pvc || { log_error_timestamp "create_datavolume_and_pvc failed"; return 1; }
+    create_virtualmachine_and_fetch_ip || { log_error_timestamp "create_virtualmachine_and_fetch_ip failed"; return 1; }
+    create_services || { log_error_timestamp "create_services failed"; return 1; }
+    create_routes || { log_error_timestamp "create_routes failed"; return 1; }
+    ssh_into_vm || { log_error_timestamp "ssh_into_vm failed"; return 1; }
+    configure_appliance || { log_error_timestamp "configure_appliance failed"; return 1; }
+    check_evmserverd || { log_error_timestamp "check_evmserverd failed"; return 1; }
+
+    log_timestamp_console "Appliance configuration completed successfully."
+    return 0
+}
+
+# Verify prereq and setup variables used in the script
+verify_prereq
+env_setup
+
+# Execute the appliance_configure (Main Function) and handle its exit status
+log_timestamp_console "Starting MIQ Appliance Configuration Script..."
+appliance_configure
+exit_status=$?
+if [[ $exit_status -ne 0 ]]; then
+    log_error_timestamp "appliance_configure failed with exit status $exit_status"
+    echo "appliance_configure failed with exit status $exit_status" >&2
+    log_error_timestamp "Full configuration log can be found at $LOG_FILE"
+    echo "Full configuration log can be found at $LOG_FILE" >&2
+    exit 1
+fi
+
+log_timestamp_console "appliance_configure completed successfully."
+log_timestamp_console "Full configuration log can be found at $LOG_FILE"
+log_timestamp_console "To login: virtctl ssh -l root $vmi_name -n $NAMESPACE"
+exit 0
