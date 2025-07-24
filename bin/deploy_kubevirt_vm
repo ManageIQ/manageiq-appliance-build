@@ -548,7 +548,7 @@ ssh_into_vm() {
     log_timestamp_console "SSH into the VM $vmi_name..."
     expect <<EOF | tee -a $LOG_FILE
         set timeout -1
-        spawn virtctl ssh -l root $vmi_name -n $NAMESPACE
+        spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE
         match_max 32000
         expect {
             "Are you sure you want to continue connecting (yes/no)?" {
@@ -593,7 +593,7 @@ configure_appliance() {
     log_timestamp_console "Configuring the appliance on VM $vmi_name..."
     expect <<EOF
         set timeout -1
-        spawn virtctl ssh -l root $vmi_name -n $NAMESPACE
+        spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE
         match_max 32000
         expect {
             "Are you sure you want to continue connecting (yes/no)? " {
@@ -675,7 +675,7 @@ EOF
 check_evmserverd() {
     log_timestamp_console "=== Checking evmserverd status..."
     expect <<EOF | tee -a $LOG_FILE
-    spawn virtctl ssh -l root $VM_NAME -n $NAMESPACE
+    spawn virtctl ssh root@vmi/$VM_NAME -n $NAMESPACE
     expect "root@vmi/$VM_NAME.${NAMESPACE}'s password: "
     send "$NEWPASSWORD\r"
     expect "#"
@@ -748,5 +748,5 @@ fi
 
 log_timestamp_console "appliance_configure completed successfully."
 log_timestamp_console "Full configuration log can be found at $LOG_FILE"
-log_timestamp_console "To login: virtctl ssh -l root $vmi_name -n $NAMESPACE"
+log_timestamp_console "To login: virtctl ssh root@vmi/$vmi_name -n $NAMESPACE"
 exit 0
