@@ -376,11 +376,11 @@ create_datavolume_and_pvc() {
         local start_time=$(date +%s)
         while true; do
             pvc_status=$(oc get pvc $VM_NAME -n $NAMESPACE -o=jsonpath='{.status.phase}')
+            db_pvc_status=$(oc get pvc $VM_NAME-database -n $NAMESPACE -o=jsonpath='{.status.phase}')
 
-            log_timestamp "PVC status: $pvc_status, Database PVC status: $database_pvc_status"
-            database_pvc_status=$(oc get pvc $VM_NAME-database -n $NAMESPACE -o=jsonpath='{.status.phase}')
+            log_timestamp "PVC status: $pvc_status, Database PVC status: $db_pvc_status"
 
-            if [[ "$pvc_status" == "Bound" && "$database_pvc_status" == "Bound" ]]; then
+            if [[ "$pvc_status" == "Bound" && "$db_pvc_status" == "Bound" ]]; then
                 log_timestamp "PVCs are bound successfully."
                 return 0
             fi
@@ -400,6 +400,29 @@ create_datavolume_and_pvc() {
 
     log_error_timestamp "Failed to bind PVCs after 3 attempts. Exiting..."
     return 1
+}
+
+check_datavolume_imported() {
+    log_timestamp_console "Waiting for data volumes to be imported..."
+
+    while true; do
+        dv_status=$(oc get dv $VM_NAME -n $NAMESPACE -o=jsonpath='{.status.phase}')
+        db_dv_status=$(oc get dv $VM_NAME-database -n $NAMESPACE -o=jsonpath='{.status.phase}')
+
+        log_timestamp "Data volume status: $dv_status, Database data volume status: $db_dv_status"
+
+        if [[ "$dv_status" == "Succeeded" && "$db_dv_status" == "Succeeded" ]]; then
+            log_timestamp "Data volumes imported successfully."
+            return 0
+        fi
+
+        dv_progress=$(oc get dv $VM_NAME -n $NAMESPACE -o=jsonpath='{.status.progress}')
+        db_dv_progress=$(oc get dv $VM_NAME-database -n $NAMESPACE -o=jsonpath='{.status.progress}')
+
+        log_timestamp "Data volume Progress: $dv_progress, Database data volume Progress: $db_dv_progress"
+
+        sleep 5
+    done
 }
 
 # Function to create VirtualMachine fetch IP and VMI Name
@@ -695,6 +718,7 @@ appliance_configure() {
     install_cdi || { log_error_timestamp "install_cdi failed"; return 1; }
     create_namespace_and_secret || { log_error_timestamp "create_namespace_and_secret failed"; return 1; }
     create_datavolume_and_pvc || { log_error_timestamp "create_datavolume_and_pvc failed"; return 1; }
+    check_datavolume_imported || { log_error_timestamp "check_datavolume_imported failed"; return 1; }
     create_virtualmachine_and_fetch_ip || { log_error_timestamp "create_virtualmachine_and_fetch_ip failed"; return 1; }
     create_services || { log_error_timestamp "create_services failed"; return 1; }
     create_routes || { log_error_timestamp "create_routes failed"; return 1; }
