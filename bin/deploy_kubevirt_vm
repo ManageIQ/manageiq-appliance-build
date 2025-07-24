@@ -35,10 +35,10 @@ env_setup() {
     export SSH_KEY="QUFBQUIzTnphQzF5YzJFQUFBQURBUUFCQUFBQ0FRRFBGMyt0Y1Z1SlI3aVhVN0IzSytLY1dDK0NVaXpWNTc3UUhmelVmY0VoK2s5RnhnbjVrTWI1aUxQcms2bTY3bnc4RVFoWTI0dlVWem9NV1pSZTAwdk95SUJCNkdSdTFPZzlONXdqMjBVMEIyZVAxRFc4SXRTVDd1YXhkV1BIU2l4WEFERnRvSm91eUppeHA5WVBpcWxqU25Cb2hrc1d3QkJpWTB1QUl3aE1jLzBxemhXNWZEaW00eGYrLzQ2NkZUVENNU2YyQmhkelNtejJNNitUQWhtVTllMUw1UW1sRnFQcFNHSFJnY0FCVmtKTkE3L0dNM2Q2U2RkUDRpODNHOEN6VWkzSjNseEtXZkxHazBsc3dSWlEzbEVPa2lSMGFWdjFUUDRnc0ZSRmhQUytjYnpUTnAyK01odFA2dHlvcXJUS29qZU1IRnAxMm9GdXRLZTUvSlNGekdHcStFK09Lc1I2V1FRc2pJUUJTaXlzNnZGKzJVQkFDVGprQ2ROUENGRWJ1RkcyQUhFTzRNT0swR1RvUS9od3g2Z0RiQ0xVUDJvRXZXNkJqREdDdi94dlFxT0ZuUUdqOU5ERjJ6MTFwejhBdGc2SmF1UzF2T3NMcFRqb3pOczdKZ2pIQ2N1aWcvUS9nb0theGZuNFpPL3FDL3AwU0cxeTFDOWZLS2JXUmxacnExTUJ2OGoySHNIYUxwN0lIZEVCUnpJMGxqdmRiTVpFMWVvY2s4bTQvaW9rTzRPV3ZyMjhraWFhSldtTGhOQjA1V1ByblZkczZIclFkOG8zSmhYaW5VWTkxTGlhMXIwUW1hUHJNMW0vc0dqbXR2d2VhOUpYTG8rME9uRm5pSzhWM2FuYjg4LzNlSjRFNGNPWmdBWjNqZnhJbFViSFdWLzBGaFIrSTRUL2N3PT0="
 
     # VM_NAME -- The name of VM created. It consists of lower-case alphanumeric characters, or -. No . allowed in the name
-    export VM_NAME=manageiq-ovirt-master-20250601
+    export VM_NAME=manageiq-ovirt-devel
 
     # IMAGE_NAME -- http link to the Red Hat virtualization MIQ image.
-    export IMAGE_NAME=https://releases.manageiq.org/manageiq-ovirt-master-20250601.qc2
+    export IMAGE_NAME=https://releases.manageiq.org/manageiq-ovirt-devel.qc2
 
     # CLUSTER_URL
     export CLUSTER_URL=$(oc whoami --show-server | cut -d ':' -f 1,2)
