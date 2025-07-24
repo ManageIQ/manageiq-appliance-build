@@ -13,10 +13,8 @@ set -Eeo pipefail
 
 verify_prereq() {
     command -v oc > /dev/null 2>&1 || (echo "ERROR: oc cli required.\n" && exit 1)
-
-    oc get pods > /dev/null 2>&1 || (echo "ERROR: need connection to OCP cluster" && exit 1)
-
     command -v virtctl > /dev/null 2>&1 || (echo "ERROR: You need virtctl to access the MIQ console." && exit 1)
+    oc get pods > /dev/null 2>&1 || (echo "ERROR: need connection to OCP cluster" && exit 1)
 }
 
 # setup variables used in the script
