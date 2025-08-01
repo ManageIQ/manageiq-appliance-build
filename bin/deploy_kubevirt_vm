@@ -42,7 +42,7 @@ env_setup() {
     export CLUSTER_URL=$(oc whoami --show-server | cut -d ':' -f 1,2)
     export CLUSTER_HOST=${CLUSTER_URL#https://api.}
 
-    read -p "Installing MIQ appliance using image url: ${IMAGE_NAME} Confirm or crtl-C to cancel" xx
+    read -p "Installing MIQ appliance using image url: ${IMAGE_NAME} Confirm or ctrl-C to cancel" xx
 
     RUNDATE=$(date '+%Y%m%d-%H%M%S')
     export LOG_FILE="/tmp/miq_appliance_configure_${RUNDATE}.log"
@@ -61,7 +61,7 @@ log_error_timestamp() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR: $1" | tee -a $LOG_FILE >&2
 }
 
-# Function to log messages with timestamps and also to the conosle
+# Function to log messages with timestamps and also to the console
 log_timestamp_console() {
     datevalue=$(date '+%Y-%m-%d %H:%M:%S')
     echo "[${datevalue}] $1" >> $LOG_FILE
@@ -658,7 +658,7 @@ EOF
     # Capture exit status of expect
     configure_status=$?
 
-    # Check if appliance is configure
+    # Check if appliance is configured
     if [ $configure_status -eq 0 ]; then
         sleep 600
         log_timestamp_console "Configuration on VM $vmi_name completed successfully."
