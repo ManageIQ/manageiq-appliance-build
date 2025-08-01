@@ -1,0 +1,27 @@
+#!/bin/bash
+
+NS=miq-appliance
+
+# delete routes
+echo "Info: deleting routes"
+oc -n $NS delete route appliance
+oc -n $NS delete route appliance-cockpit
+
+# delete services
+echo "Info: deleting services"
+VMNAME=$(oc -n $NS get datavolume --no-headers | grep -v database | cut -f1 -d" ")
+oc -n $NS delete service ${VMNAME}-cockpit
+oc -n $NS delete service ${VMNAME}-https
+oc -n $NS delete service ${VMNAME}-ssh
+
+# delete VirtualMachine CR
+echo "Info: deleting virtualmachine ${VMNAME}"
+oc delete virtualmachine ${VMNAME}
+
+# delete DataVolume CR
+echo "Info: deleting datavolume CR ${VMNAME} and ${VMNAME}-database"
+oc -n $NS delete datavolume ${VMNAME}
+oc -n $NS delete datavolume ${VMNAME}-database
+
+echo "Info: Done"
+exit 0
