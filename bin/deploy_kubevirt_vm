@@ -1,21 +1,16 @@
 #!/bin/bash
 
-#######################################################################
-# environment variables needed:
-#   accessKeyId -- use to access image
-#   secretKey   -- secret key to get the image if needed
-#   SSH_KEY     -- base64 encoded public key to ssh to manageiq console
-#                  Otherwise use the root password to login
-#
-#
-#######################################################################
 set -Eeo pipefail
 
 verify_prereq() {
-    command -v oc > /dev/null 2>&1 || (echo "ERROR: oc cli required.\n" && exit 1)
-    command -v virtctl > /dev/null 2>&1 || (echo "ERROR: You need virtctl to access the MIQ console." && exit 1)
-    oc get pods > /dev/null 2>&1 || (echo "ERROR: need connection to OCP cluster" && exit 1)
-}
+    command -v oc > /dev/null 2>&1 || (echo "ERROR: oc cli must be installed." && exit 1)
+    command -v virtctl > /dev/null 2>&1 || (echo "ERROR: virtctl cli must be installed. See https://github.com/kubevirt/kubevirt/releases/latest" && exit 1)
+
+    oc whoami > /dev/null 2>&1 || (echo "ERROR: must be logged in to an OCP cluster" && exit 1)
+    [ -z "$(oc get storageclass --ignore-not-found)" ] && (echo "ERROR: OCP cluster must have a storageclass" && exit 1)
+
+    return 0
+ }
 
 # setup variables used in the script
 env_setup() {
