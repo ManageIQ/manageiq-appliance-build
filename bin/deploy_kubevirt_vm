@@ -241,6 +241,12 @@ EOF
 install_kubevirt() {
     log_timestamp_console "Installing Kubevirt..."
 
+    kubevirt_status=$(oc get kubevirt.kubevirt.io/kubevirt -o=jsonpath='{.status.phase}' -n kubevirt)
+    if [[ "$kubevirt_status" == "Deployed" ]]; then
+        log_timestamp "KubeVirt is already installed."
+        return 0
+    fi
+
     log_timestamp "Creating Kubevirt operator..."
     oc create -f https://github.com/kubevirt/kubevirt/releases/latest/download/kubevirt-operator.yaml > /dev/null 2>&1
     check_command "Failed to create Kubevirt operator." || return 1
@@ -276,6 +282,12 @@ install_kubevirt() {
 # Function to install CDI (Containerized Data Importer) into the cluster
 install_cdi() {
     log_timestamp_console "Installing CDI..."
+
+    cdi_status=$(oc get cdi -n cdi -o=jsonpath='{.items[0].status.phase}')
+    if [[ "$cdi_status" == "Deployed" ]]; then
+        log_timestamp "CDI is already installed."
+        return 0
+    fi
 
     log_timestamp "Creating CDI operator..."
     oc create -f https://github.com/kubevirt/containerized-data-importer/releases/latest/download/cdi-operator.yaml > /dev/null 2>&1
