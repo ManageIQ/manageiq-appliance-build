@@ -119,7 +119,7 @@ EOF
     return $?
 }
 
-create_datavolume_cr_2() {
+create_datavolume_db_cr() {
     cat << EOF | oc apply -f -
 apiVersion: cdi.kubevirt.io/v1beta1
 kind: DataVolume
@@ -365,69 +365,29 @@ create_namespace_and_secret(){
 create_datavolume_and_pvc() {
     log_timestamp_console "Creating DataVolume and PVC..."
 
-    for ((i=1; i<=3; i++)); do
-        log_timestamp "Attempt $i to create DataVolume and PVC..."
+    log_timestamp "Applying DataVolume CR..."
+    create_datavolume_cr
+    check_command "Failed to create_datavolume_cr." || continue
 
-        log_timestamp "Applying DataVolume CR..."
-        create_datavolume_cr
-        check_command "Failed to create_datavolume_cr." || continue
+    log_timestamp "Applying DataVolume Database CR..."
+    create_datavolume_db_cr
+    check_command "Failed to create_datavolume_db_cr." || continue
 
-        log_timestamp "Applying DataVolume 2 CR..."
-        create_datavolume_cr_2
-        check_command "Failed to create_datavolume_cr_2." || continue
-
-        log_timestamp_console "Waiting for data volume to be bound..."
-        local timeout=2400
-        local start_time=$(date +%s)
-        while true; do
-            pvc_status=$(oc get pvc $VM_NAME -n $NAMESPACE -o=jsonpath='{.status.phase}')
-            db_pvc_status=$(oc get pvc $VM_NAME-database -n $NAMESPACE -o=jsonpath='{.status.phase}')
-
-            log_timestamp "PVC status: $pvc_status, Database PVC status: $db_pvc_status"
-
-            if [[ "$pvc_status" == "Bound" && "$db_pvc_status" == "Bound" ]]; then
-                log_timestamp "PVCs are bound successfully."
-                return 0
-            fi
-
-            if [ $(($(date +%s) - start_time)) -ge $timeout ]; then
-                log_error_timestamp "PVC binding timed out after ${timeout} seconds."
-                break
-            fi
-            sleep 5
-        done
-
-        log_timestamp_console "PVCs are not bound. Cleaning up and retrying..."
-        oc delete pvc $VM_NAME -n $NAMESPACE
-        oc delete pvc $VM_NAME-database -n $NAMESPACE
-        sleep 30
-    done
-
-    log_error_timestamp "Failed to bind PVCs after 3 attempts. Exiting..."
-    return 1
-}
-
-check_datavolume_imported() {
-    log_timestamp_console "Waiting for data volumes to be imported..."
-
+    log_timestamp_console "Waiting for data volumes to be bound and imported..."
     while true; do
-        dv_status=$(oc get dv $VM_NAME -n $NAMESPACE -o=jsonpath='{.status.phase}')
-        db_dv_status=$(oc get dv $VM_NAME-database -n $NAMESPACE -o=jsonpath='{.status.phase}')
+        dv_status=$(oc get dv $VM_NAME -n $NAMESPACE -o=jsonpath='{.status.phase} ({.status.progress})')
+        db_dv_status=$(oc get dv $VM_NAME-database -n $NAMESPACE -o=jsonpath='{.status.phase} ({.status.progress})')
 
         log_timestamp "Data volume status: $dv_status, Database data volume status: $db_dv_status"
 
-        if [[ "$dv_status" == "Succeeded" && "$db_dv_status" == "Succeeded" ]]; then
+        if [[ "$dv_status" == "Succeeded"* && "$db_dv_status" == "Succeeded"* ]]; then
             log_timestamp "Data volumes imported successfully."
             return 0
         fi
 
-        dv_progress=$(oc get dv $VM_NAME -n $NAMESPACE -o=jsonpath='{.status.progress}')
-        db_dv_progress=$(oc get dv $VM_NAME-database -n $NAMESPACE -o=jsonpath='{.status.progress}')
-
-        log_timestamp "Data volume Progress: $dv_progress, Database data volume Progress: $db_dv_progress"
-
         sleep 5
     done
+    return 0
 }
 
 # Function to create VirtualMachine fetch IP and VMI Name
@@ -723,7 +683,6 @@ appliance_configure() {
     install_cdi || { log_error_timestamp "install_cdi failed"; return 1; }
     create_namespace_and_secret || { log_error_timestamp "create_namespace_and_secret failed"; return 1; }
     create_datavolume_and_pvc || { log_error_timestamp "create_datavolume_and_pvc failed"; return 1; }
-    check_datavolume_imported || { log_error_timestamp "check_datavolume_imported failed"; return 1; }
     create_virtualmachine_and_fetch_ip || { log_error_timestamp "create_virtualmachine_and_fetch_ip failed"; return 1; }
     create_services || { log_error_timestamp "create_services failed"; return 1; }
     create_routes || { log_error_timestamp "create_routes failed"; return 1; }
