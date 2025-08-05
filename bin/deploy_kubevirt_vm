@@ -43,7 +43,7 @@ env_setup() {
     export LOG_FILE="/tmp/miq_appliance_configure_${RUNDATE}.log"
 
     # remove kubevirt_host_files
-    /bin/rm -f /root/.ssh/kubevirt_known_hosts
+    rm -f ~/.ssh/kubevirt_known_hosts
 }
 
 # Function to log messages with timestamps
