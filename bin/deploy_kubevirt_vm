@@ -520,7 +520,7 @@ ssh_into_vm() {
                 send "yes\r"
                 exp_continue
             }
-            "root@vmi/${vmi_name}.${NAMESPACE}'s password:" {
+            "root@vmi.${vmi_name}.${NAMESPACE}'s password:" {
                 send "smartvm\r"
                 exp_continue
             }
@@ -565,7 +565,7 @@ configure_appliance() {
                 send "yes\r"
                 exp_continue
             }
-            "root@vmi/${vmi_name}.${NAMESPACE}'s password: " {
+            "root@vmi.${vmi_name}.${NAMESPACE}'s password: " {
                 send "$NEWPASSWORD\r"
                 exp_continue
             }
