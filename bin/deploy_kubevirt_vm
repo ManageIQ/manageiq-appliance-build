@@ -508,11 +508,11 @@ create_routes() {
 # Function to wait for SSH service to be ready and SSH into VM
 ssh_into_vm() {
     log_timestamp_console "Waiting for SSH service to be ready..."
-    sleep 60
 
     log_timestamp_console "SSH into the VM $vmi_name..."
     expect <<EOF | tee -a $LOG_FILE
         set timeout -1
+        set password smartvm
         spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE
         match_max 32000
         expect {
@@ -520,8 +520,12 @@ ssh_into_vm() {
                 send "yes\r"
                 exp_continue
             }
-            "root@vmi/${vmi_name}.${NAMESPACE}'s password:" {
-                send "smartvm\r"
+            "root@vmi.${vmi_name}.${NAMESPACE}'s password:" {
+                send "\$password\r"
+                exp_continue
+            }
+            "Permission denied, please try again." {
+                set password $NEWPASSWORD
                 exp_continue
             }
             "New password:" {
@@ -565,7 +569,7 @@ configure_appliance() {
                 send "yes\r"
                 exp_continue
             }
-            "root@vmi/${vmi_name}.${NAMESPACE}'s password: " {
+            "root@vmi.${vmi_name}.${NAMESPACE}'s password: " {
                 send "$NEWPASSWORD\r"
                 exp_continue
             }
