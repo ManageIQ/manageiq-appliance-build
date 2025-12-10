@@ -6,13 +6,17 @@ on:
   schedule:
   - cron: 0 0 * * 0
   workflow_dispatch:
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+permissions:
+  contents: read
 jobs:
   setup:
     runs-on: self-hosted
     steps:
     - name: Clone Imagefactory
-      run: |
-        git clone https://www.github.com/bdunne/imagefactory.git /build/gha/$GITHUB_RUN_ID/imagefactory
+      run: git clone https://www.github.com/bdunne/imagefactory.git /build/gha/$GITHUB_RUN_ID/imagefactory
   build_appliances:
     strategy:
       max-parallel: 2
@@ -30,13 +34,12 @@ jobs:
     runs-on: self-hosted
     needs: setup
     env:
-      TARGET_PLATFORM: ${{ matrix.target }}
+      TARGET_PLATFORM: "${{ matrix.target }}"
     steps:
     - uses: actions/checkout@v6
     - name: Build appliance images
       env:
-        S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
-        S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
-        S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
-      run: |
-        ruby scripts/vmbuild.rb --type nightly --reference $GITHUB_REF_NAME --copy-dir $GITHUB_REF_NAME --only $TARGET_PLATFORM --upload --delete | tee -a /build/logs/${GITHUB_REF_NAME}_$(date +'%Y%m%d')_${GITHUB_RUN_ID}.log
+        S3_ACCESS_KEY: "${{ secrets.S3_ACCESS_KEY }}"
+        S3_ENDPOINT: "${{ secrets.S3_ENDPOINT }}"
+        S3_SECRET_KEY: "${{ secrets.S3_SECRET_KEY }}"
+      run: ruby scripts/vmbuild.rb --type nightly --reference $GITHUB_REF_NAME --copy-dir $GITHUB_REF_NAME --only $TARGET_PLATFORM --upload --delete | tee -a /build/logs/${GITHUB_REF_NAME}_$(date +'%Y%m%d')_${GITHUB_RUN_ID}.log
