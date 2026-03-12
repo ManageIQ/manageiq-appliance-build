@@ -27,8 +27,12 @@ env_setup() {
     # SSH_KEY - base64 encoded public key can be used to ssh to manageiq console. If not provided, use the dummy one below and you login using root password
     export SSH_KEY="QUFBQUIzTnphQzF5YzJFQUFBQURBUUFCQUFBQ0FRRFBGMyt0Y1Z1SlI3aVhVN0IzSytLY1dDK0NVaXpWNTc3UUhmelVmY0VoK2s5RnhnbjVrTWI1aUxQcms2bTY3bnc4RVFoWTI0dlVWem9NV1pSZTAwdk95SUJCNkdSdTFPZzlONXdqMjBVMEIyZVAxRFc4SXRTVDd1YXhkV1BIU2l4WEFERnRvSm91eUppeHA5WVBpcWxqU25Cb2hrc1d3QkJpWTB1QUl3aE1jLzBxemhXNWZEaW00eGYrLzQ2NkZUVENNU2YyQmhkelNtejJNNitUQWhtVTllMUw1UW1sRnFQcFNHSFJnY0FCVmtKTkE3L0dNM2Q2U2RkUDRpODNHOEN6VWkzSjNseEtXZkxHazBsc3dSWlEzbEVPa2lSMGFWdjFUUDRnc0ZSRmhQUytjYnpUTnAyK01odFA2dHlvcXJUS29qZU1IRnAxMm9GdXRLZTUvSlNGekdHcStFK09Lc1I2V1FRc2pJUUJTaXlzNnZGKzJVQkFDVGprQ2ROUENGRWJ1RkcyQUhFTzRNT0swR1RvUS9od3g2Z0RiQ0xVUDJvRXZXNkJqREdDdi94dlFxT0ZuUUdqOU5ERjJ6MTFwejhBdGc2SmF1UzF2T3NMcFRqb3pOczdKZ2pIQ2N1aWcvUS9nb0theGZuNFpPL3FDL3AwU0cxeTFDOWZLS2JXUmxacnExTUJ2OGoySHNIYUxwN0lIZEVCUnpJMGxqdmRiTVpFMWVvY2s4bTQvaW9rTzRPV3ZyMjhraWFhSldtTGhOQjA1V1ByblZkczZIclFkOG8zSmhYaW5VWTkxTGlhMXIwUW1hUHJNMW0vc0dqbXR2d2VhOUpYTG8rME9uRm5pSzhWM2FuYjg4LzNlSjRFNGNPWmdBWjNqZnhJbFViSFdWLzBGaFIrSTRUL2N3PT0="
 
+    # HA -- High Availability mode. If true, deploy primary and standby VMs
+    export HA=false
+
     # VM_NAME -- The name of VM created. It consists of lower-case alphanumeric characters, or -. No . allowed in the name
-    export VM_NAME=manageiq-ovirt-devel
+    export VM_NAME_BASE=manageiq-ovirt-devel
+    export VM_NAME=$VM_NAME_BASE
 
     # IMAGE_NAME -- http link to the Red Hat virtualization MIQ image.
     export IMAGE_NAME=https://releases.manageiq.org/manageiq-ovirt-devel.qc2
@@ -42,8 +46,32 @@ env_setup() {
     RUNDATE=$(date '+%Y%m%d-%H%M%S')
     export LOG_FILE="/tmp/miq_appliance_configure_${RUNDATE}.log"
 
+    echo "======================================================================"
+    echo "ManageIQ Appliance Deployment Script"
+    echo "======================================================================"
+    echo "Log file: $LOG_FILE"
+    echo "All detailed output will be written to the log file."
+    echo "======================================================================"
+    echo ""
+
     # remove kubevirt_host_files
     rm -f ~/.ssh/kubevirt_known_hosts
+}
+
+# Helper function to set VM-specific variables for primary/standby configurations
+set_vm_variables() {
+    local suffix=$1  # "primary" or "standby"
+
+    if [[ -n "$suffix" ]]; then
+        export VM_NAME="${VM_NAME_BASE}-${suffix}"
+        export ROUTE_SUFFIX="${suffix}"
+    else
+        export VM_NAME="${VM_NAME_BASE}"
+        export ROUTE_SUFFIX=""
+    fi
+
+    log_timestamp "VM_NAME set to: $VM_NAME"
+    log_timestamp "ROUTE_SUFFIX set to: $ROUTE_SUFFIX"
 }
 
 # Function to log messages with timestamps
@@ -194,13 +222,17 @@ EOF
 }
 
 create_appliance_cockpit_route() {
+    # Use VM_NAME directly for route name and host to make it obvious which VM uses this route
+    local route_name="${VM_NAME}-cockpit"
+    local route_host="${VM_NAME}-cockpit"
+
     cat << EOF | oc apply -f -
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: miq-appliance-cockpit
+  name: ${route_name}
 spec:
-  host: miq-appliance-cockpit.apps.${CLUSTER_HOST}
+  host: ${route_host}.apps.${CLUSTER_HOST}
   port:
     targetPort: 9090
   tls:
@@ -215,14 +247,44 @@ EOF
     return $?
 }
 
-create_appliance_route() {
+create_appliance_postgres_route() {
+    # Use VM_NAME directly for route name and host to make it obvious which VM uses this route
+    local route_name="${VM_NAME}-postgres"
+    local route_host="${VM_NAME}-postgres"
+
     cat << EOF | oc apply -f -
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: miq-appliance
+  name: ${route_name}
 spec:
-  host: miq-appliance.apps.${CLUSTER_HOST}
+  host: ${route_host}.apps.${CLUSTER_HOST}
+  port:
+    targetPort: 5432
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: passthrough
+  to:
+    kind: Service
+    name: "${VM_NAME}-postgres"
+    weight: 100
+  wildcardPolicy: None
+EOF
+    return $?
+}
+
+create_appliance_route() {
+    # Use VM_NAME directly for route name and host to make it obvious which VM uses this route
+    local route_name="${VM_NAME}-https"
+    local route_host="${VM_NAME}"
+
+    cat << EOF | oc apply -f -
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ${route_name}
+spec:
+  host: ${route_host}.apps.${CLUSTER_HOST}
   port:
     targetPort: 443
   tls:
@@ -460,6 +522,7 @@ create_services() {
     create_service_if_not_exists "$VM_NAME-https" "443" || return 1
     create_service_if_not_exists "$VM_NAME-cockpit" "9090" || return 1
     create_service_if_not_exists "$VM_NAME-ssh" "20222" || return 1
+    create_service_if_not_exists "$VM_NAME-postgres" "5432" || return 1
     return 0
 }
 
@@ -499,6 +562,7 @@ create_routes() {
     log_timestamp_console "Creating route for cockpit service..."
 
     create_appliance_cockpit_route
+    create_appliance_postgres_route
     create_appliance_route
 
     log_timestamp_console "Routes are created successfully."
@@ -681,20 +745,37 @@ get_route_host() {
 }
 
 # Function to configure MIQ appliance (Main Function)
+# Parameters:
+#   $1 - mode: "full" (includes shared setup and appliance config) or "vm-only" (VM-specific setup only)
 appliance_configure() {
-    log_timestamp_console "Starting appliance configuration..."
-    install_kubevirt || { log_error_timestamp "install_kubevirt failed"; return 1; }
-    install_cdi || { log_error_timestamp "install_cdi failed"; return 1; }
-    create_namespace_and_secret || { log_error_timestamp "create_namespace_and_secret failed"; return 1; }
+    local mode=${1:-"full"}
+
+    log_timestamp_console "Starting appliance configuration in '$mode' mode for VM: $VM_NAME..."
+
+    # Shared setup - only run in "full" mode (once for all VMs)
+    if [[ "$mode" == "full" ]]; then
+        install_kubevirt || { log_error_timestamp "install_kubevirt failed"; return 1; }
+        install_cdi || { log_error_timestamp "install_cdi failed"; return 1; }
+        create_namespace_and_secret || { log_error_timestamp "create_namespace_and_secret failed"; return 1; }
+    fi
+
+    # VM-specific setup - run in both modes (each VM gets its own datavolumes)
     create_datavolume_and_pvc || { log_error_timestamp "create_datavolume_and_pvc failed"; return 1; }
     create_virtualmachine_and_fetch_ip || { log_error_timestamp "create_virtualmachine_and_fetch_ip failed"; return 1; }
     create_services || { log_error_timestamp "create_services failed"; return 1; }
     create_routes || { log_error_timestamp "create_routes failed"; return 1; }
     ssh_into_vm || { log_error_timestamp "ssh_into_vm failed"; return 1; }
-    configure_appliance || { log_error_timestamp "configure_appliance failed"; return 1; }
-    check_evmserverd || { log_error_timestamp "check_evmserverd failed"; return 1; }
 
-    log_timestamp_console "Appliance configuration completed successfully."
+    # Appliance configuration - only run in "full" mode
+    if [[ "$mode" == "full" ]]; then
+        configure_appliance || { log_error_timestamp "configure_appliance failed"; return 1; }
+        check_evmserverd || { log_error_timestamp "check_evmserverd failed"; return 1; }
+    else
+        log_timestamp_console "Skipping configure_appliance and check_evmserverd for standby VM."
+        log_timestamp_console "TODO: Manual configuration required for standby VM."
+    fi
+
+    log_timestamp_console "Appliance configuration completed successfully for VM: $VM_NAME."
     return 0
 }
 
@@ -704,17 +785,61 @@ env_setup
 
 # Execute the appliance_configure (Main Function) and handle its exit status
 log_timestamp_console "Starting MIQ Appliance Configuration Script..."
-appliance_configure
-exit_status=$?
-if [[ $exit_status -ne 0 ]]; then
-    log_error_timestamp "appliance_configure failed with exit status $exit_status"
-    echo "appliance_configure failed with exit status $exit_status" >&2
-    log_error_timestamp "Full configuration log can be found at $LOG_FILE"
-    echo "Full configuration log can be found at $LOG_FILE" >&2
-    exit 1
+
+if [[ "$HA" == "true" ]]; then
+    log_timestamp_console "HA mode enabled - deploying primary and standby VMs..."
+
+    # Deploy Primary VM with full configuration
+    log_timestamp_console "=== Deploying PRIMARY VM ==="
+    set_vm_variables "primary"
+    appliance_configure "full"
+    exit_status=$?
+    if [[ $exit_status -ne 0 ]]; then
+        log_error_timestamp "Primary VM configuration failed with exit status $exit_status"
+        echo "Primary VM configuration failed with exit status $exit_status" >&2
+        log_error_timestamp "Full configuration log can be found at $LOG_FILE"
+        echo "Full configuration log can be found at $LOG_FILE" >&2
+        exit 1
+    fi
+    log_timestamp_console "Primary VM configuration completed successfully."
+    primary_vmi_name=$vmi_name
+
+    # Deploy Standby VM with VM-only configuration
+    log_timestamp_console "=== Deploying STANDBY VM ==="
+    set_vm_variables "standby"
+    appliance_configure "vm-only"
+    exit_status=$?
+    if [[ $exit_status -ne 0 ]]; then
+        log_error_timestamp "Standby VM configuration failed with exit status $exit_status"
+        echo "Standby VM configuration failed with exit status $exit_status" >&2
+        log_error_timestamp "Full configuration log can be found at $LOG_FILE"
+        echo "Full configuration log can be found at $LOG_FILE" >&2
+        exit 1
+    fi
+    log_timestamp_console "Standby VM configuration completed successfully."
+    standby_vmi_name=$vmi_name
+
+    log_timestamp_console "=== HA Deployment Complete ==="
+    log_timestamp_console "Full configuration log can be found at $LOG_FILE"
+    log_timestamp_console "Primary VM login: virtctl ssh root@vmi/$primary_vmi_name -n $NAMESPACE"
+    log_timestamp_console "Standby VM login: virtctl ssh root@vmi/$standby_vmi_name -n $NAMESPACE"
+    log_timestamp_console "NOTE: Standby VM requires manual configuration."
+else
+    # Standard single VM deployment
+    log_timestamp_console "Standard mode - deploying single VM..."
+    appliance_configure "full"
+    exit_status=$?
+    if [[ $exit_status -ne 0 ]]; then
+        log_error_timestamp "appliance_configure failed with exit status $exit_status"
+        echo "appliance_configure failed with exit status $exit_status" >&2
+        log_error_timestamp "Full configuration log can be found at $LOG_FILE"
+        echo "Full configuration log can be found at $LOG_FILE" >&2
+        exit 1
+    fi
+
+    log_timestamp_console "appliance_configure completed successfully."
+    log_timestamp_console "Full configuration log can be found at $LOG_FILE"
+    log_timestamp_console "To login: virtctl ssh root@vmi/$vmi_name -n $NAMESPACE"
 fi
 
-log_timestamp_console "appliance_configure completed successfully."
-log_timestamp_console "Full configuration log can be found at $LOG_FILE"
-log_timestamp_console "To login: virtctl ssh root@vmi/$vmi_name -n $NAMESPACE"
 exit 0

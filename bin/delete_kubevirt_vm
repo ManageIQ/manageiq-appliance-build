@@ -1,27 +1,75 @@
 #!/bin/bash
 
+set -e
+
 NS=miq-appliance
 
-# delete routes
-echo "Info: deleting routes"
-oc -n $NS delete route appliance
-oc -n $NS delete route appliance-cockpit
+# Function to delete resources for a specific VM
+delete_vm_resources() {
+    local vmname=$1
 
-# delete services
-echo "Info: deleting services"
-VMNAME=$(oc -n $NS get datavolume --no-headers | grep -v database | cut -f1 -d" ")
-oc -n $NS delete service ${VMNAME}-cockpit
-oc -n $NS delete service ${VMNAME}-https
-oc -n $NS delete service ${VMNAME}-ssh
+    if [[ -z "$vmname" ]]; then
+        echo "Warning: No VM name provided, skipping deletion"
+        return 0
+    fi
 
-# delete VirtualMachine CR
-echo "Info: deleting virtualmachine ${VMNAME}"
-oc delete virtualmachine ${VMNAME}
+    echo "Info: Deleting resources for VM: ${vmname}"
 
-# delete DataVolume CR
-echo "Info: deleting datavolume CR ${VMNAME} and ${VMNAME}-database"
-oc -n $NS delete datavolume ${VMNAME}
-oc -n $NS delete datavolume ${VMNAME}-database
+    # Delete routes (using VM_NAME-based naming)
+    echo "Info: Deleting routes for ${vmname}"
+    oc -n $NS delete route ${vmname}-https --ignore-not-found=true
+    oc -n $NS delete route ${vmname}-cockpit --ignore-not-found=true
+    oc -n $NS delete route ${vmname}-postgres --ignore-not-found=true
 
+    # Delete services
+    echo "Info: Deleting services for ${vmname}"
+    oc -n $NS delete service ${vmname}-cockpit --ignore-not-found=true
+    oc -n $NS delete service ${vmname}-https --ignore-not-found=true
+    oc -n $NS delete service ${vmname}-ssh --ignore-not-found=true
+    oc -n $NS delete service ${vmname}-postgres --ignore-not-found=true
+
+    # Delete VirtualMachine CR
+    echo "Info: Deleting virtualmachine ${vmname}"
+    oc -n $NS delete virtualmachine ${vmname} --ignore-not-found=true
+
+    # Delete DataVolume CRs
+    echo "Info: Deleting datavolumes for ${vmname}"
+    oc -n $NS delete datavolume ${vmname} --ignore-not-found=true
+    oc -n $NS delete datavolume ${vmname}-database --ignore-not-found=true
+
+    echo "Info: Resources for ${vmname} deleted successfully"
+}
+
+# Main deletion logic
+echo "Info: Starting deletion of MIQ appliance resources in namespace: ${NS}"
+
+# Get all datavolumes (excluding database volumes) to find VMs
+VMNAMES=$(oc -n $NS get datavolume --no-headers 2>/dev/null | grep -v database | cut -f1 -d" " || true)
+
+if [[ -z "$VMNAMES" ]]; then
+    echo "Warning: No VMs found in namespace ${NS}"
+    echo "Info: Checking for any remaining resources..."
+
+    # Try to clean up any orphaned resources
+    echo "Info: Cleaning up any orphaned routes"
+    oc -n $NS delete route --all --ignore-not-found=true
+
+    echo "Info: Cleaning up any orphaned services"
+    oc -n $NS get service --no-headers 2>/dev/null | while read svc rest; do
+        if [[ "$svc" =~ (cockpit|https|ssh|postgres)$ ]]; then
+            oc -n $NS delete service "$svc" --ignore-not-found=true
+        fi
+    done
+
+    echo "Info: Done"
+    exit 0
+fi
+
+# Delete resources for each VM found
+for vmname in $VMNAMES; do
+    delete_vm_resources "$vmname"
+done
+
+echo "Info: All VM resources deleted successfully"
 echo "Info: Done"
 exit 0
