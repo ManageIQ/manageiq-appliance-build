@@ -29,7 +29,9 @@ env_setup() {
     export CLUSTER_URL=$(oc whoami --show-server | cut -d ':' -f 1,2)
     export CLUSTER_HOST=${CLUSTER_URL#https://api.}
 
-    read -p "Installing MIQ appliance using image url: ${IMAGE_NAME} Confirm or ctrl-C to cancel" xx
+    echo "Installing MIQ appliance using image url: ${IMAGE_NAME}"
+    echo "Starting in 5 seconds... (Press Ctrl-C to cancel)"
+    sleep 5
 
     RUNDATE=$(date '+%Y%m%d-%H%M%S')
     export LOG_FILE="/tmp/miq_appliance_configure_${RUNDATE}.log"
