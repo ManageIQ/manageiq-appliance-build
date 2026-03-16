@@ -1,0 +1,31 @@
+# KubeVirt VM Configuration
+# This file contains default values for deploying and deleting KubeVirt VMs
+# Copy this file to kubevirt_vm_overrides.conf (without .tmpl) and customize as needed
+# Format: Simple shell variable assignments (KEY=value)
+
+# Namespace where the VM resources will be created
+NAMESPACE=miq-appliance
+
+# Root password for the VM (used for initial login and configuration)
+NEWPASSWORD=smartvm123
+
+# Secret name for storing image access credentials
+SECRET_NAME=miq-appliance-secret
+
+# Image access credentials (used if the image requires authentication)
+accessKeyId=dummy
+secretKey=dummypassword
+
+# SSH public key (base64 encoded) for SSH access to the VM
+# If not provided or left as dummy, you can login using root password
+# This is an invalid or dummy key for security reasons.
+SSH_KEY=QUFBQUIzTnphQzF5YzJFQUFBQURBUUFCQUFBQ0FRRFBGMyt0Y1Z1SlI3aVhVN0IzSytLY1dDK0NVaXpWNTc3UUhmelVmY0VoK2s5RnhnbjVrTWI1aUxQcms2bTY3bnc4RVFoWTI0dlVWem9NV1pSZTAwdk95SUJCNkdSdTFPZzlONXdqMjBVMEIyZVAxRFc4SXRTVDd1YXhkV1BIU2l4WEFERnRvSm91eUppeHA5WVBpcWxqU25Cb2hrc1d3QkJpWTB1QUl3aE1jLzBxemhXNWZEaW00eGYrLzQ2NkZUVENNU2YyQmhkelNtejJNNitUQWhtVTllMUw1UW1sRnFQcFNHSFJnY0FCVmtKTkE3L0dNM2Q2U2RkUDRpODNHOEN6VWkzSjNseEtXZkxHazBsc3dSWlEzbEVPa2lSMGFWdjFUUDRnc0ZSRmhQUytjYnpUTnAyK01odFA2dHlvcXJUS29qZU1IRnAxMm9GdXRLZTUvSlNGekdHcStFK09Lc1I2V1FRc2pJUUJTaXlzNnZGKzJVQkFDVGprQ2ROUENGRWJ1RkcyQUhFTzRNT0swR1RvUS9od3g2Z0RiQ0xVUDJvRXZXNkJqREdDdi94dlFxT0ZuUUdqOU5ERjJ6MTFwejhBdGc2SmF1UzF2T3NMcFRqb3pOczdKZ2pIQ2N1aWcvUS9nb0theGZuNFpPL3FDL3AwU0cxeTFDOWZLS2JXUmxacnExTUJ2OGoySHNIYUxwN0lIZEVCUnpJMGxqdmRiTVpFMWVvY2s4bTQvaW9rTzRPV3ZyMjhraWFhSldtTGhOQjA1V1ByblZkczZIclFkOG8zSmhYaW5VWTkxTGlhMXIwUW1hUHJNMW0vc0dqbXR2d2VhOUpYTG8rME9uRm5pSzhWM2FuYjg4LzNlSjRFNGNPWmdBWjNqZnhJbFViSFdWLzBGaFIrSTRUL2N3PT0=
+
+# High Availability mode - if true, deploy primary and standby VMs
+HA=false
+
+# Base name for the VM (will be suffixed with -primary/-standby in HA mode)
+VM_NAME_BASE=manageiq-ovirt-devel
+
+# URL to the ManageIQ image
+IMAGE_NAME=https://releases.manageiq.org/manageiq-ovirt-devel.qc2

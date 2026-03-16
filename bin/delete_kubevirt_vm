@@ -2,7 +2,16 @@
 
 set -e
 
-NS=miq-appliance
+# Source shared functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/shared_kubevirt_functions.sh"
+
+# Load configuration from file (creates from template if needed)
+# Function will exit if config was just created or if error occurred
+load_kubevirt_config "config/kubevirt_vm_overrides.conf"
+
+# Set namespace from loaded config
+NS="${NAMESPACE}"
 
 # Function to delete resources for a specific VM
 delete_vm_resources() {
