@@ -570,7 +570,7 @@ ssh_into_vm() {
         spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE
         match_max 32000
         expect {
-            "Are you sure you want to continue connecting (yes/no)?" {
+            -re "Are you sure you want to continue connecting.*\\?" {
                 send "yes\r"
                 exp_continue
             }
@@ -620,7 +620,7 @@ configure_appliance() {
         spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE
         match_max 32000
         expect {
-            "Are you sure you want to continue connecting (yes/no)? " {
+            -re "Are you sure you want to continue connecting.*\\?" {
                 send "yes\r"
                 exp_continue
             }
