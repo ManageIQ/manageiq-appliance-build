@@ -16,13 +16,78 @@ verify_prereq() {
     return 0
  }
 
+# Function to generate random 8-character hex suffix
+# Uses /dev/urandom and standard Unix tools (no openssl dependency)
+generate_random_suffix() {
+    LC_ALL=C tr -dc 'a-f0-9' < /dev/urandom | head -c 8
+}
+
+# Function to check for existing VM and prompt user
+# Returns: 0 if no existing VM or user wants new deployment
+#          1 if user wants to continue with existing VM (sets VM_NAME_BASE to existing name)
+check_existing_vm() {
+    local vm_base_name=$1
+
+    # Only check if namespace exists, otherwise skip (will be created later)
+    if ! oc get namespace "$NAMESPACE" >/dev/null 2>&1; then
+        return 0
+    fi
+
+    # Check if any VMs exist with this base name (exact match or with suffix)
+    local existing_vms=$(oc get vm -n "$NAMESPACE" 2>/dev/null | grep "^${vm_base_name}" | awk '{print $1}')
+
+    if [[ -n "$existing_vms" ]]; then
+        echo ""
+        echo "WARNING: Found existing VM(s) with base name '${vm_base_name}':"
+        echo "$existing_vms"
+        echo ""
+        echo "This may be from a previous deployment attempt."
+        echo ""
+        read -p "Do you want to resume the existing deployment? (y/n): " -n 1 -r
+        echo ""
+
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            local first_vm=$(echo "$existing_vms" | head -n 1)
+            echo "Continuing with existing VM: $first_vm"
+            # Strip -primary or -standby suffix if present to get the true base name
+            local base_name="$first_vm"
+            if [[ "$first_vm" =~ -primary$ ]]; then
+                base_name="${first_vm%-primary}"
+            elif [[ "$first_vm" =~ -standby$ ]]; then
+                base_name="${first_vm%-standby}"
+            fi
+            export VM_NAME_BASE="$base_name"
+            return 1  # Signal that we're using existing VM
+        else
+            echo ""
+            echo "Please delete the existing VM(s) first using:"
+            echo "  bin/delete_kubevirt_vm"
+            exit 1
+        fi
+    fi
+
+    return 0
+}
+
 # setup variables used in the script
 env_setup() {
     # Load configuration from file (creates from template if needed)
     # Function will exit if config was just created or if error occurred
     load_kubevirt_config "config/kubevirt_vm_overrides.conf"
 
-    # Set VM_NAME based on VM_NAME_BASE
+    # Check for existing VMs with this base name
+    # If function returns 1, user wants to continue with existing VM (VM_NAME_BASE already set)
+    # If function returns 0, proceed with new deployment (add random suffix)
+    if check_existing_vm "$VM_NAME_BASE"; then
+        # Add random suffix to VM_NAME_BASE to avoid SSH known_hosts conflicts
+        # This ensures each deployment gets a unique VM name
+        local random_suffix=$(generate_random_suffix)
+        export VM_NAME_BASE="${VM_NAME_BASE}-${random_suffix}"
+        echo "New deployment - VM base name will be: ${VM_NAME_BASE}"
+    else
+        echo "Resuming existing deployment - VM base name: ${VM_NAME_BASE}"
+    fi
+
     export VM_NAME=$VM_NAME_BASE
 
     # Derived values (not from config file)
