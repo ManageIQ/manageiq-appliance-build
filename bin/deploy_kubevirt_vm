@@ -687,43 +687,59 @@ EOF
     echo "$configure_output" >> $LOG_FILE
 
     # Check if appliance is configured
-    if [ $configure_status -eq 0 ]; then
-        sleep 600
-        log_timestamp_console "Configuration on VM $vmi_name completed successfully."
-    else
+    if [ $configure_status -ne 0 ]; then
         log_error_timestamp "Appliance Configurations failed"
         echo "$configure_output" >&2
         return 1
     fi
+
+    log_timestamp_console "Configuration on VM $vmi_name completed successfully."
     return 0
 }
 
-# Function to check evmserverd status
+# Function to check evmserverd status with polling
 check_evmserverd() {
-    log_timestamp_console "=== Checking evmserverd status..."
-    evmserverd_output=$(expect <<EOF 2>&1
-    spawn virtctl ssh root@vmi/$VM_NAME -n $NAMESPACE
-    expect "root@vmi/$VM_NAME.${NAMESPACE}'s password: "
-    send "$NEWPASSWORD\r"
-    expect "#"
-    send "systemctl is-active evmserverd\r"
-    expect "#"
-    send "exit\r"
-    expect eof
+    log_timestamp_console "Waiting for evmserverd to become active (checking every 30 seconds for up to 10 minutes)..."
+
+    local max_attempts=20
+    local attempt=1
+
+    while [ $attempt -le $max_attempts ]; do
+        log_timestamp_console "Checking evmserverd status (attempt $attempt of $max_attempts)..."
+
+        evmserverd_output=$(expect <<EOF 2>&1
+        set timeout 30
+        spawn virtctl ssh root@vmi/$VM_NAME -n $NAMESPACE
+        expect "root@vmi/$VM_NAME.${NAMESPACE}'s password: "
+        send "$NEWPASSWORD\r"
+        expect "#"
+        send "systemctl is-active evmserverd\r"
+        expect -re "(active|inactive)"
+        set status \$expect_out(0,string)
+        send "exit\r"
+        expect eof
+        puts \$status
 EOF
-    )
-    evmserverd_active=$?
+        )
 
-    echo "$evmserverd_output" | tee -a $LOG_FILE
+        echo "$evmserverd_output" >> $LOG_FILE
 
-    # Check if evmserverd is active
-    if [ $evmserverd_active -eq 0 ]; then
-        log_timestamp_console "evmserverd is active"
-    else
-        log_error_timestamp "evmserverd is inactive"
-        return 1
-    fi
-    return 0
+        if echo "$evmserverd_output" | grep -q "active"; then
+            log_timestamp_console "evmserverd is active!"
+            return 0
+        fi
+
+        log_timestamp "evmserverd not yet active (attempt $attempt of $max_attempts)"
+
+        if [ $attempt -lt $max_attempts ]; then
+            sleep 30
+        fi
+
+        attempt=$((attempt + 1))
+    done
+
+    log_error_timestamp "evmserverd did not become active within 10 minutes"
+    return 1
 }
 
 # Function to get and validate the route host
