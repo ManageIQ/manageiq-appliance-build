@@ -807,8 +807,21 @@ configure_appliance() {
                 send "appliance_console\r"
                 expect "Press any key to continue.\r"
                 send " "
-                expect "Choose the advanced setting: "
-                send "4\r"
+
+                expect -re "Choose the advanced setting: "
+                # Capture the menu to find the Configure Application option number
+                set menu_buffer \$expect_out(buffer)
+
+                # Look for the Configure Application option (format: "4) Configure Application")
+                if {[regexp {([0-9]+)\) Configure Application} \$menu_buffer match config_number]} {
+                    puts "Found Configure Application option at number: \$config_number"
+                    send "\$config_number\r"
+                } else {
+                    puts "ERROR: Could not find 'Configure Application' option in menu"
+                    puts "MENU CONTENT: \$menu_buffer"
+                    exit 1
+                }
+
                 expect "Choose the encryption key: |1| "
                 send "1\r"
                 expect "Choose the database operation: "
@@ -845,12 +858,24 @@ configure_appliance() {
                 send " "
                 expect "Press any key to continue.\r"
                 send " "
-                expect "Choose the advanced setting: "
-                send "16\r"
-                expect "#" {
-                    send "exit\r"
-                    expect eof
+
+                expect -re "Choose the advanced setting: "
+                # Capture the menu to find the Quit option number
+                set menu_buffer \$expect_out(buffer)
+
+                # Look for the Quit option (format: "17) Quit")
+                if {[regexp {([0-9]+)\) Quit} \$menu_buffer match quit_number]} {
+                    puts "Found Quit option at number: \$quit_number"
+                    send "\$quit_number\r"
+                } else {
+                    puts "ERROR: Could not find 'Quit' option in menu"
+                    puts "MENU CONTENT: \$menu_buffer"
+                    exit 1
                 }
+
+                expect -re "#|\\$"
+                send "exit\r"
+                expect eof
             }
         }
 EOF
