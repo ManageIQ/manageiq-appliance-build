@@ -628,10 +628,63 @@ create_routes() {
 ssh_into_vm() {
     log_timestamp_console "Waiting for SSH service to be ready..."
 
-    log_timestamp_console "SSH into the VM $vmi_name..."
+    local max_retries=60
+    local retry=0
+    local ssh_ready=false
+
+    while [ $retry -lt $max_retries ]; do
+        log_timestamp_console "Checking SSH availability (attempt $((retry+1))/$max_retries)..."
+
+        # Use expect to handle the SSH connection non-interactively
+        ssh_test=$(expect -c "
+            set timeout 5
+            spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE
+            expect {
+                \"Are you sure you want to continue connecting\" {
+                    send \"no\r\"
+                    expect eof
+                }
+                \"password:\" {
+                    send \"\r\"
+                    expect eof
+                }
+                \"Permission denied\" {
+                    expect eof
+                }
+                timeout {
+                    exit 1
+                }
+                eof {
+                    exit 1
+                }
+            }
+        " 2>&1 || true)
+
+        # Check for various indicators that SSH is responding
+        if echo "$ssh_test" | grep -qE "Are you sure you want to continue|password:|Permission denied"; then
+            log_timestamp_console "SSH service is responding"
+            ssh_ready=true
+            break
+        fi
+
+        log_timestamp_console "SSH not ready yet, waiting..."
+        sleep 10
+        retry=$((retry+1))
+    done
+
+    if [ "$ssh_ready" = false ]; then
+        log_error_timestamp "SSH service did not become ready after $((max_retries * 10)) seconds"
+        return 1
+    fi
+
+    log_timestamp_console "SSH is ready, waiting 30 seconds for VM to fully initialize..."
+    sleep 30
+
+    log_timestamp_console "SSH into the VM $vmi_name to change password..."
     ssh_output=$(expect <<EOF 2>&1
-        set timeout -1
+        set timeout 60
         set password smartvm
+        set password_changed 0
         spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE
         match_max 32000
         expect {
@@ -644,7 +697,13 @@ ssh_into_vm() {
                 exp_continue
             }
             "Permission denied, please try again." {
-                set password $NEWPASSWORD
+                send "$NEWPASSWORD\r"
+                exp_continue
+            }
+            "You are required to change your password immediately" {
+                exp_continue
+            }
+            "Your password has expired" {
                 exp_continue
             }
             "New password:" {
@@ -653,12 +712,41 @@ ssh_into_vm() {
             }
             "Retype new password:" {
                 send "$NEWPASSWORD\r"
+                set password_changed 1
+                exp_continue
+            }
+            "passwd: all authentication tokens updated successfully" {
+                set password_changed 1
                 exp_continue
             }
             "#" {
                 send "exit\r"
+                expect eof
             }
-            eof
+            "Connection closed" {
+                if {\$password_changed == 1} {
+                    exit 0
+                } else {
+                    exit 1
+                }
+            }
+            timeout {
+                puts "ERROR: Timeout waiting for SSH response"
+                exit 1
+            }
+            eof {
+                if {\$password_changed == 1} {
+                    exit 0
+                } else {
+                    puts "ERROR: Connection closed before password change completed"
+                    exit 1
+                }
+            }
+        }
+        if {\$password_changed == 1} {
+            exit 0
+        } else {
+            exit 1
         }
 EOF
     )
@@ -666,11 +754,12 @@ EOF
 
     echo "$ssh_output" | tee -a $LOG_FILE
 
-    # Check if evmserverd is active
+    # Check if password change succeeded
     if [ $password_change_status -eq 0 ]; then
         log_timestamp_console "SSH into VM succeeded and password is changed."
     else
-        log_error_timestamp "SSH into VM failed"
+        log_error_timestamp "SSH into VM failed or password change did not complete"
+        log_error_timestamp "Please check the log output above for details"
         return 1
     fi
     return 0
