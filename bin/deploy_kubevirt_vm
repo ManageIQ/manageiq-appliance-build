@@ -491,11 +491,21 @@ create_datavolume_and_pvc() {
     check_command "Failed to create_datavolume_db_cr." || continue
 
     log_timestamp_console "Waiting for data volumes to be bound and imported..."
+    local iteration=0
     while true; do
         dv_status=$(oc get dv $VM_NAME -n $NAMESPACE -o=jsonpath='{.status.phase} ({.status.progress})')
         db_dv_status=$(oc get dv $VM_NAME-database -n $NAMESPACE -o=jsonpath='{.status.phase} ({.status.progress})')
 
         log_timestamp "Data volume status: $dv_status, Database data volume status: $db_dv_status"
+
+        # Log in-progress data volumes every 30 seconds (6 iterations * 5 seconds = 30 seconds)
+        if (( iteration % 6 == 0 )); then
+            local in_progress=$(oc get datavolume -n $NAMESPACE --no-headers 2>/dev/null | grep -v "Succeeded.*100\.0%" || true)
+            if [[ -n "$in_progress" ]]; then
+                log_timestamp_console "Data volume import progress (in-progress only):"
+                echo "$in_progress" | tee -a $LOG_FILE
+            fi
+        fi
 
         if [[ "$dv_status" == "Succeeded"* && "$db_dv_status" == "Succeeded"* ]]; then
             log_timestamp "Data volumes imported successfully."
@@ -503,6 +513,7 @@ create_datavolume_and_pvc() {
         fi
 
         sleep 5
+        ((iteration++))
     done
     return 0
 }
