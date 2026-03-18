@@ -948,6 +948,16 @@ EOF
     return 1
 }
 
+verify_env_prereq() {
+    log "Setting up pre-deployment requirements..."
+
+    install_kubevirt || { log_error "install_kubevirt failed"; exit 1; }
+    install_cdi || { log_error "install_cdi failed"; exit 1; }
+    create_namespace_and_secret || { log_error "create_namespace_and_secret failed"; exit 1; }
+
+    log "Pre-deployment requirements completed successfully."
+}
+
 # Function to configure MIQ appliance (Main Function)
 # Parameters:
 #   $1 - mode: "full" (includes shared setup and appliance config) or "vm-only" (VM-specific setup only)
@@ -955,13 +965,6 @@ appliance_configure() {
     local mode=${1:-"full"}
 
     log "Starting appliance configuration in '$mode' mode for VM: $VM_NAME..."
-
-    # Shared setup - only run in "full" mode (once for all VMs)
-    if [[ "$mode" == "full" ]]; then
-        install_kubevirt || { log "install_kubevirt failed"; return 1; }
-        install_cdi || { log "install_cdi failed"; return 1; }
-        create_namespace_and_secret || { log "create_namespace_and_secret failed"; return 1; }
-    fi
 
     # VM-specific setup - run in both modes (each VM gets its own datavolumes)
     create_datavolume_and_pvc || { log "create_datavolume_and_pvc failed"; return 1; }
@@ -986,6 +989,7 @@ appliance_configure() {
 # Verify prereq and setup variables used in the script
 verify_prereq
 env_setup
+verify_env_prereq
 
 # Execute the appliance_configure (Main Function) and handle its exit status
 log "Starting MIQ Appliance Configuration Script..."
