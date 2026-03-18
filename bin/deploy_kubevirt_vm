@@ -134,8 +134,8 @@ log() {
 
 log_error() {
     local message="$1"
-    local datevalue=$(date '+%Y-%m-%d %H:%M:%S')
-    echo "[${datevalue}] ERROR: ${message}" | tee -a $LOG_FILE >&2
+    log "ERROR: ${message}" >&2
+    echo "See log file for details: $LOG_FILE" >&2
 }
 
 # Function to check if a command was successful and retry up to 3 times
