@@ -788,75 +788,30 @@ configure_appliance() {
             "#" {
                 send "hostnamectl set-hostname ${vmi_ip}.local\r"
                 send "echo '${vmi_ip} ${vmi_ip}.local 192' >> /etc/hosts\r"
-                send "appliance_console\r"
-                expect "Press any key to continue.\r"
-                send " "
-
-                expect -re "Choose the advanced setting: "
-                # Capture the menu to find the Configure Application option number
-                set menu_buffer \$expect_out(buffer)
-
-                # Look for the Configure Application option (format: "4) Configure Application")
-                if {[regexp {([0-9]+)\) Configure Application} \$menu_buffer match config_number]} {
-                    puts "Found Configure Application option at number: \$config_number"
-                    send "\$config_number\r"
-                } else {
-                    puts "ERROR: Could not find 'Configure Application' option in menu"
-                    puts "MENU CONTENT: \$menu_buffer"
-                    exit 1
+                send "appliance_console_cli --region=55 --internal --dbname=vmdb_production --username=root --password=smartvm --dbdisk=auto --key --message-server-config --message-server-host=${vmi_ip}.local --message-keystore-username=admin --message-keystore-password=smartvm > /tmp/appliance_console_cli.log 2>&1; echo \"EXIT_CODE:\$?\"\r"
+                expect {
+                    -re "EXIT_CODE:0" {
+                        puts "appliance_console_cli completed successfully"
+                    }
+                    -re "EXIT_CODE:(\[0-9\]+)" {
+                        puts "ERROR: appliance_console_cli failed with exit code \$expect_out(1,string)"
+                        puts "Check /tmp/appliance_console_cli.log for details"
+                        send "cat /tmp/appliance_console_cli.log\r"
+                        expect -re "#|\\$"
+                        send "exit\r"
+                        expect eof
+                        exit 1
+                    }
+                    timeout {
+                        puts "ERROR: appliance_console_cli timed out"
+                        puts "Check /tmp/appliance_console_cli.log for details"
+                        send "cat /tmp/appliance_console_cli.log\r"
+                        expect -re "#|\\$"
+                        send "exit\r"
+                        expect eof
+                        exit 1
+                    }
                 }
-
-                expect "Choose the encryption key: |1| "
-                send "1\r"
-                expect "Choose the database operation: "
-                send "1\r"
-                expect "Choose the configure messaging: "
-                send "1\r"
-                expect "Choose the database disk: |1| "
-                send "1\r"
-                expect "? (Y/N): |N| "
-                send "n\r"
-                expect "Enter the database region number: *"
-                send "55\r"
-                expect "Enter the database password on localhost: "
-                send "smartvm\r"
-                expect "Enter the database password on localhost: "
-                send "smartvm\r"
-                expect "Already configured on this Appliance, Un-Configure first? (Y/N): "
-                send "y\r"
-                expect "Proceed with Configuration? (Y/N): "
-                send "y\r"
-                expect "Enter the Message Server Hostname: |${vmi_ip}.local| "
-                send "\r"
-                expect "\[?2004l\rEnter the Message Keystore Username: |admin| \[?2004h"
-                send "\r"
-                expect "\[?2004l\rEnter the Message Keystore Password: "
-                send "smartvm\r"
-                expect "\[?2004l\rEnter the Message Keystore Password: "
-                send "smartvm\r"
-                expect "Configure a new persistent disk volume? (optional) (Y/N): "
-                send "n\r"
-                expect "Proceed? (Y/N): "
-                send "y\r"
-                expect "Press any key to continue.\r"
-                send " "
-                expect "Press any key to continue.\r"
-                send " "
-
-                expect -re "Choose the advanced setting: "
-                # Capture the menu to find the Quit option number
-                set menu_buffer \$expect_out(buffer)
-
-                # Look for the Quit option (format: "17) Quit")
-                if {[regexp {([0-9]+)\) Quit} \$menu_buffer match quit_number]} {
-                    puts "Found Quit option at number: \$quit_number"
-                    send "\$quit_number\r"
-                } else {
-                    puts "ERROR: Could not find 'Quit' option in menu"
-                    puts "MENU CONTENT: \$menu_buffer"
-                    exit 1
-                }
-
                 expect -re "#|\\$"
                 send "exit\r"
                 expect eof
