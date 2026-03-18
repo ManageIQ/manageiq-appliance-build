@@ -59,9 +59,7 @@ check_existing_vm() {
             export VM_NAME_BASE="$base_name"
             return 1  # Signal that we're using existing VM
         else
-            echo ""
-            echo "Please delete the existing VM(s) first using:"
-            echo "  bin/delete_kubevirt_vm"
+            log "Warning: Please delete the existing VM(s) first using: bin/delete_kubevirt_vm"
             exit 1
         fi
     fi
@@ -105,7 +103,6 @@ env_setup() {
     echo "ManageIQ Appliance Deployment Script"
     echo "======================================================================"
     echo "Log file: $LOG_FILE"
-    echo "All detailed output will be written to the log file."
     echo "======================================================================"
     echo ""
 
@@ -125,25 +122,20 @@ set_vm_variables() {
         export ROUTE_SUFFIX=""
     fi
 
-    log_timestamp "VM_NAME set to: $VM_NAME"
-    log_timestamp "ROUTE_SUFFIX set to: $ROUTE_SUFFIX"
+    log "VM_NAME set to: $VM_NAME"
+    log "ROUTE_SUFFIX set to: $ROUTE_SUFFIX"
 }
 
-# Function to log messages with timestamps
-log_timestamp() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"  >> $LOG_FILE
+log() {
+    local message="$1"
+    local datevalue=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[${datevalue}] ${message}" | tee -a $LOG_FILE
 }
 
-# Function to log errors with timestamps
-log_error_timestamp() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR: $1" | tee -a $LOG_FILE >&2
-}
-
-# Function to log messages with timestamps and also to the console
-log_timestamp_console() {
-    datevalue=$(date '+%Y-%m-%d %H:%M:%S')
-    echo "[${datevalue}] $1" >> $LOG_FILE
-    echo "[${datevalue}] $1"
+log_error() {
+    local message="$1"
+    local datevalue=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[${datevalue}] ERROR: ${message}" | tee -a $LOG_FILE >&2
 }
 
 # Function to check if a command was successful and retry up to 3 times
@@ -155,13 +147,13 @@ check_command() {
             success=1
             break
         else
-            log_timestamp "Command failed. Retrying in 5 seconds... (Attempt $((i+1)) of $retries)"
+            log "Command failed. Retrying in 5 seconds... (Attempt $((i+1)) of $retries)"
             sleep 5
         fi
     done
 
     if [[ $success -ne 1 ]]; then
-        log_error_timestamp "$1"
+        log_error "$1"
         return 1
     fi
     return 0
@@ -172,12 +164,12 @@ resource_exists() {
     local resource_kind=$1
     local resource_name=$2
 
-    log_timestamp "Checking if $resource_kind/$resource_name exists..."
+    log "Checking if $resource_kind/$resource_name exists..."
     if ! oc get "$resource_kind" "$resource_name" &>/dev/null; then
-        log_timestamp "Resource $resource_kind/$resource_name does not exist."
+        log "Resource $resource_kind/$resource_name does not exist."
         return 1
     fi
-    log_timestamp "Resource $resource_kind/$resource_name exists."
+    log "Resource $resource_kind/$resource_name exists."
     return 0
 }
 
@@ -356,159 +348,159 @@ EOF
 
 # Function to install Kubevirt into the cluster
 install_kubevirt() {
-    log_timestamp_console "Installing Kubevirt..."
+    log "Installing Kubevirt..."
 
     kubevirt_status=$(oc get kubevirt.kubevirt.io/kubevirt -o=jsonpath='{.status.phase}' -n kubevirt)
     if [[ "$kubevirt_status" == "Deployed" ]]; then
-        log_timestamp "KubeVirt is already installed."
+        log "KubeVirt is already installed."
         return 0
     fi
 
-    log_timestamp "Creating Kubevirt operator..."
+    log "Creating Kubevirt operator..."
     oc create -f https://github.com/kubevirt/kubevirt/releases/latest/download/kubevirt-operator.yaml > /dev/null 2>&1
     check_command "Failed to create Kubevirt operator." || return 1
 
-    log_timestamp "Creating Kubevirt CR..."
+    log "Creating Kubevirt CR..."
     oc create -f https://github.com/kubevirt/kubevirt/releases/latest/download/kubevirt-cr.yaml > /dev/null 2>&1
     check_command "Failed to create Kubevirt CR." || return 1
 
-    log_timestamp "Creating Kubevirt config map..."
+    log "Creating Kubevirt config map..."
     oc create configmap kubevirt-config --from-literal feature-gates=DataVolumes -n kube-system > /dev/null 2>&1
     check_command "Failed to create Kubevirt config map." || return 1
 
-    log_timestamp_console "Waiting for Kubevirt deployment..."
+    log "Waiting for Kubevirt deployment..."
     local timeout=600
     local start_time=$(date +%s)
     while true; do
         kubevirt_status=$(oc get kubevirt.kubevirt.io/kubevirt -o=jsonpath='{.status.phase}' -n kubevirt)
-        log_timestamp "Current Kubevirt status: $kubevirt_status"
+        log "Current Kubevirt status: $kubevirt_status"
         if [[ "$kubevirt_status" == "Deployed" ]]; then
             break
         fi
         if [ $(($(date +%s) - start_time)) -ge $timeout ]; then
-            log_error_timestamp "Kubevirt deployment timed out after ${timeout} seconds."
+            log_error "Kubevirt deployment timed out after ${timeout} seconds."
             return 1
         fi
         sleep 5
     done
 
-    log_timestamp "Kubevirt deployed successfully."
+    log "Kubevirt deployed successfully."
     return 0
 }
 
 # Function to install CDI (Containerized Data Importer) into the cluster
 install_cdi() {
-    log_timestamp_console "Installing CDI..."
+    log "Installing CDI..."
 
     cdi_status=$(oc get cdi -n cdi -o=jsonpath='{.items[0].status.phase}')
     if [[ "$cdi_status" == "Deployed" ]]; then
-        log_timestamp "CDI is already installed."
+        log "CDI is already installed."
         return 0
     fi
 
-    log_timestamp "Creating CDI operator..."
+    log "Creating CDI operator..."
     oc create -f https://github.com/kubevirt/containerized-data-importer/releases/latest/download/cdi-operator.yaml > /dev/null 2>&1
     check_command "Failed to create CDI operator." || return 1
 
-    log_timestamp "Creating CDI CR..."
+    log "Creating CDI CR..."
     oc create -f https://github.com/kubevirt/containerized-data-importer/releases/latest/download/cdi-cr.yaml > /dev/null 2>&1
     check_command "Failed to create CDI CR." || return 1
 
-    log_timestamp_console "Waiting for CDI deployment..."
+    log "Waiting for CDI deployment..."
     local timeout=600
     local start_time=$(date +%s)
     while true; do
         cdi_status=$(oc get cdi -n cdi -o=jsonpath='{.items[0].status.phase}')
-        log_timestamp "Current CDI status: $cdi_status"
+        log "Current CDI status: $cdi_status"
         if [[ "$cdi_status" == "Deployed" ]]; then
             break
         fi
         if [ $(($(date +%s) - start_time)) -ge $timeout ]; then
-            log_error_timestamp "CDI deployment timed out after ${timeout} seconds."
+            log_error "CDI deployment timed out after ${timeout} seconds."
             return 1
         fi
         sleep 5
     done
 
-    log_timestamp "CDI deployed successfully."
+    log "CDI deployed successfully."
     return 0
 }
 
 # Function to create Namespace and Secret
 create_namespace_and_secret(){
-    log_timestamp_console "Creating Namespace and Secret..."
+    log "Creating Namespace and Secret..."
 
     # Check if VM_NAME, NAMESPACE and SECRET_NAME is set
     if [[ -z "$VM_NAME" ]] || [[ -z "$NAMESPACE" ]] || [[ -z "$SECRET_NAME" ]]; then
-        log_error_timestamp "One or more required variables (VM_NAME, NAMESPACE, SECRET_NAME) are missing. Exiting..."
+        log_error "One or more required variables (VM_NAME, NAMESPACE, SECRET_NAME) are missing. Exiting..."
         return 1
     fi
 
     # Check if namespace exists
     if ! oc get namespace "$NAMESPACE" >/dev/null 2>&1; then
-        log_timestamp "Namespace $NAMESPACE does not exist. Creating..."
+        log "Namespace $NAMESPACE does not exist. Creating..."
         if ! oc create namespace "$NAMESPACE"; then
-            log_error_timestamp "Namespace $NAMESPACE could not be created."
+            log_error "Namespace $NAMESPACE could not be created."
             return 1
         fi
-        log_timestamp "Namespace $NAMESPACE created successfully."
+        log "Namespace $NAMESPACE created successfully."
     else
-        log_timestamp "Namespace $NAMESPACE already exists."
+        log "Namespace $NAMESPACE already exists."
     fi
 
     # Switch to namespace
-    log_timestamp "Switching to namespace $NAMESPACE..."
+    log "Switching to namespace $NAMESPACE..."
     if ! oc project "$NAMESPACE" >/dev/null 2>&1; then
-        log_error_timestamp "Could not switch to namespace $NAMESPACE."
+        log_error "Could not switch to namespace $NAMESPACE."
         return 1
     fi
-    log_timestamp "Now in namespace $NAMESPACE."
+    log "Now in namespace $NAMESPACE."
 
     # Check if secret exists in the namespace
     if ! oc get secret "$SECRET_NAME" -n "$NAMESPACE" >/dev/null 2>&1; then
-        log_timestamp "Secret $SECRET_NAME does not exist in namespace $NAMESPACE. Creating..."
+        log "Secret $SECRET_NAME does not exist in namespace $NAMESPACE. Creating..."
         if ! oc create secret generic "$SECRET_NAME" --from-literal=accessKeyId="$accessKeyId" --from-literal=secretKey="$secretKey" -n "$NAMESPACE"; then
-            log_error_timestamp "Secret $SECRET_NAME could not be created in namespace $NAMESPACE."
+            log_error "Secret $SECRET_NAME could not be created in namespace $NAMESPACE."
             return 1
         fi
-        log_timestamp "Secret $SECRET_NAME created successfully in namespace $NAMESPACE."
+        log "Secret $SECRET_NAME created successfully in namespace $NAMESPACE."
     else
-        log_timestamp "Secret $SECRET_NAME already exists in namespace $NAMESPACE."
+        log "Secret $SECRET_NAME already exists in namespace $NAMESPACE."
     fi
     return 0
 }
 
 # Function to create DataVolume for Image and DB Disk
 create_datavolume_and_pvc() {
-    log_timestamp_console "Creating DataVolume and PVC..."
+    log "Creating DataVolume and PVC..."
 
-    log_timestamp "Applying DataVolume CR..."
+    log "Applying DataVolume CR..."
     create_datavolume_cr
     check_command "Failed to create_datavolume_cr." || continue
 
-    log_timestamp "Applying DataVolume Database CR..."
+    log "Applying DataVolume Database CR..."
     create_datavolume_db_cr
     check_command "Failed to create_datavolume_db_cr." || continue
 
-    log_timestamp_console "Waiting for data volumes to be bound and imported..."
+    log "Waiting for data volumes to be bound and imported..."
     local iteration=0
     while true; do
         dv_status=$(oc get dv $VM_NAME -n $NAMESPACE -o=jsonpath='{.status.phase} ({.status.progress})')
         db_dv_status=$(oc get dv $VM_NAME-database -n $NAMESPACE -o=jsonpath='{.status.phase} ({.status.progress})')
 
-        log_timestamp "Data volume status: $dv_status, Database data volume status: $db_dv_status"
+        log "Data volume status: $dv_status, Database data volume status: $db_dv_status"
 
         # Log in-progress data volumes every 30 seconds (6 iterations * 5 seconds = 30 seconds)
         if (( iteration % 6 == 0 )); then
             local in_progress=$(oc get datavolume -n $NAMESPACE --no-headers 2>/dev/null | grep -v "Succeeded.*100\.0%" || true)
             if [[ -n "$in_progress" ]]; then
-                log_timestamp_console "Data volume import progress (in-progress only):"
+                log "Data volume import progress (in-progress only):"
                 echo "$in_progress" | tee -a $LOG_FILE
             fi
         fi
 
         if [[ "$dv_status" == "Succeeded"* && "$db_dv_status" == "Succeeded"* ]]; then
-            log_timestamp "Data volumes imported successfully."
+            log "Data volumes imported successfully."
             return 0
         fi
 
@@ -520,32 +512,32 @@ create_datavolume_and_pvc() {
 
 # Function to create VirtualMachine fetch IP and VMI Name
 create_virtualmachine_and_fetch_ip() {
-    log_timestamp_console "Fetching SSH key from $SECRET_NAME..."
+    log "Fetching SSH key from $SECRET_NAME..."
 
     if [ -z "$SSH_KEY" ]; then
-        log_error_timestamp "Failed to fetch SSH key from the secret."
+        log_error "Failed to fetch SSH key from the secret."
         return 1
     fi
     DECODED_SSH_KEY=$(echo "$SSH_KEY" | base64 --decode)
-    log_timestamp "SSH key fetched successfully."
+    log "SSH key fetched successfully."
 
-    log_timestamp "Creating VirtualMachine..."
+    log "Creating VirtualMachine..."
 
-    log_timestamp "Calling create_vm_cr ..."
+    log "Calling create_vm_cr ..."
     create_vm_cr
     check_command "Failed to create VirtualMachine." || return 1
 
-    log_timestamp_console "Waiting for VirtualMachineInstance (VMI) to be running..."
+    log "Waiting for VirtualMachineInstance (VMI) to be running..."
     local timeout=600
     local start_time=$(date +%s)
     while true; do
         vmi_status=$(oc get vmi $VM_NAME -o=jsonpath='{.status.phase}' -n $NAMESPACE)
-        log_timestamp "Current VMI status: $vmi_status"
+        log "Current VMI status: $vmi_status"
         if [[ "$vmi_status" == "Running" ]]; then
             break
         fi
         if [ $(($(date +%s) - start_time)) -ge $timeout ]; then
-            log_error_timestamp "VMI startup timed out after ${timeout} seconds."
+            log_error "VMI startup timed out after ${timeout} seconds."
             return 1
         fi
         sleep 5
@@ -554,14 +546,14 @@ create_virtualmachine_and_fetch_ip() {
     # Get VMI name
     vmi_name=$(oc get vm $VM_NAME -o=jsonpath='{.metadata.name}' -n $NAMESPACE)
     if [[ -z "$vmi_name" ]]; then
-        log_error_timestamp "Failed to get VirtualMachine (VM) name. Exiting..."
+        log_error "Failed to get VirtualMachine (VM) name. Exiting..."
         return 1
     fi
 
-    log_timestamp_console "VirtualMachine (VM) Name: $vmi_name"
+    log "VirtualMachine (VM) Name: $vmi_name"
 
     # Get VM IP
-    log_timestamp_console "Getting VirtualMachineInstance (VMI) IP address..."
+    log "Getting VirtualMachineInstance (VMI) IP address..."
     local ip_timeout=600
 
     local ip_start_time=$(date +%s)
@@ -571,19 +563,19 @@ create_virtualmachine_and_fetch_ip() {
             break
         fi
         if [ $(($(date +%s) - ip_start_time)) -ge $ip_timeout ]; then
-            log_error_timestamp "Failed to get VMI IP address after ${ip_timeout} seconds. Exiting..."
+            log_error "Failed to get VMI IP address after ${ip_timeout} seconds. Exiting..."
             return 1
         fi
         sleep 5
     done
 
-    log_timestamp_console "VM IP Address: $vmi_ip"
+    log "VM IP Address: $vmi_ip"
     return 0
 }
 
 # Function to create services for https, cockpit and SSH
 create_services() {
-    log_timestamp_console "Creating services..."
+    log "Creating services..."
 
     create_service_if_not_exists "$VM_NAME-https" "443" || return 1
     create_service_if_not_exists "$VM_NAME-cockpit" "9090" || return 1
@@ -599,52 +591,52 @@ create_service_if_not_exists() {
 
     if ! resource_exists "svc" "$service_name"; then
 
-        log_timestamp "Creating service $service_name..."
+        log "Creating service $service_name..."
         virtctl expose vmi $VM_NAME --port="$service_port" --name="$service_name" -n $NAMESPACE
         if ! check_command "Failed to expose service $service_name."; then
             return 1
         fi
-        log_timestamp_console "Service $service_name created successfully."
+        log "Service $service_name created successfully."
     else
-        log_timestamp_console "Service $service_name already exists. Skipping creation."
+        log "Service $service_name already exists. Skipping creation."
     fi
     return 0
 }
 
 # Function to create routes
 create_routes() {
-    log_timestamp_console "Creating routes..."
+    log "Creating routes..."
 
     # Print the extracted cluster name
-    log_timestamp_console "Cluster host: $CLUSTER_HOST"
+    log "Cluster host: $CLUSTER_HOST"
 
     # Ensure CLUSTER_HOST is set
     if [[ -z "$CLUSTER_HOST" ]]; then
-        log_error_timestamp_console "CLUSTER_HOST variable is missing. Exiting..."
+        log_error "CLUSTER_HOST variable is missing. Exiting..."
         return 1
     fi
 
     # Create route for cockpit service
-    log_timestamp_console "Creating route for cockpit service..."
+    log "Creating route for cockpit service..."
 
     create_appliance_cockpit_route
     create_appliance_postgres_route
     create_appliance_route
 
-    log_timestamp_console "Routes are created successfully."
+    log "Routes are created successfully."
     return 0
 }
 
 # Function to wait for SSH service to be ready and SSH into VM
 ssh_into_vm() {
-    log_timestamp_console "Waiting for SSH service to be ready..."
+    log "Waiting for SSH service to be ready..."
 
     local max_retries=60
     local retry=0
     local ssh_ready=false
 
     while [ $retry -lt $max_retries ]; do
-        log_timestamp_console "Checking SSH availability (attempt $((retry+1))/$max_retries)..."
+        log "Checking SSH availability (attempt $((retry+1))/$max_retries)..."
 
         # Use expect to handle the SSH connection non-interactively
         ssh_test=$(expect -c "
@@ -673,25 +665,25 @@ ssh_into_vm() {
 
         # Check for various indicators that SSH is responding
         if echo "$ssh_test" | grep -qE "Are you sure you want to continue|password:|Permission denied"; then
-            log_timestamp_console "SSH service is responding"
+            log "SSH service is responding"
             ssh_ready=true
             break
         fi
 
-        log_timestamp_console "SSH not ready yet, waiting..."
+        log "SSH not ready yet, waiting..."
         sleep 10
         retry=$((retry+1))
     done
 
     if [ "$ssh_ready" = false ]; then
-        log_error_timestamp "SSH service did not become ready after $((max_retries * 10)) seconds"
+        log "SSH service did not become ready after $((max_retries * 10)) seconds"
         return 1
     fi
 
-    log_timestamp_console "SSH is ready, waiting 30 seconds for VM to fully initialize..."
+    log "SSH is ready, waiting 30 seconds for VM to fully initialize..."
     sleep 30
 
-    log_timestamp_console "SSH into the VM $vmi_name to change password..."
+    log "SSH into the VM $vmi_name to change password..."
     ssh_output=$(expect <<EOF 2>&1
         set timeout 60
         set password smartvm
@@ -767,10 +759,10 @@ EOF
 
     # Check if password change succeeded
     if [ $password_change_status -eq 0 ]; then
-        log_timestamp_console "SSH into VM succeeded and password is changed."
+        log "SSH into VM succeeded and password is changed."
     else
-        log_error_timestamp "SSH into VM failed or password change did not complete"
-        log_error_timestamp "Please check the log output above for details"
+        log_error "SSH into VM failed or password change did not complete"
+        log_error "Please check the log output above for details"
         return 1
     fi
     return 0
@@ -779,7 +771,7 @@ EOF
 # Function to configure the appliance
 configure_appliance() {
 
-    log_timestamp_console "Configuring the appliance on VM $vmi_name..."
+    log "Configuring the appliance on VM $vmi_name..."
 
     # Use background process with timeout for portability (works on macOS and Linux)
     # Create a temporary file for output
@@ -889,13 +881,13 @@ EOF
     # Wait for expect process with timeout
     while kill -0 $expect_pid 2>/dev/null; do
         if [ $elapsed -ge $timeout_seconds ]; then
-            log_error_timestamp "Configuration timed out after 10 minutes"
+            log_error "Configuration timed out after 10 minutes"
             kill -TERM $expect_pid 2>/dev/null
             sleep 2
             kill -KILL $expect_pid 2>/dev/null
             configure_output=$(cat "$temp_output")
             echo "$configure_output" >> $LOG_FILE
-            log_error_timestamp "Last captured output:"
+            log "Last captured output:"
             echo "$configure_output" >&2
             rm -f "$temp_output"
             return 1
@@ -914,24 +906,24 @@ EOF
 
     # Check if appliance is configured
     if [ $configure_status -ne 0 ]; then
-        log_error_timestamp "Appliance Configuration failed"
+        log "Appliance Configuration failed"
         echo "$configure_output" >&2
         return 1
     fi
 
-    log_timestamp_console "Configuration on VM $vmi_name completed successfully."
+    log "Configuration on VM $vmi_name completed successfully."
     return 0
 }
 
 # Function to check evmserverd status with polling
 check_evmserverd() {
-    log_timestamp_console "Waiting for evmserverd to become active (checking every 30 seconds for up to 10 minutes)..."
+    log "Waiting for evmserverd to become active (checking every 30 seconds for up to 10 minutes)..."
 
     local max_attempts=20
     local attempt=1
 
     while [ $attempt -le $max_attempts ]; do
-        log_timestamp_console "Checking evmserverd status (attempt $attempt of $max_attempts)..."
+        log "Checking evmserverd status (attempt $attempt of $max_attempts)..."
 
         evmserverd_output=$(expect <<EOF 2>&1
         set timeout 30
@@ -951,11 +943,11 @@ EOF
         echo "$evmserverd_output" >> $LOG_FILE
 
         if echo "$evmserverd_output" | grep -q "active"; then
-            log_timestamp_console "evmserverd is active!"
+            log "evmserverd is active!"
             return 0
         fi
 
-        log_timestamp "evmserverd not yet active (attempt $attempt of $max_attempts)"
+        log "evmserverd not yet active (attempt $attempt of $max_attempts)"
 
         if [ $attempt -lt $max_attempts ]; then
             sleep 30
@@ -964,7 +956,7 @@ EOF
         attempt=$((attempt + 1))
     done
 
-    log_error_timestamp "evmserverd did not become active within 10 minutes"
+    log "evmserverd did not become active within 10 minutes"
     return 1
 }
 
@@ -973,7 +965,7 @@ get_route_host() {
 
     route_host=$(oc get route appliance -o=jsonpath='{.spec.host}' -n $NAMESPACE)
     if [[ -z "$route_host" ]]; then
-        log_error_timestamp "Appliance route not found."
+        log "Appliance route not found."
         return 1
     fi
 
@@ -987,32 +979,32 @@ get_route_host() {
 appliance_configure() {
     local mode=${1:-"full"}
 
-    log_timestamp_console "Starting appliance configuration in '$mode' mode for VM: $VM_NAME..."
+    log "Starting appliance configuration in '$mode' mode for VM: $VM_NAME..."
 
     # Shared setup - only run in "full" mode (once for all VMs)
     if [[ "$mode" == "full" ]]; then
-        install_kubevirt || { log_error_timestamp "install_kubevirt failed"; return 1; }
-        install_cdi || { log_error_timestamp "install_cdi failed"; return 1; }
-        create_namespace_and_secret || { log_error_timestamp "create_namespace_and_secret failed"; return 1; }
+        install_kubevirt || { log "install_kubevirt failed"; return 1; }
+        install_cdi || { log "install_cdi failed"; return 1; }
+        create_namespace_and_secret || { log "create_namespace_and_secret failed"; return 1; }
     fi
 
     # VM-specific setup - run in both modes (each VM gets its own datavolumes)
-    create_datavolume_and_pvc || { log_error_timestamp "create_datavolume_and_pvc failed"; return 1; }
-    create_virtualmachine_and_fetch_ip || { log_error_timestamp "create_virtualmachine_and_fetch_ip failed"; return 1; }
-    create_services || { log_error_timestamp "create_services failed"; return 1; }
-    create_routes || { log_error_timestamp "create_routes failed"; return 1; }
-    ssh_into_vm || { log_error_timestamp "ssh_into_vm failed"; return 1; }
+    create_datavolume_and_pvc || { log "create_datavolume_and_pvc failed"; return 1; }
+    create_virtualmachine_and_fetch_ip || { log "create_virtualmachine_and_fetch_ip failed"; return 1; }
+    create_services || { log "create_services failed"; return 1; }
+    create_routes || { log "create_routes failed"; return 1; }
+    ssh_into_vm || { log "ssh_into_vm failed"; return 1; }
 
     # Appliance configuration - only run in "full" mode
     if [[ "$mode" == "full" ]]; then
-        configure_appliance || { log_error_timestamp "configure_appliance failed"; return 1; }
-        check_evmserverd || { log_error_timestamp "check_evmserverd failed"; return 1; }
+        configure_appliance || { log "configure_appliance failed"; return 1; }
+        check_evmserverd || { log "check_evmserverd failed"; return 1; }
     else
-        log_timestamp_console "Skipping configure_appliance and check_evmserverd for standby VM."
-        log_timestamp_console "TODO: Manual configuration required for standby VM."
+        log "Skipping configure_appliance and check_evmserverd for standby VM."
+        log "TODO: Manual configuration required for standby VM."
     fi
 
-    log_timestamp_console "Appliance configuration completed successfully for VM: $VM_NAME."
+    log "Appliance configuration completed successfully for VM: $VM_NAME."
     return 0
 }
 
@@ -1021,62 +1013,62 @@ verify_prereq
 env_setup
 
 # Execute the appliance_configure (Main Function) and handle its exit status
-log_timestamp_console "Starting MIQ Appliance Configuration Script..."
+log "Starting MIQ Appliance Configuration Script..."
 
 if [[ "$HA" == "true" ]]; then
-    log_timestamp_console "HA mode enabled - deploying primary and standby VMs..."
+    log "HA mode enabled - deploying primary and standby VMs..."
 
     # Deploy Primary VM with full configuration
-    log_timestamp_console "=== Deploying PRIMARY VM ==="
+    log "=== Deploying PRIMARY VM ==="
     set_vm_variables "primary"
     appliance_configure "full"
     exit_status=$?
     if [[ $exit_status -ne 0 ]]; then
-        log_error_timestamp "Primary VM configuration failed with exit status $exit_status"
+        log "Primary VM configuration failed with exit status $exit_status"
         echo "Primary VM configuration failed with exit status $exit_status" >&2
-        log_error_timestamp "Full configuration log can be found at $LOG_FILE"
+        log "Full configuration log can be found at $LOG_FILE"
         echo "Full configuration log can be found at $LOG_FILE" >&2
         exit 1
     fi
-    log_timestamp_console "Primary VM configuration completed successfully."
+    log "Primary VM configuration completed successfully."
     primary_vmi_name=$vmi_name
 
     # Deploy Standby VM with VM-only configuration
-    log_timestamp_console "=== Deploying STANDBY VM ==="
+    log "=== Deploying STANDBY VM ==="
     set_vm_variables "standby"
     appliance_configure "vm-only"
     exit_status=$?
     if [[ $exit_status -ne 0 ]]; then
-        log_error_timestamp "Standby VM configuration failed with exit status $exit_status"
+        log "Standby VM configuration failed with exit status $exit_status"
         echo "Standby VM configuration failed with exit status $exit_status" >&2
-        log_error_timestamp "Full configuration log can be found at $LOG_FILE"
+        log "Full configuration log can be found at $LOG_FILE"
         echo "Full configuration log can be found at $LOG_FILE" >&2
         exit 1
     fi
-    log_timestamp_console "Standby VM configuration completed successfully."
+    log "Standby VM configuration completed successfully."
     standby_vmi_name=$vmi_name
 
-    log_timestamp_console "=== HA Deployment Complete ==="
-    log_timestamp_console "Full configuration log can be found at $LOG_FILE"
-    log_timestamp_console "Primary VM login: virtctl ssh root@vmi/$primary_vmi_name -n $NAMESPACE"
-    log_timestamp_console "Standby VM login: virtctl ssh root@vmi/$standby_vmi_name -n $NAMESPACE"
-    log_timestamp_console "NOTE: Standby VM requires manual configuration."
+    log "=== HA Deployment Complete ==="
+    log "Full configuration log can be found at $LOG_FILE"
+    log "Primary VM login: virtctl ssh root@vmi/$primary_vmi_name -n $NAMESPACE"
+    log "Standby VM login: virtctl ssh root@vmi/$standby_vmi_name -n $NAMESPACE"
+    log "NOTE: Standby VM requires manual configuration."
 else
     # Standard single VM deployment
-    log_timestamp_console "Standard mode - deploying single VM..."
+    log "Standard mode - deploying single VM..."
     appliance_configure "full"
     exit_status=$?
     if [[ $exit_status -ne 0 ]]; then
-        log_error_timestamp "appliance_configure failed with exit status $exit_status"
+        log "appliance_configure failed with exit status $exit_status"
         echo "appliance_configure failed with exit status $exit_status" >&2
-        log_error_timestamp "Full configuration log can be found at $LOG_FILE"
+        log "Full configuration log can be found at $LOG_FILE"
         echo "Full configuration log can be found at $LOG_FILE" >&2
         exit 1
     fi
 
-    log_timestamp_console "appliance_configure completed successfully."
-    log_timestamp_console "Full configuration log can be found at $LOG_FILE"
-    log_timestamp_console "To login: virtctl ssh root@vmi/$vmi_name -n $NAMESPACE"
+    log "appliance_configure completed successfully."
+    log "Full configuration log can be found at $LOG_FILE"
+    log "To login: virtctl ssh root@vmi/$vmi_name -n $NAMESPACE"
 fi
 
 exit 0
