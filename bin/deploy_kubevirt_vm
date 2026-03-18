@@ -138,6 +138,12 @@ log_error() {
     echo "See log file for details: $LOG_FILE" >&2
 }
 
+# Strip carriage returns from expect output to prevent terminal corruption
+# Carriage returns can overwrite the current line and break subsequent command execution
+strip_cr_from_expect_output() {
+    tr -d '\r'
+}
+
 # Function to check if a command was successful and retry up to 3 times
 check_command() {
     local retries=3
@@ -744,7 +750,7 @@ EOF
     )
     password_change_status=$?
 
-    echo "$ssh_output" | tee -a $LOG_FILE
+    echo "$ssh_output" | strip_cr_from_expect_output | tee -a $LOG_FILE
 
     # Check if password change succeeded
     if [ $password_change_status -eq 0 ]; then
@@ -877,7 +883,7 @@ EOF
             configure_output=$(cat "$temp_output")
             rm -f "$temp_output"
             log_error "Configuration timed out after 10 minutes. Last captured output:
-$configure_output"
+$(echo "$configure_output" | strip_cr_from_expect_output)"
             return 1
         fi
         sleep $sleep_interval
@@ -890,12 +896,12 @@ $configure_output"
     configure_output=$(cat "$temp_output")
     rm -f "$temp_output"
 
-    echo "$configure_output" >> $LOG_FILE
+    echo "$configure_output" | strip_cr_from_expect_output >> $LOG_FILE
 
     # Check if appliance is configured
     if [ $configure_status -ne 0 ]; then
         log_error "Appliance Configuration failed. Output:
-$configure_output"
+$(echo "$configure_output" | strip_cr_from_expect_output)"
         return 1
     fi
 
