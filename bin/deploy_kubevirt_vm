@@ -958,29 +958,22 @@ verify_env_prereq() {
     log "Pre-deployment requirements completed successfully."
 }
 
-# Function to configure MIQ appliance (Main Function)
-# Parameters:
-#   $1 - mode: "full" (includes shared setup and appliance config) or "vm-only" (VM-specific setup only)
-appliance_configure() {
-    local mode=${1:-"full"}
-
-    log "Starting appliance configuration in '$mode' mode for VM: $VM_NAME..."
-
-    # VM-specific setup - run in both modes (each VM gets its own datavolumes)
+setup_vm_resources() {
+    log "Setting up VM resources..."
     create_datavolume_and_pvc || { log "create_datavolume_and_pvc failed"; return 1; }
     create_virtualmachine_and_fetch_ip || { log "create_virtualmachine_and_fetch_ip failed"; return 1; }
     create_services || { log "create_services failed"; return 1; }
     create_routes || { log "create_routes failed"; return 1; }
-    ssh_into_vm || { log "ssh_into_vm failed"; return 1; }
+}
 
-    # Appliance configuration - only run in "full" mode
-    if [[ "$mode" == "full" ]]; then
-        configure_appliance || { log "configure_appliance failed"; return 1; }
-        check_evmserverd || { log "check_evmserverd failed"; return 1; }
-    else
-        log "Skipping configure_appliance and check_evmserverd for standby VM."
-        log "TODO: Manual configuration required for standby VM."
-    fi
+
+# Function to configure MIQ appliance
+appliance_configure() {
+    log "Starting appliance configuration for VM: $VM_NAME..."
+
+    ssh_into_vm || { log "ssh_into_vm failed"; return 1; }
+    configure_appliance || { log "configure_appliance failed"; return 1; }
+    check_evmserverd || { log "check_evmserverd failed"; return 1; }
 
     log "Appliance configuration completed successfully for VM: $VM_NAME."
     return 0
@@ -994,33 +987,41 @@ verify_env_prereq
 # Execute the appliance_configure (Main Function) and handle its exit status
 log "Starting MIQ Appliance Configuration Script..."
 
+# Deploy first VM (primary if HA, single if not)
 if [[ "$HA" == "true" ]]; then
-    log "HA mode enabled - deploying primary and standby VMs..."
-
-    # Deploy Primary VM with full configuration
-    log "=== Deploying PRIMARY VM ==="
+    log "HA mode enabled - deploying primary VM..."
     set_vm_variables "primary"
-    appliance_configure "full"
-    exit_status=$?
-    if [[ $exit_status -ne 0 ]]; then
-        log_error "Primary VM configuration failed with exit status $exit_status"
-        log "Full configuration log can be found at $LOG_FILE"
-        exit 1
-    fi
-    log "Primary VM configuration completed successfully."
-    primary_vmi_name=$vmi_name
+else
+    log "Standard mode - deploying single VM..."
+fi
 
-    # Deploy Standby VM with VM-only configuration
+setup_vm_resources || {
+    log_error "setup_vm_resources failed"
+    log "Full configuration log can be found at $LOG_FILE"
+    exit 1
+}
+
+appliance_configure
+exit_status=$?
+if [[ $exit_status -ne 0 ]]; then
+    log_error "appliance_configure failed with exit status $exit_status"
+    log "Full configuration log can be found at $LOG_FILE"
+    exit 1
+fi
+
+log "First VM configuration completed successfully."
+primary_vmi_name=$vmi_name
+
+# Deploy second VM if HA mode
+if [[ "$HA" == "true" ]]; then
     log "=== Deploying STANDBY VM ==="
     set_vm_variables "standby"
-    appliance_configure "vm-only"
-    exit_status=$?
-    if [[ $exit_status -ne 0 ]]; then
-        log_error "Standby VM configuration failed with exit status $exit_status"
+    setup_vm_resources || {
+        log_error "Standby VM setup_vm_resources failed"
         log "Full configuration log can be found at $LOG_FILE"
         exit 1
-    fi
-    log "Standby VM configuration completed successfully."
+    }
+    log "Standby VM setup completed successfully (appliance configuration skipped)."
     standby_vmi_name=$vmi_name
 
     log "=== HA Deployment Complete ==="
@@ -1029,17 +1030,7 @@ if [[ "$HA" == "true" ]]; then
     log "Standby VM login: virtctl ssh root@vmi/$standby_vmi_name -n $NAMESPACE"
     log "NOTE: Standby VM requires manual configuration."
 else
-    # Standard single VM deployment
-    log "Standard mode - deploying single VM..."
-    appliance_configure "full"
-    exit_status=$?
-    if [[ $exit_status -ne 0 ]]; then
-        log_error "appliance_configure failed with exit status $exit_status"
-        log "Full configuration log can be found at $LOG_FILE"
-        exit 1
-    fi
-
-    log "appliance_configure completed successfully."
+    log "Standard deployment completed successfully."
     log "Full configuration log can be found at $LOG_FILE"
     log "To login: virtctl ssh root@vmi/$vmi_name -n $NAMESPACE"
 fi
