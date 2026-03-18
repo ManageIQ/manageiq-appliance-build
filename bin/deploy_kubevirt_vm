@@ -676,7 +676,7 @@ ssh_into_vm() {
     done
 
     if [ "$ssh_ready" = false ]; then
-        log "SSH service did not become ready after $((max_retries * 10)) seconds"
+        log_error "SSH service did not become ready after $((max_retries * 10)) seconds"
         return 1
     fi
 
@@ -956,21 +956,8 @@ EOF
         attempt=$((attempt + 1))
     done
 
-    log "evmserverd did not become active within 10 minutes"
+    log_error "evmserverd did not become active within 10 minutes"
     return 1
-}
-
-# Function to get and validate the route host
-get_route_host() {
-
-    route_host=$(oc get route appliance -o=jsonpath='{.spec.host}' -n $NAMESPACE)
-    if [[ -z "$route_host" ]]; then
-        log "Appliance route not found."
-        return 1
-    fi
-
-    echo "$route_host"
-    return 0
 }
 
 # Function to configure MIQ appliance (Main Function)
