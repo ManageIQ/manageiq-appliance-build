@@ -7,11 +7,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/shared_kubevirt_functions.sh"
 
 verify_prereq() {
-    command -v oc > /dev/null 2>&1 || (echo "ERROR: oc cli must be installed." && exit 1)
-    command -v virtctl > /dev/null 2>&1 || (echo "ERROR: virtctl cli must be installed. See https://github.com/kubevirt/kubevirt/releases/latest" && exit 1)
+    command -v oc > /dev/null 2>&1 || { log_error "oc cli must be installed"; exit 1; }
+    command -v virtctl > /dev/null 2>&1 || { log_error "virtctl cli must be installed. See https://github.com/kubevirt/kubevirt/releases/latest"; exit 1; }
 
-    oc whoami > /dev/null 2>&1 || (echo "ERROR: must be logged in to an OCP cluster" && exit 1)
-    [ -z "$(oc get storageclass --ignore-not-found)" ] && (echo "ERROR: OCP cluster must have a storageclass" && exit 1)
+    oc whoami > /dev/null 2>&1 || { log_error "must be logged in to an OCP cluster"; exit 1; }
+    [ -z "$(oc get storageclass --ignore-not-found)" ] && { log_error "OCP cluster must have a storageclass"; exit 1; }
 
     return 0
  }
@@ -886,10 +886,9 @@ EOF
             sleep 2
             kill -KILL $expect_pid 2>/dev/null
             configure_output=$(cat "$temp_output")
-            echo "$configure_output" >> $LOG_FILE
-            log "Last captured output:"
-            echo "$configure_output" >&2
             rm -f "$temp_output"
+            log_error "Configuration timed out after 10 minutes. Last captured output:
+$configure_output"
             return 1
         fi
         sleep $sleep_interval
@@ -906,8 +905,8 @@ EOF
 
     # Check if appliance is configured
     if [ $configure_status -ne 0 ]; then
-        log "Appliance Configuration failed"
-        echo "$configure_output" >&2
+        log_error "Appliance Configuration failed. Output:
+$configure_output"
         return 1
     fi
 
@@ -1011,10 +1010,8 @@ if [[ "$HA" == "true" ]]; then
     appliance_configure "full"
     exit_status=$?
     if [[ $exit_status -ne 0 ]]; then
-        log "Primary VM configuration failed with exit status $exit_status"
-        echo "Primary VM configuration failed with exit status $exit_status" >&2
+        log_error "Primary VM configuration failed with exit status $exit_status"
         log "Full configuration log can be found at $LOG_FILE"
-        echo "Full configuration log can be found at $LOG_FILE" >&2
         exit 1
     fi
     log "Primary VM configuration completed successfully."
@@ -1026,10 +1023,8 @@ if [[ "$HA" == "true" ]]; then
     appliance_configure "vm-only"
     exit_status=$?
     if [[ $exit_status -ne 0 ]]; then
-        log "Standby VM configuration failed with exit status $exit_status"
-        echo "Standby VM configuration failed with exit status $exit_status" >&2
+        log_error "Standby VM configuration failed with exit status $exit_status"
         log "Full configuration log can be found at $LOG_FILE"
-        echo "Full configuration log can be found at $LOG_FILE" >&2
         exit 1
     fi
     log "Standby VM configuration completed successfully."
@@ -1046,10 +1041,8 @@ else
     appliance_configure "full"
     exit_status=$?
     if [[ $exit_status -ne 0 ]]; then
-        log "appliance_configure failed with exit status $exit_status"
-        echo "appliance_configure failed with exit status $exit_status" >&2
+        log_error "appliance_configure failed with exit status $exit_status"
         log "Full configuration log can be found at $LOG_FILE"
-        echo "Full configuration log can be found at $LOG_FILE" >&2
         exit 1
     fi
 
