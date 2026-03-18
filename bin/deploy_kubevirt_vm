@@ -960,10 +960,10 @@ verify_env_prereq() {
 
 setup_vm_resources() {
     log "Setting up VM resources..."
-    create_datavolume_and_pvc || { log "create_datavolume_and_pvc failed"; return 1; }
-    create_virtualmachine_and_fetch_ip || { log "create_virtualmachine_and_fetch_ip failed"; return 1; }
-    create_services || { log "create_services failed"; return 1; }
-    create_routes || { log "create_routes failed"; return 1; }
+    create_datavolume_and_pvc || { log_error "create_datavolume_and_pvc failed"; exit 1; }
+    create_virtualmachine_and_fetch_ip || { log_error "create_virtualmachine_and_fetch_ip failed"; exit 1; }
+    create_services || { log_error "create_services failed"; exit 1; }
+    create_routes || { log_error "create_routes failed"; exit 1; }
 }
 
 
@@ -971,12 +971,11 @@ setup_vm_resources() {
 appliance_configure() {
     log "Starting appliance configuration for VM: $VM_NAME..."
 
-    ssh_into_vm || { log "ssh_into_vm failed"; return 1; }
-    configure_appliance || { log "configure_appliance failed"; return 1; }
-    check_evmserverd || { log "check_evmserverd failed"; return 1; }
+    ssh_into_vm || { log_error "ssh_into_vm failed"; exit 1; }
+    configure_appliance || { log_error "configure_appliance failed"; exit 1; }
+    check_evmserverd || { log_error "check_evmserverd failed"; exit 1; }
 
     log "Appliance configuration completed successfully for VM: $VM_NAME."
-    return 0
 }
 
 # Verify prereq and setup variables used in the script
@@ -995,19 +994,9 @@ else
     log "Standard mode - deploying single VM..."
 fi
 
-setup_vm_resources || {
-    log_error "setup_vm_resources failed"
-    log "Full configuration log can be found at $LOG_FILE"
-    exit 1
-}
+setup_vm_resources
 
 appliance_configure
-exit_status=$?
-if [[ $exit_status -ne 0 ]]; then
-    log_error "appliance_configure failed with exit status $exit_status"
-    log "Full configuration log can be found at $LOG_FILE"
-    exit 1
-fi
 
 log "First VM configuration completed successfully."
 primary_vmi_name=$vmi_name
@@ -1016,11 +1005,7 @@ primary_vmi_name=$vmi_name
 if [[ "$HA" == "true" ]]; then
     log "=== Deploying STANDBY VM ==="
     set_vm_variables "standby"
-    setup_vm_resources || {
-        log_error "Standby VM setup_vm_resources failed"
-        log "Full configuration log can be found at $LOG_FILE"
-        exit 1
-    }
+    setup_vm_resources
     log "Standby VM setup completed successfully (appliance configuration skipped)."
     standby_vmi_name=$vmi_name
 
