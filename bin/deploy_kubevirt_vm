@@ -624,8 +624,6 @@ create_routes() {
 
 # Function to wait for SSH service to be ready and SSH into VM
 ssh_into_vm() {
-    log "Waiting for SSH service to be ready..."
-
     local max_retries=60
     local retry=0
     local ssh_ready=false
@@ -665,7 +663,6 @@ ssh_into_vm() {
             break
         fi
 
-        log "SSH not ready yet, waiting..."
         sleep 10
         retry=$((retry+1))
     done
