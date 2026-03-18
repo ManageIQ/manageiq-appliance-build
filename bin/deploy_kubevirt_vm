@@ -964,6 +964,9 @@ setup_vm_resources() {
     create_virtualmachine_and_fetch_ip || { log_error "create_virtualmachine_and_fetch_ip failed"; exit 1; }
     create_services || { log_error "create_services failed"; exit 1; }
     create_routes || { log_error "create_routes failed"; exit 1; }
+
+    # Reset the initial ssh password
+    ssh_into_vm || { log_error "ssh_into_vm failed"; exit 1; }
 }
 
 
@@ -971,7 +974,6 @@ setup_vm_resources() {
 appliance_configure() {
     log "Starting appliance configuration for VM: $VM_NAME..."
 
-    ssh_into_vm || { log_error "ssh_into_vm failed"; exit 1; }
     configure_appliance || { log_error "configure_appliance failed"; exit 1; }
     check_evmserverd || { log_error "check_evmserverd failed"; exit 1; }
 
