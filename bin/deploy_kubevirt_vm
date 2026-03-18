@@ -142,7 +142,7 @@ log_error() {
 check_command() {
     local retries=3
     local success=0
-    for ((i=0; i<$retries; i++)); do
+    for ((i=0; i<retries; i++)); do
         if [[ $? -eq 0 ]]; then
             success=1
             break
