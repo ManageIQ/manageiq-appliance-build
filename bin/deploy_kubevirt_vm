@@ -784,25 +784,53 @@ EOF
 }
 
 # Function to configure the appliance
+# Parameters:
+#   $1: replication_type - "none", "primary", or "standby"
+#   $2: cluster_node_number - node number (1 for primary, 2 for standby)
+#   $3: primary_host_ip - IP address of primary host (required for standby)
+#   $4: standby_host_ip - IP address of standby host (required for standby)
 configure_appliance() {
+    local replication_type=${1:-"none"}
+    local cluster_node_number=${2:-""}
+    local primary_host_ip=${3:-""}
+    local standby_host_ip=${4:-""}
 
-    log "Configuring the appliance on VM $vmi_name..."
+    log "Configuring the appliance on VM $vmi_name (replication: $replication_type)..."
 
-    # Set hostname and update /etc/hosts
     set_hostname
+
+    local cli_cmd="cd /var/www/miq/vmdb && bundle exec appliance_console_cli --region=55 --dbname=vmdb_production --username=root --password=smartvm --dbdisk=auto"
+
+    # Standbys will be initialized as standby dbs, fetch their key from the primary and will not have a messaging server setup
+    if [[ "$replication_type" != "standby" ]]; then
+        cli_cmd="$cli_cmd --internal --server start --key --message-server-config --message-server-host=${vmi_ip}.local --message-keystore-username=admin --message-keystore-password=smartvm"
+    fi
+
+    # Add replication parameters or standalone based on HA being enabled
+    if [[ "$replication_type" == "primary" ]]; then
+        log "Configuring as PRIMARY node (cluster node: $cluster_node_number)"
+        cli_cmd="$cli_cmd --replication=primary --cluster-node-number=$cluster_node_number"
+    elif [[ "$replication_type" == "standby" ]]; then
+        log "Configuring as STANDBY node (cluster node: $cluster_node_number, primary: $primary_host_ip, standby: $standby_host_ip)"
+        cli_cmd="$cli_cmd --fetch-key=$primary_host_ip --sshlogin=root --sshpassword=$NEWPASSWORD --replication=standby --cluster-node-number=$cluster_node_number --primary-host=$primary_host_ip --standby-host=$standby_host_ip"
+    fi
+
+    # Redirect stderr to stdout in the remote command for complete output capture
+    cli_cmd="$cli_cmd 2>&1"
 
     # Create a temporary file for output
     local temp_output=$(mktemp)
     local temp_stderr=$(mktemp)
 
-    # Run appliance_console_cli via SSH command with expect handling authentication
+    log "Full CLI command to execute:"
+    log "$cli_cmd"
     log "Running appliance_console_cli..."
     (expect <<EOF
         set timeout 600
         log_user 1
         exp_internal 0
 
-        spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE -c "cd /var/www/miq/vmdb && bundle exec appliance_console_cli --region=55 --internal --dbname=vmdb_production --username=root --password=smartvm --dbdisk=auto --key --message-server-config --message-server-host=${vmi_ip}.local --message-keystore-username=admin --message-keystore-password=smartvm 2>&1"
+        spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE -c "$cli_cmd"
 
         match_max 32000
         expect {
@@ -858,7 +886,6 @@ EOF
     cat "$temp_stderr" | strip_cr_from_expect_output >> $LOG_FILE
     rm -f "$temp_output" "$temp_stderr"
 
-    # Check if appliance is configured
     if [ $configure_status -ne 0 ]; then
         log_error "Appliance Configuration failed with exit code: $configure_status"
         return 1
@@ -936,10 +963,20 @@ setup_vm_resources() {
 
 
 # Function to configure MIQ appliance
+# Parameters:
+#   $1: replication_type - "none", "primary", or "standby"
+#   $2: cluster_node_number - node number (1 for primary, 2 for standby)
+#   $3: primary_host_ip - IP address of primary host (required for standby)
+#   $4: standby_host_ip - IP address of standby host (required for standby)
 appliance_configure() {
+    local replication_type=${1:-"none"}
+    local cluster_node_number=${2:-""}
+    local primary_host_ip=${3:-""}
+    local standby_host_ip=${4:-""}
+
     log "Starting appliance configuration for VM: $VM_NAME..."
 
-    configure_appliance || exit 1
+    configure_appliance "$replication_type" "$cluster_node_number" "$primary_host_ip" "$standby_host_ip" || exit 1
     check_evmserverd || { log_error "check_evmserverd failed"; exit 1; }
 
     log "Appliance configuration completed successfully for VM: $VM_NAME."
@@ -963,25 +1000,40 @@ fi
 
 setup_vm_resources
 
-appliance_configure
-
-log "First VM configuration completed successfully."
+# Store primary VM info for HA configuration
 primary_vmi_name=$vmi_name
+primary_vmi_ip=$vmi_ip
 
 # Deploy second VM if HA mode
 if [[ "$HA" == "true" ]]; then
+    # Now configure primary (no standby IP needed for primary)
+    log "=== Configuring PRIMARY VM ==="
+    vmi_name=$primary_vmi_name
+    vmi_ip=$primary_vmi_ip
+    appliance_configure "primary" "1" "" ""
+    log "Primary VM configuration completed successfully."
+
     log "=== Deploying STANDBY VM ==="
     set_vm_variables "standby"
     setup_vm_resources
-    log "Standby VM setup completed successfully (appliance configuration skipped)."
     standby_vmi_name=$vmi_name
+    standby_vmi_ip=$vmi_ip
+    log "Standby VM setup completed successfully."
+
+    # Configure standby with primary IP
+    log "=== Configuring STANDBY VM ==="
+    vmi_name=$standby_vmi_name
+    vmi_ip=$standby_vmi_ip
+    appliance_configure "standby" "2" "$primary_vmi_ip" "$standby_vmi_ip"
+    log "Standby VM configuration completed successfully."
 
     log "=== HA Deployment Complete ==="
     log "Full configuration log can be found at $LOG_FILE"
     log "Primary VM login: virtctl ssh root@vmi/$primary_vmi_name -n $NAMESPACE"
     log "Standby VM login: virtctl ssh root@vmi/$standby_vmi_name -n $NAMESPACE"
-    log "NOTE: Standby VM requires manual configuration."
 else
+    # Standard single VM deployment
+    appliance_configure "none" "" "" ""
     log "Standard deployment completed successfully."
     log "Full configuration log can be found at $LOG_FILE"
     log "To login: virtctl ssh root@vmi/$vmi_name -n $NAMESPACE"
