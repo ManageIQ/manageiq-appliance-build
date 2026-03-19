@@ -760,21 +760,12 @@ EOF
     return 0
 }
 
-# Function to configure the appliance
-configure_appliance() {
-
-    log "Configuring the appliance on VM $vmi_name..."
-
-    # Use background process with timeout for portability (works on macOS and Linux)
-    # Create a temporary file for output
-    local temp_output=$(mktemp)
-
-    # Run expect in background and capture its PID
-    (expect <<EOF
-        set timeout -1
-        log_user 1
-        exp_internal 0
-        spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE
+# Function to set hostname and update /etc/hosts on the VM
+set_hostname() {
+    log "Setting hostname and updating /etc/hosts..."
+    local setup_output=$(expect <<EOF 2>&1
+        set timeout 60
+        spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE -c "hostnamectl set-hostname ${vmi_ip}.local && echo '${vmi_ip} ${vmi_ip}.local 192' >> /etc/hosts"
         match_max 32000
         expect {
             -re "Are you sure you want to continue connecting.*\\?" {
@@ -785,40 +776,57 @@ configure_appliance() {
                 send "$NEWPASSWORD\r"
                 exp_continue
             }
-            "#" {
-                send "hostnamectl set-hostname ${vmi_ip}.local\r"
-                send "echo '${vmi_ip} ${vmi_ip}.local 192' >> /etc/hosts\r"
-                send "appliance_console_cli --region=55 --internal --dbname=vmdb_production --username=root --password=smartvm --dbdisk=auto --key --message-server-config --message-server-host=${vmi_ip}.local --message-keystore-username=admin --message-keystore-password=smartvm > /tmp/appliance_console_cli.log 2>&1; echo \"EXIT_CODE:\$?\"\r"
-                expect {
-                    -re "EXIT_CODE:0" {
-                        puts "appliance_console_cli completed successfully"
-                    }
-                    -re "EXIT_CODE:(\[0-9\]+)" {
-                        puts "ERROR: appliance_console_cli failed with exit code \$expect_out(1,string)"
-                        puts "Check /tmp/appliance_console_cli.log for details"
-                        send "cat /tmp/appliance_console_cli.log\r"
-                        expect -re "#|\\$"
-                        send "exit\r"
-                        expect eof
-                        exit 1
-                    }
-                    timeout {
-                        puts "ERROR: appliance_console_cli timed out"
-                        puts "Check /tmp/appliance_console_cli.log for details"
-                        send "cat /tmp/appliance_console_cli.log\r"
-                        expect -re "#|\\$"
-                        send "exit\r"
-                        expect eof
-                        exit 1
-                    }
-                }
-                expect -re "#|\\$"
-                send "exit\r"
-                expect eof
+            eof
+        }
+EOF
+    )
+    echo "$setup_output" | strip_cr_from_expect_output >> $LOG_FILE
+}
+
+# Function to configure the appliance
+configure_appliance() {
+
+    log "Configuring the appliance on VM $vmi_name..."
+
+    # Set hostname and update /etc/hosts
+    set_hostname
+
+    # Create a temporary file for output
+    local temp_output=$(mktemp)
+    local temp_stderr=$(mktemp)
+
+    # Run appliance_console_cli via SSH command with expect handling authentication
+    log "Running appliance_console_cli..."
+    (expect <<EOF
+        set timeout 600
+        log_user 1
+        exp_internal 0
+
+        spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE -c "cd /var/www/miq/vmdb && bundle exec appliance_console_cli --region=55 --internal --dbname=vmdb_production --username=root --password=smartvm --dbdisk=auto --key --message-server-config --message-server-host=${vmi_ip}.local --message-keystore-username=admin --message-keystore-password=smartvm 2>&1"
+
+        match_max 32000
+        expect {
+            -re "Are you sure you want to continue connecting.*\\?" {
+                send "yes\r"
+                exp_continue
+            }
+            "root@vmi.${vmi_name}.${NAMESPACE}'s password: " {
+                send "$NEWPASSWORD\r"
+                exp_continue
+            }
+            eof {
+                # Command completed, check exit status
+                catch wait result
+                set exit_status [lindex \$result 3]
+                exit \$exit_status
+            }
+            timeout {
+                puts "ERROR: appliance_console_cli timed out after 10 minutes"
+                exit 1
             }
         }
 EOF
-    ) > "$temp_output" 2>&1 &
+    ) > "$temp_output" 2> "$temp_stderr" &
 
     local expect_pid=$!
     local timeout_seconds=600
@@ -832,10 +840,9 @@ EOF
             kill -TERM $expect_pid 2>/dev/null
             sleep 2
             kill -KILL $expect_pid 2>/dev/null
-            configure_output=$(cat "$temp_output")
-            rm -f "$temp_output"
-            log_error "Configuration timed out after 10 minutes. Last captured output:
-$(echo "$configure_output" | strip_cr_from_expect_output)"
+            cat "$temp_output" | strip_cr_from_expect_output >> $LOG_FILE
+            cat "$temp_stderr" | strip_cr_from_expect_output >> $LOG_FILE
+            rm -f "$temp_output" "$temp_stderr"
             return 1
         fi
         sleep $sleep_interval
@@ -845,15 +852,15 @@ $(echo "$configure_output" | strip_cr_from_expect_output)"
     # Get exit status and output
     wait $expect_pid
     configure_status=$?
-    configure_output=$(cat "$temp_output")
-    rm -f "$temp_output"
 
-    echo "$configure_output" | strip_cr_from_expect_output >> $LOG_FILE
+    # Log all output
+    cat "$temp_output" | strip_cr_from_expect_output >> $LOG_FILE
+    cat "$temp_stderr" | strip_cr_from_expect_output >> $LOG_FILE
+    rm -f "$temp_output" "$temp_stderr"
 
     # Check if appliance is configured
     if [ $configure_status -ne 0 ]; then
-        log_error "Appliance Configuration failed. Output:
-$(echo "$configure_output" | strip_cr_from_expect_output)"
+        log_error "Appliance Configuration failed with exit code: $configure_status"
         return 1
     fi
 
@@ -932,7 +939,7 @@ setup_vm_resources() {
 appliance_configure() {
     log "Starting appliance configuration for VM: $VM_NAME..."
 
-    configure_appliance || { log_error "configure_appliance failed"; exit 1; }
+    configure_appliance || exit 1
     check_evmserverd || { log_error "check_evmserverd failed"; exit 1; }
 
     log "Appliance configuration completed successfully for VM: $VM_NAME."
