@@ -959,25 +959,6 @@ setup_vm_resources() {
 }
 
 
-# Function to configure MIQ appliance
-# Parameters:
-#   $1: replication_type - "none", "primary", or "standby"
-#   $2: cluster_node_number - node number (1 for primary, 2 for standby)
-#   $3: primary_host_ip - IP address of primary host (required for standby)
-#   $4: standby_host_ip - IP address of standby host (required for standby)
-appliance_configure() {
-    local replication_type=${1:-"none"}
-    local cluster_node_number=${2:-""}
-    local primary_host_ip=${3:-""}
-    local standby_host_ip=${4:-""}
-
-    log "Starting appliance configuration for VM: $VM_NAME..."
-
-    configure_appliance "$replication_type" "$cluster_node_number" "$primary_host_ip" "$standby_host_ip" || exit 1
-    check_evmserverd || { log_error "check_evmserverd failed"; exit 1; }
-
-    log "Appliance configuration completed successfully for VM: $VM_NAME."
-}
 
 # Verify prereq and setup variables used in the script
 verify_prereq
@@ -1003,11 +984,12 @@ primary_vmi_ip=$vmi_ip
 
 # Deploy second VM if HA mode
 if [[ "$HA" == "true" ]]; then
-    # Now configure primary (no standby IP needed for primary)
+    # Configure primary
     log "=== Configuring PRIMARY VM ==="
     vmi_name=$primary_vmi_name
     vmi_ip=$primary_vmi_ip
-    appliance_configure "primary" "1" "" ""
+    configure_appliance "primary" "1" "" "" || exit 1
+    check_evmserverd || { log_error "check_evmserverd failed"; exit 1; }
     log "Primary VM configuration completed successfully."
 
     log "=== Deploying STANDBY VM ==="
@@ -1017,11 +999,12 @@ if [[ "$HA" == "true" ]]; then
     standby_vmi_ip=$vmi_ip
     log "Standby VM setup completed successfully."
 
-    # Configure standby with primary IP
+    # Configure standby
     log "=== Configuring STANDBY VM ==="
     vmi_name=$standby_vmi_name
     vmi_ip=$standby_vmi_ip
-    appliance_configure "standby" "2" "$primary_vmi_ip" "$standby_vmi_ip"
+    configure_appliance "standby" "2" "$primary_vmi_ip" "$standby_vmi_ip" || exit 1
+    # ideally, standby shouldn't start evmserverd so we don't need to check it
     log "Standby VM configuration completed successfully."
 
     log "=== HA Deployment Complete ==="
@@ -1030,7 +1013,8 @@ if [[ "$HA" == "true" ]]; then
     log "Standby VM login: virtctl ssh root@vmi/$standby_vmi_name -n $NAMESPACE"
 else
     # Standard single VM deployment
-    appliance_configure "none" "" "" ""
+    configure_appliance "none" "" "" "" || exit 1
+    check_evmserverd || { log_error "check_evmserverd failed"; exit 1; }
     log "Standard deployment completed successfully."
     log "Full configuration log can be found at $LOG_FILE"
     log "To login: virtctl ssh root@vmi/$vmi_name -n $NAMESPACE"
