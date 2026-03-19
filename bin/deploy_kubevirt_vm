@@ -672,9 +672,6 @@ ssh_into_vm() {
         return 1
     fi
 
-    log "SSH is ready, waiting 30 seconds for VM to fully initialize..."
-    sleep 30
-
     log "SSH into the VM $vmi_name to change password..."
     ssh_output=$(expect <<EOF 2>&1
         set timeout 60
