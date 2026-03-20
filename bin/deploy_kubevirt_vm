@@ -909,13 +909,13 @@ EOF
 
 # Function to check evmserverd status with polling
 check_evmserverd() {
-    log "Waiting for evmserverd to become active (checking every 30 seconds for up to 10 minutes)..."
+    log "Checking evmserverd status..."
 
     local max_attempts=20
     local attempt=1
 
     while [ $attempt -le $max_attempts ]; do
-        log "Checking evmserverd status (attempt $attempt of $max_attempts)..."
+        log "  Checking evmserverd status (attempt $attempt of $max_attempts)..."
 
         evmserverd_output=$(expect <<EOF 2>&1
         set timeout 30
@@ -936,12 +936,12 @@ EOF
 
         # Check if inactive first (error condition)
         if echo "$evmserverd_output" | grep -qw "inactive"; then
-            log "evmserverd is inactive (attempt $attempt of $max_attempts)"
+            log "  evmserverd is inactive (attempt $attempt of $max_attempts)"
         elif echo "$evmserverd_output" | grep -qw "active"; then
-            log "evmserverd is active!"
+            log "Checking evmserverd status...completed successfully."
             return 0
         else
-            log "evmserverd status unknown (attempt $attempt of $max_attempts)"
+            log "  evmserverd status unknown (attempt $attempt of $max_attempts)"
         fi
 
         if [ $attempt -lt $max_attempts ]; then
@@ -974,6 +974,8 @@ setup_vm_resources() {
 
     # Reset the initial ssh password
     ssh_into_vm || { log_error "ssh_into_vm failed"; exit 1; }
+
+    log "Setting up VM resources...completed successfully."
 }
 
 
