@@ -811,7 +811,6 @@ configure_appliance() {
     fi
 
     local temp_output=$(mktemp)
-    local temp_stderr=$(mktemp)
 
     # Build the remote command with proper exit status capture
     # Use a here-document to avoid complex escaping
@@ -857,7 +856,7 @@ REMOTE_CMD
             }
         }
 EOF
-    ) > "$temp_output" 2> "$temp_stderr" &
+    ) > "$temp_output" 2>&1 &
 
     local expect_pid=$!
     local timeout_seconds=600
@@ -871,8 +870,7 @@ EOF
             sleep 2
             kill -KILL $expect_pid 2>/dev/null
             cat "$temp_output" | strip_cr_from_expect_output >> $LOG_FILE
-            cat "$temp_stderr" | strip_cr_from_expect_output >> $LOG_FILE
-            rm -f "$temp_output" "$temp_stderr"
+            rm -f "$temp_output"
             return 1
         fi
         sleep $sleep_interval
@@ -884,12 +882,11 @@ EOF
 
     local cleaned_output=$(cat "$temp_output" | strip_cr_from_expect_output)
     echo "$cleaned_output" >> $LOG_FILE
-    cat "$temp_stderr" | strip_cr_from_expect_output >> $LOG_FILE
 
     # Extract the actual exit status from the remote command
     local remote_exit_status=$(echo "$cleaned_output" | grep "EXIT_STATUS=" | tail -1 | cut -d= -f2)
 
-    rm -f "$temp_output" "$temp_stderr"
+    rm -f "$temp_output"
 
     if [ $configure_status -ne 0 ]; then
         log_error "Appliance Configuration failed - SSH/expect error with exit code: $configure_status"
