@@ -1005,16 +1005,14 @@ fi
 
 setup_vm_resources
 
-# Store primary VM info for HA configuration
-primary_vmi_name=$vmi_name
-primary_vmi_ip=$vmi_ip
-
 # Deploy second VM if HA mode
 if [[ "$HA" == "true" ]]; then
-    # Configure primary
+    # Store primary VM info for HA configuration (vmi_name and vmi_ip are set by setup_vm_resources)
+    PRIMARY_VMI_NAME=$vmi_name
+    PRIMARY_IP=$vmi_ip
+
+    # Configure primary (uses current vmi_name and vmi_ip globals)
     log "=== Configuring PRIMARY VM ==="
-    vmi_name=$primary_vmi_name
-    vmi_ip=$primary_vmi_ip
     configure_appliance "primary" "1" "" "" || exit 1
     check_evmserverd || { log_error "check_evmserverd failed"; exit 1; }
     log "Primary VM configuration completed successfully."
@@ -1022,22 +1020,20 @@ if [[ "$HA" == "true" ]]; then
     log "=== Deploying STANDBY VM ==="
     set_vm_variables "standby"
     setup_vm_resources
-    standby_vmi_name=$vmi_name
-    standby_vmi_ip=$vmi_ip
+    STANDBY_VMI_NAME=$vmi_name
+    STANDBY_IP=$vmi_ip
     log "Standby VM setup completed successfully."
 
-    # Configure standby
+    # Configure standby (uses current vmi_name and vmi_ip globals)
     log "=== Configuring STANDBY VM ==="
-    vmi_name=$standby_vmi_name
-    vmi_ip=$standby_vmi_ip
-    configure_appliance "standby" "2" "$primary_vmi_ip" "$standby_vmi_ip" || exit 1
+    configure_appliance "standby" "2" "$PRIMARY_IP" "$STANDBY_IP" || exit 1
     # ideally, standby shouldn't start evmserverd so we don't need to check it
     log "Standby VM configuration completed successfully."
 
     log "=== HA Deployment Complete ==="
     log "Full configuration log can be found at $LOG_FILE"
-    log "Primary VM login: virtctl ssh root@vmi/$primary_vmi_name -n $NAMESPACE"
-    log "Standby VM login: virtctl ssh root@vmi/$standby_vmi_name -n $NAMESPACE"
+    log "Primary VM login: virtctl ssh root@vmi/$PRIMARY_VMI_NAME -n $NAMESPACE"
+    log "Standby VM login: virtctl ssh root@vmi/$STANDBY_VMI_NAME -n $NAMESPACE"
 else
     # Standard single VM deployment
     configure_appliance "none" "" "" "" || exit 1
