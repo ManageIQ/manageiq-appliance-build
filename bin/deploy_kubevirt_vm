@@ -721,13 +721,12 @@ EOF
     )
     password_change_status=$?
 
-    echo "$ssh_output" | strip_cr_from_expect_output | tee -a $LOG_FILE
+    echo "$ssh_output" | strip_cr_from_expect_output >> $LOG_FILE
 
     if [ $password_change_status -eq 0 ]; then
         log "Connecting to VM via SSH and changing password...completed successfully."
     else
         log_error "SSH into VM failed or password change did not complete"
-        log_error "Please check the log output above for details"
         return 1
     fi
     return 0
