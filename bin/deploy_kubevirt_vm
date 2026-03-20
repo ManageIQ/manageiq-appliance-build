@@ -672,9 +672,6 @@ ssh_into_vm() {
         return 1
     fi
 
-    log "SSH is ready, waiting 30 seconds for VM to fully initialize..."
-    sleep 30
-
     log "SSH into the VM $vmi_name to change password..."
     ssh_output=$(expect <<EOF 2>&1
         set timeout 60
@@ -760,21 +757,12 @@ EOF
     return 0
 }
 
-# Function to configure the appliance
-configure_appliance() {
-
-    log "Configuring the appliance on VM $vmi_name..."
-
-    # Use background process with timeout for portability (works on macOS and Linux)
-    # Create a temporary file for output
-    local temp_output=$(mktemp)
-
-    # Run expect in background and capture its PID
-    (expect <<EOF
-        set timeout -1
-        log_user 1
-        exp_internal 0
-        spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE
+# Function to set hostname and update /etc/hosts on the VM
+set_hostname() {
+    log "Setting hostname and updating /etc/hosts..."
+    local setup_output=$(expect <<EOF 2>&1
+        set timeout 60
+        spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE -c "hostnamectl set-hostname ${vmi_ip}.local && echo '${vmi_ip} ${vmi_ip}.local 192' >> /etc/hosts"
         match_max 32000
         expect {
             -re "Are you sure you want to continue connecting.*\\?" {
@@ -785,81 +773,86 @@ configure_appliance() {
                 send "$NEWPASSWORD\r"
                 exp_continue
             }
-            "#" {
-                send "hostnamectl set-hostname ${vmi_ip}.local\r"
-                send "echo '${vmi_ip} ${vmi_ip}.local 192' >> /etc/hosts\r"
-                send "appliance_console\r"
-                expect "Press any key to continue.\r"
-                send " "
+            eof
+        }
+EOF
+    )
+    echo "$setup_output" | strip_cr_from_expect_output >> $LOG_FILE
+}
 
-                expect -re "Choose the advanced setting: "
-                # Capture the menu to find the Configure Application option number
-                set menu_buffer \$expect_out(buffer)
+# Function to configure the appliance
+# Parameters:
+#   $1: replication_type - "none", "primary", or "standby"
+#   $2: cluster_node_number - node number (1 for primary, 2 for standby)
+#   $3: primary_host_ip - IP address of primary host (required for standby)
+#   $4: standby_host_ip - IP address of standby host (required for standby)
+configure_appliance() {
+    local replication_type=${1:-"none"}
+    local cluster_node_number=${2:-""}
+    local primary_host_ip=${3:-""}
+    local standby_host_ip=${4:-""}
 
-                # Look for the Configure Application option (format: "4) Configure Application")
-                if {[regexp {([0-9]+)\) Configure Application} \$menu_buffer match config_number]} {
-                    puts "Found Configure Application option at number: \$config_number"
-                    send "\$config_number\r"
-                } else {
-                    puts "ERROR: Could not find 'Configure Application' option in menu"
-                    puts "MENU CONTENT: \$menu_buffer"
-                    exit 1
-                }
+    log "Configuring the appliance on VM $vmi_name (replication: $replication_type)..."
 
-                expect "Choose the encryption key: |1| "
-                send "1\r"
-                expect "Choose the database operation: "
-                send "1\r"
-                expect "Choose the configure messaging: "
-                send "1\r"
-                expect "Choose the database disk: |1| "
-                send "1\r"
-                expect "? (Y/N): |N| "
-                send "n\r"
-                expect "Enter the database region number: *"
-                send "55\r"
-                expect "Enter the database password on localhost: "
-                send "smartvm\r"
-                expect "Enter the database password on localhost: "
-                send "smartvm\r"
-                expect "Already configured on this Appliance, Un-Configure first? (Y/N): "
-                send "y\r"
-                expect "Proceed with Configuration? (Y/N): "
-                send "y\r"
-                expect "Enter the Message Server Hostname: |${vmi_ip}.local| "
-                send "\r"
-                expect "\[?2004l\rEnter the Message Keystore Username: |admin| \[?2004h"
-                send "\r"
-                expect "\[?2004l\rEnter the Message Keystore Password: "
-                send "smartvm\r"
-                expect "\[?2004l\rEnter the Message Keystore Password: "
-                send "smartvm\r"
-                expect "Configure a new persistent disk volume? (optional) (Y/N): "
-                send "n\r"
-                expect "Proceed? (Y/N): "
-                send "y\r"
-                expect "Press any key to continue.\r"
-                send " "
-                expect "Press any key to continue.\r"
-                send " "
+    set_hostname
 
-                expect -re "Choose the advanced setting: "
-                # Capture the menu to find the Quit option number
-                set menu_buffer \$expect_out(buffer)
+    local cli_cmd="cd /var/www/miq/vmdb && bundle exec appliance_console_cli --region=55 --dbname=vmdb_production --username=root --password=smartvm --dbdisk=auto"
 
-                # Look for the Quit option (format: "17) Quit")
-                if {[regexp {([0-9]+)\) Quit} \$menu_buffer match quit_number]} {
-                    puts "Found Quit option at number: \$quit_number"
-                    send "\$quit_number\r"
-                } else {
-                    puts "ERROR: Could not find 'Quit' option in menu"
-                    puts "MENU CONTENT: \$menu_buffer"
-                    exit 1
-                }
+    if [[ "$replication_type" != "standby" ]]; then
+        cli_cmd="$cli_cmd --internal --server start --key --message-server-config --message-server-host=${vmi_ip}.local --message-keystore-username=admin --message-keystore-password=smartvm"
+    fi
 
-                expect -re "#|\\$"
-                send "exit\r"
-                expect eof
+    if [[ "$replication_type" == "primary" ]]; then
+        log "Configuring as PRIMARY node (cluster node: $cluster_node_number)"
+        cli_cmd="$cli_cmd --replication=primary --cluster-node-number=$cluster_node_number"
+    elif [[ "$replication_type" == "standby" ]]; then
+        log "Configuring as STANDBY node (cluster node: $cluster_node_number, primary: $primary_host_ip, standby: $standby_host_ip)"
+        cli_cmd="$cli_cmd --fetch-key=$primary_host_ip --sshlogin=root --sshpassword=$NEWPASSWORD --replication=standby --cluster-node-number=$cluster_node_number --primary-host=$primary_host_ip --standby-host=$standby_host_ip"
+    fi
+
+    local temp_output=$(mktemp)
+
+    # Build the remote command with proper exit status capture
+    # Use a here-document to avoid complex escaping
+    local remote_cmd=$(cat <<'REMOTE_CMD'
+%CLI_CMD% 2>&1
+EXIT_CODE=$?
+echo "EXIT_STATUS=$EXIT_CODE"
+exit $EXIT_CODE
+REMOTE_CMD
+)
+    # Substitute the actual CLI command
+    remote_cmd="${remote_cmd//%CLI_CMD%/$cli_cmd}"
+
+    log "Full CLI command to execute:"
+    log "$cli_cmd"
+    log "Running appliance_console_cli..."
+
+    (expect <<EOF
+        set timeout 600
+        log_user 1
+        exp_internal 0
+
+        spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE -c {$remote_cmd}
+
+        match_max 32000
+        expect {
+            -re "Are you sure you want to continue connecting.*\\?" {
+                send "yes\r"
+                exp_continue
+            }
+            "root@vmi.${vmi_name}.${NAMESPACE}'s password: " {
+                send "$NEWPASSWORD\r"
+                exp_continue
+            }
+            eof {
+                catch wait result
+                set exit_status [lindex \$result 3]
+                exit \$exit_status
+            }
+            timeout {
+                puts "ERROR: appliance_console_cli timed out after 10 minutes"
+                exit 1
             }
         }
 EOF
@@ -870,35 +863,43 @@ EOF
     local elapsed=0
     local sleep_interval=5
 
-    # Wait for expect process with timeout
     while kill -0 $expect_pid 2>/dev/null; do
         if [ $elapsed -ge $timeout_seconds ]; then
             log_error "Configuration timed out after 10 minutes"
             kill -TERM $expect_pid 2>/dev/null
             sleep 2
             kill -KILL $expect_pid 2>/dev/null
-            configure_output=$(cat "$temp_output")
+            cat "$temp_output" | strip_cr_from_expect_output >> $LOG_FILE
             rm -f "$temp_output"
-            log_error "Configuration timed out after 10 minutes. Last captured output:
-$(echo "$configure_output" | strip_cr_from_expect_output)"
             return 1
         fi
         sleep $sleep_interval
         elapsed=$((elapsed + sleep_interval))
     done
 
-    # Get exit status and output
     wait $expect_pid
     configure_status=$?
-    configure_output=$(cat "$temp_output")
+
+    local cleaned_output=$(cat "$temp_output" | strip_cr_from_expect_output)
+    echo "$cleaned_output" >> $LOG_FILE
+
+    # Extract the actual exit status from the remote command
+    local remote_exit_status=$(echo "$cleaned_output" | grep "EXIT_STATUS=" | tail -1 | cut -d= -f2)
+
     rm -f "$temp_output"
 
-    echo "$configure_output" | strip_cr_from_expect_output >> $LOG_FILE
-
-    # Check if appliance is configured
     if [ $configure_status -ne 0 ]; then
-        log_error "Appliance Configuration failed. Output:
-$(echo "$configure_output" | strip_cr_from_expect_output)"
+        log_error "Appliance Configuration failed - SSH/expect error with exit code: $configure_status"
+        return 1
+    fi
+
+    if [ -n "$remote_exit_status" ] && [ "$remote_exit_status" -ne 0 ]; then
+        log_error "Appliance Configuration failed - appliance_console_cli returned exit code: $remote_exit_status"
+        return 1
+    fi
+
+    if [ -z "$remote_exit_status" ]; then
+        log_error "Appliance Configuration failed - could not determine exit status of appliance_console_cli"
         return 1
     fi
 
@@ -908,13 +909,13 @@ $(echo "$configure_output" | strip_cr_from_expect_output)"
 
 # Function to check evmserverd status with polling
 check_evmserverd() {
-    log "Waiting for evmserverd to become active (checking every 30 seconds for up to 10 minutes)..."
+    log "Checking evmserverd status..."
 
     local max_attempts=20
     local attempt=1
 
     while [ $attempt -le $max_attempts ]; do
-        log "Checking evmserverd status (attempt $attempt of $max_attempts)..."
+        log "  Checking evmserverd status (attempt $attempt of $max_attempts)..."
 
         evmserverd_output=$(expect <<EOF 2>&1
         set timeout 30
@@ -923,8 +924,8 @@ check_evmserverd() {
         send "$NEWPASSWORD\r"
         expect "#"
         send "systemctl is-active evmserverd\r"
-        expect -re "(active|inactive)"
-        set status \$expect_out(0,string)
+        expect -re "(inactive|active)"
+        set status \$expect_out(1,string)
         send "exit\r"
         expect eof
         puts \$status
@@ -933,12 +934,15 @@ EOF
 
         echo "$evmserverd_output" >> $LOG_FILE
 
-        if echo "$evmserverd_output" | grep -q "active"; then
-            log "evmserverd is active!"
+        # Check if inactive first (error condition)
+        if echo "$evmserverd_output" | grep -qw "inactive"; then
+            log "  evmserverd is inactive (attempt $attempt of $max_attempts)"
+        elif echo "$evmserverd_output" | grep -qw "active"; then
+            log "Checking evmserverd status...completed successfully."
             return 0
+        else
+            log "  evmserverd status unknown (attempt $attempt of $max_attempts)"
         fi
-
-        log "evmserverd not yet active (attempt $attempt of $max_attempts)"
 
         if [ $attempt -lt $max_attempts ]; then
             sleep 30
@@ -970,28 +974,18 @@ setup_vm_resources() {
 
     # Reset the initial ssh password
     ssh_into_vm || { log_error "ssh_into_vm failed"; exit 1; }
+
+    log "Setting up VM resources...completed successfully."
 }
 
 
-# Function to configure MIQ appliance
-appliance_configure() {
-    log "Starting appliance configuration for VM: $VM_NAME..."
 
-    configure_appliance || { log_error "configure_appliance failed"; exit 1; }
-    check_evmserverd || { log_error "check_evmserverd failed"; exit 1; }
-
-    log "Appliance configuration completed successfully for VM: $VM_NAME."
-}
-
-# Verify prereq and setup variables used in the script
 verify_prereq
 env_setup
 verify_env_prereq
 
-# Execute the appliance_configure (Main Function) and handle its exit status
 log "Starting MIQ Appliance Configuration Script..."
 
-# Deploy first VM (primary if HA, single if not)
 if [[ "$HA" == "true" ]]; then
     log "HA mode enabled - deploying primary VM..."
     set_vm_variables "primary"
@@ -1001,25 +995,35 @@ fi
 
 setup_vm_resources
 
-appliance_configure
-
-log "First VM configuration completed successfully."
-primary_vmi_name=$vmi_name
-
 # Deploy second VM if HA mode
 if [[ "$HA" == "true" ]]; then
+    # Store primary VM info for HA configuration (vmi_name and vmi_ip are set by setup_vm_resources)
+    PRIMARY_VMI_NAME=$vmi_name
+    PRIMARY_IP=$vmi_ip
+
+    log "=== Configuring PRIMARY VM ==="
+    configure_appliance "primary" "1" "" "" || exit 1
+    check_evmserverd || { log_error "check_evmserverd failed"; exit 1; }
+    log "Primary VM configuration completed successfully."
+
     log "=== Deploying STANDBY VM ==="
     set_vm_variables "standby"
     setup_vm_resources
-    log "Standby VM setup completed successfully (appliance configuration skipped)."
-    standby_vmi_name=$vmi_name
+    STANDBY_VMI_NAME=$vmi_name
+    STANDBY_IP=$vmi_ip
+    log "Standby VM setup completed successfully."
+
+    log "=== Configuring STANDBY VM ==="
+    configure_appliance "standby" "2" "$PRIMARY_IP" "$STANDBY_IP" || exit 1
+    log "Standby VM configuration completed successfully (evmserverd check skipped for standby)."
 
     log "=== HA Deployment Complete ==="
     log "Full configuration log can be found at $LOG_FILE"
-    log "Primary VM login: virtctl ssh root@vmi/$primary_vmi_name -n $NAMESPACE"
-    log "Standby VM login: virtctl ssh root@vmi/$standby_vmi_name -n $NAMESPACE"
-    log "NOTE: Standby VM requires manual configuration."
+    log "Primary VM login: virtctl ssh root@vmi/$PRIMARY_VMI_NAME -n $NAMESPACE"
+    log "Standby VM login: virtctl ssh root@vmi/$STANDBY_VMI_NAME -n $NAMESPACE"
 else
+    configure_appliance "none" "" "" "" || exit 1
+    check_evmserverd || { log_error "check_evmserverd failed"; exit 1; }
     log "Standard deployment completed successfully."
     log "Full configuration log can be found at $LOG_FILE"
     log "To login: virtctl ssh root@vmi/$vmi_name -n $NAMESPACE"
