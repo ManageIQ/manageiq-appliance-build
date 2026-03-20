@@ -812,22 +812,31 @@ configure_appliance() {
         cli_cmd="$cli_cmd --fetch-key=$primary_host_ip --sshlogin=root --sshpassword=$NEWPASSWORD --replication=standby --cluster-node-number=$cluster_node_number --primary-host=$primary_host_ip --standby-host=$standby_host_ip"
     fi
 
-    # Redirect stderr to stdout in the remote command for complete output capture
-    cli_cmd="$cli_cmd 2>&1"
-
-    # Create a temporary file for output
     local temp_output=$(mktemp)
     local temp_stderr=$(mktemp)
+
+    # Build the remote command with proper exit status capture
+    # Use a here-document to avoid complex escaping
+    local remote_cmd=$(cat <<'REMOTE_CMD'
+%CLI_CMD% 2>&1
+EXIT_CODE=$?
+echo "EXIT_STATUS=$EXIT_CODE"
+exit $EXIT_CODE
+REMOTE_CMD
+)
+    # Substitute the actual CLI command
+    remote_cmd="${remote_cmd//%CLI_CMD%/$cli_cmd}"
 
     log "Full CLI command to execute:"
     log "$cli_cmd"
     log "Running appliance_console_cli..."
+
     (expect <<EOF
         set timeout 600
         log_user 1
         exp_internal 0
 
-        spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE -c "$cli_cmd"
+        spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE -c {$remote_cmd}
 
         match_max 32000
         expect {
@@ -879,12 +888,27 @@ EOF
     configure_status=$?
 
     # Log all output
-    cat "$temp_output" | strip_cr_from_expect_output >> $LOG_FILE
+    local cleaned_output=$(cat "$temp_output" | strip_cr_from_expect_output)
+    echo "$cleaned_output" >> $LOG_FILE
     cat "$temp_stderr" | strip_cr_from_expect_output >> $LOG_FILE
+
+    # Extract the actual exit status from the remote command
+    local remote_exit_status=$(echo "$cleaned_output" | grep "EXIT_STATUS=" | tail -1 | cut -d= -f2)
+
     rm -f "$temp_output" "$temp_stderr"
 
     if [ $configure_status -ne 0 ]; then
-        log_error "Appliance Configuration failed with exit code: $configure_status"
+        log_error "Appliance Configuration failed - SSH/expect error with exit code: $configure_status"
+        return 1
+    fi
+
+    if [ -n "$remote_exit_status" ] && [ "$remote_exit_status" -ne 0 ]; then
+        log_error "Appliance Configuration failed - appliance_console_cli returned exit code: $remote_exit_status"
+        return 1
+    fi
+
+    if [ -z "$remote_exit_status" ]; then
+        log_error "Appliance Configuration failed - could not determine exit status of appliance_console_cli"
         return 1
     fi
 
@@ -909,8 +933,8 @@ check_evmserverd() {
         send "$NEWPASSWORD\r"
         expect "#"
         send "systemctl is-active evmserverd\r"
-        expect -re "(active|inactive)"
-        set status \$expect_out(0,string)
+        expect -re "(inactive|active)"
+        set status \$expect_out(1,string)
         send "exit\r"
         expect eof
         puts \$status
@@ -919,12 +943,15 @@ EOF
 
         echo "$evmserverd_output" >> $LOG_FILE
 
-        if echo "$evmserverd_output" | grep -q "active"; then
+        # Check if inactive first (error condition)
+        if echo "$evmserverd_output" | grep -qw "inactive"; then
+            log "evmserverd is inactive (attempt $attempt of $max_attempts)"
+        elif echo "$evmserverd_output" | grep -qw "active"; then
             log "evmserverd is active!"
             return 0
+        else
+            log "evmserverd status unknown (attempt $attempt of $max_attempts)"
         fi
-
-        log "evmserverd not yet active (attempt $attempt of $max_attempts)"
 
         if [ $attempt -lt $max_attempts ]; then
             sleep 30
