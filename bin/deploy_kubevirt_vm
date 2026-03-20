@@ -2,7 +2,6 @@
 
 set -Eeo pipefail
 
-# Source shared functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/shared_kubevirt_functions.sh"
 
@@ -16,24 +15,21 @@ verify_prereq() {
     return 0
  }
 
-# Function to generate random 8-character hex suffix
-# Uses /dev/urandom and standard Unix tools (no openssl dependency)
+# Uses /dev/urandom to avoid openssl dependency
 generate_random_suffix() {
     LC_ALL=C tr -dc 'a-f0-9' < /dev/urandom | head -c 8
 }
 
-# Function to check for existing VM and prompt user
-# Returns: 0 if no existing VM or user wants new deployment
-#          1 if user wants to continue with existing VM (sets VM_NAME_BASE to existing name)
+# Returns: 0 for new deployment, 1 to resume existing (sets VM_NAME_BASE)
 check_existing_vm() {
     local vm_base_name=$1
 
-    # Only check if namespace exists, otherwise skip (will be created later)
+    log "Checking for existing VMs with base name: $vm_base_name"
+    # Skip check if namespace doesn't exist yet
     if ! oc get namespace "$NAMESPACE" >/dev/null 2>&1; then
         return 0
     fi
 
-    # Check if any VMs exist with this base name (exact match or with suffix)
     local existing_vms=$(oc get vm -n "$NAMESPACE" 2>/dev/null | grep "^${vm_base_name}" | awk '{print $1}')
 
     if [[ -n "$existing_vms" ]]; then
@@ -49,7 +45,7 @@ check_existing_vm() {
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             local first_vm=$(echo "$existing_vms" | head -n 1)
             echo "Continuing with existing VM: $first_vm"
-            # Strip -primary or -standby suffix if present to get the true base name
+            # Strip HA suffixes to get base name
             local base_name="$first_vm"
             if [[ "$first_vm" =~ -primary$ ]]; then
                 base_name="${first_vm%-primary}"
@@ -57,7 +53,7 @@ check_existing_vm() {
                 base_name="${first_vm%-standby}"
             fi
             export VM_NAME_BASE="$base_name"
-            return 1  # Signal that we're using existing VM
+            return 1
         else
             log "Warning: Please delete the existing VM(s) first using: bin/delete_kubevirt_vm"
             exit 1
@@ -67,18 +63,13 @@ check_existing_vm() {
     return 0
 }
 
-# setup variables used in the script
 env_setup() {
-    # Load configuration from file (creates from template if needed)
-    # Function will exit if config was just created or if error occurred
+    log "Setting up environment variables"
+    # Exits if config was just created or error occurred
     load_kubevirt_config "config/kubevirt_vm_overrides.conf"
 
-    # Check for existing VMs with this base name
-    # If function returns 1, user wants to continue with existing VM (VM_NAME_BASE already set)
-    # If function returns 0, proceed with new deployment (add random suffix)
     if check_existing_vm "$VM_NAME_BASE"; then
-        # Add random suffix to VM_NAME_BASE to avoid SSH known_hosts conflicts
-        # This ensures each deployment gets a unique VM name
+        # Add random suffix to avoid SSH known_hosts conflicts
         local random_suffix=$(generate_random_suffix)
         export VM_NAME_BASE="${VM_NAME_BASE}-${random_suffix}"
         echo "New deployment - VM base name will be: ${VM_NAME_BASE}"
@@ -88,7 +79,6 @@ env_setup() {
 
     export VM_NAME=$VM_NAME_BASE
 
-    # Derived values (not from config file)
     export CLUSTER_URL=$(oc whoami --show-server | cut -d ':' -f 1,2)
     export CLUSTER_HOST=${CLUSTER_URL#https://api.}
 
@@ -106,11 +96,9 @@ env_setup() {
     echo "======================================================================"
     echo ""
 
-    # remove kubevirt_host_files
     rm -f ~/.ssh/kubevirt_known_hosts
 }
 
-# Helper function to set VM-specific variables for primary/standby configurations
 set_vm_variables() {
     local suffix=$1  # "primary" or "standby"
 
@@ -138,13 +126,11 @@ log_error() {
     echo "See log file for details: $LOG_FILE" >&2
 }
 
-# Strip carriage returns from expect output to prevent terminal corruption
-# Carriage returns can overwrite the current line and break subsequent command execution
+# Prevents terminal corruption from carriage returns
 strip_cr_from_expect_output() {
     tr -d '\r'
 }
 
-# Function to check if a command was successful and retry up to 3 times
 check_command() {
     local retries=3
     local success=0
@@ -165,7 +151,6 @@ check_command() {
     return 0
 }
 
-# Function to check if a resource exists
 resource_exists() {
     local resource_kind=$1
     local resource_name=$2
@@ -352,7 +337,6 @@ EOF
     return $?
 }
 
-# Function to install Kubevirt into the cluster
 install_kubevirt() {
     log "Installing Kubevirt..."
 
@@ -394,7 +378,6 @@ install_kubevirt() {
     return 0
 }
 
-# Function to install CDI (Containerized Data Importer) into the cluster
 install_cdi() {
     log "Installing CDI..."
 
@@ -432,17 +415,14 @@ install_cdi() {
     return 0
 }
 
-# Function to create Namespace and Secret
 create_namespace_and_secret(){
     log "Creating Namespace and Secret..."
 
-    # Check if VM_NAME, NAMESPACE and SECRET_NAME is set
     if [[ -z "$VM_NAME" ]] || [[ -z "$NAMESPACE" ]] || [[ -z "$SECRET_NAME" ]]; then
         log_error "One or more required variables (VM_NAME, NAMESPACE, SECRET_NAME) are missing. Exiting..."
         return 1
     fi
 
-    # Check if namespace exists
     if ! oc get namespace "$NAMESPACE" >/dev/null 2>&1; then
         log "Namespace $NAMESPACE does not exist. Creating..."
         if ! oc create namespace "$NAMESPACE"; then
@@ -454,7 +434,6 @@ create_namespace_and_secret(){
         log "Namespace $NAMESPACE already exists."
     fi
 
-    # Switch to namespace
     log "Switching to namespace $NAMESPACE..."
     if ! oc project "$NAMESPACE" >/dev/null 2>&1; then
         log_error "Could not switch to namespace $NAMESPACE."
@@ -462,7 +441,6 @@ create_namespace_and_secret(){
     fi
     log "Now in namespace $NAMESPACE."
 
-    # Check if secret exists in the namespace
     if ! oc get secret "$SECRET_NAME" -n "$NAMESPACE" >/dev/null 2>&1; then
         log "Secret $SECRET_NAME does not exist in namespace $NAMESPACE. Creating..."
         if ! oc create secret generic "$SECRET_NAME" --from-literal=accessKeyId="$accessKeyId" --from-literal=secretKey="$secretKey" -n "$NAMESPACE"; then
@@ -476,7 +454,6 @@ create_namespace_and_secret(){
     return 0
 }
 
-# Function to create DataVolume for Image and DB Disk
 create_datavolume_and_pvc() {
     log "Creating DataVolume and PVC..."
 
@@ -505,7 +482,6 @@ create_datavolume_and_pvc() {
     return 0
 }
 
-# Function to create VirtualMachine fetch IP and VMI Name
 create_virtualmachine_and_fetch_ip() {
     log "Fetching SSH key from $SECRET_NAME..."
 
@@ -538,7 +514,6 @@ create_virtualmachine_and_fetch_ip() {
         sleep 5
     done
 
-    # Get VMI name
     vmi_name=$(oc get vm $VM_NAME -o=jsonpath='{.metadata.name}' -n $NAMESPACE)
     if [[ -z "$vmi_name" ]]; then
         log_error "Failed to get VirtualMachine (VM) name. Exiting..."
@@ -547,7 +522,6 @@ create_virtualmachine_and_fetch_ip() {
 
     log "VirtualMachine (VM) Name: $vmi_name"
 
-    # Get VM IP
     log "Getting VirtualMachineInstance (VMI) IP address..."
     local ip_timeout=600
 
@@ -568,7 +542,6 @@ create_virtualmachine_and_fetch_ip() {
     return 0
 }
 
-# Function to create services for https, cockpit and SSH
 create_services() {
     log "Creating services..."
 
@@ -579,7 +552,6 @@ create_services() {
     return 0
 }
 
-# Function to create a service if it does not exist
 create_service_if_not_exists() {
     local service_name="$1"
     local service_port="$2"
@@ -598,20 +570,15 @@ create_service_if_not_exists() {
     return 0
 }
 
-# Function to create routes
 create_routes() {
     log "Creating routes..."
-
-    # Print the extracted cluster name
     log "Cluster host: $CLUSTER_HOST"
 
-    # Ensure CLUSTER_HOST is set
     if [[ -z "$CLUSTER_HOST" ]]; then
         log_error "CLUSTER_HOST variable is missing. Exiting..."
         return 1
     fi
 
-    # Create route for cockpit service
     log "Creating route for cockpit service..."
 
     create_appliance_cockpit_route
@@ -622,7 +589,6 @@ create_routes() {
     return 0
 }
 
-# Function to wait for SSH service to be ready and SSH into VM
 ssh_into_vm() {
     local max_retries=60
     local retry=0
@@ -631,7 +597,6 @@ ssh_into_vm() {
     while [ $retry -lt $max_retries ]; do
         log "Checking SSH availability (attempt $((retry+1))/$max_retries)..."
 
-        # Use expect to handle the SSH connection non-interactively
         ssh_test=$(expect -c "
             set timeout 5
             spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE
@@ -656,7 +621,6 @@ ssh_into_vm() {
             }
         " 2>&1 || true)
 
-        # Check for various indicators that SSH is responding
         if echo "$ssh_test" | grep -qE "Are you sure you want to continue|password:|Permission denied"; then
             log "SSH service is responding"
             ssh_ready=true
@@ -672,7 +636,7 @@ ssh_into_vm() {
         return 1
     fi
 
-    log "SSH into the VM $vmi_name to change password..."
+    log "Changing default password on VM $vmi_name..."
     ssh_output=$(expect <<EOF 2>&1
         set timeout 60
         set password smartvm
@@ -746,7 +710,6 @@ EOF
 
     echo "$ssh_output" | strip_cr_from_expect_output | tee -a $LOG_FILE
 
-    # Check if password change succeeded
     if [ $password_change_status -eq 0 ]; then
         log "SSH into VM succeeded and password is changed."
     else
@@ -757,7 +720,6 @@ EOF
     return 0
 }
 
-# Function to set hostname and update /etc/hosts on the VM
 set_hostname() {
     log "Setting hostname and updating /etc/hosts..."
     local setup_output=$(expect <<EOF 2>&1
@@ -780,12 +742,7 @@ EOF
     echo "$setup_output" | strip_cr_from_expect_output >> $LOG_FILE
 }
 
-# Function to configure the appliance
-# Parameters:
-#   $1: replication_type - "none", "primary", or "standby"
-#   $2: cluster_node_number - node number (1 for primary, 2 for standby)
-#   $3: primary_host_ip - IP address of primary host (required for standby)
-#   $4: standby_host_ip - IP address of standby host (required for standby)
+# $1: replication_type (none/primary/standby), $2: cluster_node_number, $3: primary_host_ip, $4: standby_host_ip
 configure_appliance() {
     local replication_type=${1:-"none"}
     local cluster_node_number=${2:-""}
@@ -812,8 +769,7 @@ configure_appliance() {
 
     local temp_output=$(mktemp)
 
-    # Build the remote command with proper exit status capture
-    # Use a here-document to avoid complex escaping
+    # Use here-doc to avoid complex escaping
     local remote_cmd=$(cat <<'REMOTE_CMD'
 %CLI_CMD% 2>&1
 EXIT_CODE=$?
@@ -821,7 +777,6 @@ echo "EXIT_STATUS=$EXIT_CODE"
 exit $EXIT_CODE
 REMOTE_CMD
 )
-    # Substitute the actual CLI command
     remote_cmd="${remote_cmd//%CLI_CMD%/$cli_cmd}"
 
     log "Full CLI command to execute:"
@@ -888,6 +843,7 @@ EOF
 
     rm -f "$temp_output"
 
+    log "Checking configuration exit status..."
     if [ $configure_status -ne 0 ]; then
         log_error "Appliance Configuration failed - SSH/expect error with exit code: $configure_status"
         return 1
@@ -907,7 +863,6 @@ EOF
     return 0
 }
 
-# Function to check evmserverd status with polling
 check_evmserverd() {
     log "Checking evmserverd status..."
 
@@ -934,7 +889,6 @@ EOF
 
         echo "$evmserverd_output" >> $LOG_FILE
 
-        # Check if inactive first (error condition)
         if echo "$evmserverd_output" | grep -qw "inactive"; then
             log "  evmserverd is inactive (attempt $attempt of $max_attempts)"
         elif echo "$evmserverd_output" | grep -qw "active"; then
@@ -995,9 +949,8 @@ fi
 
 setup_vm_resources
 
-# Deploy second VM if HA mode
 if [[ "$HA" == "true" ]]; then
-    # Store primary VM info for HA configuration (vmi_name and vmi_ip are set by setup_vm_resources)
+    # Store primary info for standby configuration
     PRIMARY_VMI_NAME=$vmi_name
     PRIMARY_IP=$vmi_ip
 
