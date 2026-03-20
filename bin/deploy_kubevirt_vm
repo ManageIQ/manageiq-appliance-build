@@ -154,13 +154,14 @@ check_command() {
 resource_exists() {
     local resource_kind=$1
     local resource_name=$2
+    local indent=${3:-""}
 
-    log "Checking if $resource_kind/$resource_name exists..."
+    log "${indent}Checking if $resource_kind/$resource_name exists..."
     if ! oc get "$resource_kind" "$resource_name" &>/dev/null; then
-        log "Resource $resource_kind/$resource_name does not exist."
+        log "${indent}Resource $resource_kind/$resource_name does not exist."
         return 1
     fi
-    log "Resource $resource_kind/$resource_name exists."
+    log "${indent}Resource $resource_kind/$resource_name exists."
     return 0
 }
 
@@ -342,28 +343,29 @@ install_kubevirt() {
 
     kubevirt_status=$(oc get kubevirt.kubevirt.io/kubevirt -o=jsonpath='{.status.phase}' -n kubevirt)
     if [[ "$kubevirt_status" == "Deployed" ]]; then
-        log "KubeVirt is already installed."
+        log "  KubeVirt is already installed."
+        log "Installing Kubevirt...completed successfully."
         return 0
     fi
 
-    log "Creating Kubevirt operator..."
+    log "  Creating Kubevirt operator..."
     oc create -f https://github.com/kubevirt/kubevirt/releases/latest/download/kubevirt-operator.yaml > /dev/null 2>&1
     check_command "Failed to create Kubevirt operator." || return 1
 
-    log "Creating Kubevirt CR..."
+    log "  Creating Kubevirt CR..."
     oc create -f https://github.com/kubevirt/kubevirt/releases/latest/download/kubevirt-cr.yaml > /dev/null 2>&1
     check_command "Failed to create Kubevirt CR." || return 1
 
-    log "Creating Kubevirt config map..."
+    log "  Creating Kubevirt config map..."
     oc create configmap kubevirt-config --from-literal feature-gates=DataVolumes -n kube-system > /dev/null 2>&1
     check_command "Failed to create Kubevirt config map." || return 1
 
-    log "Waiting for Kubevirt deployment..."
+    log "  Waiting for Kubevirt deployment..."
     local timeout=600
     local start_time=$(date +%s)
     while true; do
         kubevirt_status=$(oc get kubevirt.kubevirt.io/kubevirt -o=jsonpath='{.status.phase}' -n kubevirt)
-        log "Current Kubevirt status: $kubevirt_status"
+        log "    Current Kubevirt status: $kubevirt_status"
         if [[ "$kubevirt_status" == "Deployed" ]]; then
             break
         fi
@@ -374,7 +376,7 @@ install_kubevirt() {
         sleep 5
     done
 
-    log "Kubevirt deployed successfully."
+    log "Installing Kubevirt...completed successfully."
     return 0
 }
 
@@ -383,24 +385,25 @@ install_cdi() {
 
     cdi_status=$(oc get cdi -n cdi -o=jsonpath='{.items[0].status.phase}')
     if [[ "$cdi_status" == "Deployed" ]]; then
-        log "CDI is already installed."
+        log "  CDI is already installed."
+        log "Installing CDI...completed successfully."
         return 0
     fi
 
-    log "Creating CDI operator..."
+    log "  Creating CDI operator..."
     oc create -f https://github.com/kubevirt/containerized-data-importer/releases/latest/download/cdi-operator.yaml > /dev/null 2>&1
     check_command "Failed to create CDI operator." || return 1
 
-    log "Creating CDI CR..."
+    log "  Creating CDI CR..."
     oc create -f https://github.com/kubevirt/containerized-data-importer/releases/latest/download/cdi-cr.yaml > /dev/null 2>&1
     check_command "Failed to create CDI CR." || return 1
 
-    log "Waiting for CDI deployment..."
+    log "  Waiting for CDI deployment..."
     local timeout=600
     local start_time=$(date +%s)
     while true; do
         cdi_status=$(oc get cdi -n cdi -o=jsonpath='{.items[0].status.phase}')
-        log "Current CDI status: $cdi_status"
+        log "    Current CDI status: $cdi_status"
         if [[ "$cdi_status" == "Deployed" ]]; then
             break
         fi
@@ -411,7 +414,7 @@ install_cdi() {
         sleep 5
     done
 
-    log "CDI deployed successfully."
+    log "Installing CDI...completed successfully."
     return 0
 }
 
@@ -424,86 +427,88 @@ create_namespace_and_secret(){
     fi
 
     if ! oc get namespace "$NAMESPACE" >/dev/null 2>&1; then
-        log "Namespace $NAMESPACE does not exist. Creating..."
+        log "  Namespace $NAMESPACE does not exist. Creating..."
         if ! oc create namespace "$NAMESPACE"; then
             log_error "Namespace $NAMESPACE could not be created."
             return 1
         fi
-        log "Namespace $NAMESPACE created successfully."
+        log "  Namespace $NAMESPACE created successfully."
     else
-        log "Namespace $NAMESPACE already exists."
+        log "  Namespace $NAMESPACE already exists."
     fi
 
-    log "Switching to namespace $NAMESPACE..."
+    log "  Switching to namespace $NAMESPACE..."
     if ! oc project "$NAMESPACE" >/dev/null 2>&1; then
         log_error "Could not switch to namespace $NAMESPACE."
         return 1
     fi
-    log "Now in namespace $NAMESPACE."
+    log "  Now in namespace $NAMESPACE."
 
     if ! oc get secret "$SECRET_NAME" -n "$NAMESPACE" >/dev/null 2>&1; then
-        log "Secret $SECRET_NAME does not exist in namespace $NAMESPACE. Creating..."
+        log "  Secret $SECRET_NAME does not exist in namespace $NAMESPACE. Creating..."
         if ! oc create secret generic "$SECRET_NAME" --from-literal=accessKeyId="$accessKeyId" --from-literal=secretKey="$secretKey" -n "$NAMESPACE"; then
             log_error "Secret $SECRET_NAME could not be created in namespace $NAMESPACE."
             return 1
         fi
-        log "Secret $SECRET_NAME created successfully in namespace $NAMESPACE."
+        log "  Secret $SECRET_NAME created successfully in namespace $NAMESPACE."
     else
-        log "Secret $SECRET_NAME already exists in namespace $NAMESPACE."
+        log "  Secret $SECRET_NAME already exists in namespace $NAMESPACE."
     fi
+
+    log "Creating Namespace and Secret...completed successfully."
     return 0
 }
 
 create_datavolume_and_pvc() {
     log "Creating DataVolume and PVC..."
 
-    log "Applying DataVolume CR..."
+    log "  Applying DataVolume CR..."
     create_datavolume_cr
     check_command "Failed to create_datavolume_cr." || continue
 
-    log "Applying DataVolume Database CR..."
+    log "  Applying DataVolume Database CR..."
     create_datavolume_db_cr
     check_command "Failed to create_datavolume_db_cr." || continue
 
-    log "Waiting for data volumes to be bound and imported..."
+    log "  Waiting for data volumes to be bound and imported..."
     while true; do
         dv_status=$(oc get dv $VM_NAME -n $NAMESPACE -o=jsonpath='{.status.phase} ({.status.progress})')
         db_dv_status=$(oc get dv $VM_NAME-database -n $NAMESPACE -o=jsonpath='{.status.phase} ({.status.progress})')
 
-        log "Data volume status: $dv_status, Database data volume status: $db_dv_status"
+        log "    Data volume status: $dv_status, Database data volume status: $db_dv_status"
 
         if [[ "$dv_status" == "Succeeded"* && "$db_dv_status" == "Succeeded"* ]]; then
-            log "Data volumes imported successfully."
-            return 0
+            break
         fi
 
         sleep 20
     done
+
+    log "Creating DataVolume and PVC...completed successfully."
     return 0
 }
 
 create_virtualmachine_and_fetch_ip() {
-    log "Fetching SSH key from $SECRET_NAME..."
+    log "Creating VirtualMachine and fetching IP..."
 
+    log "  Fetching SSH key from $SECRET_NAME..."
     if [ -z "$SSH_KEY" ]; then
         log_error "Failed to fetch SSH key from the secret."
         return 1
     fi
     DECODED_SSH_KEY=$(echo "$SSH_KEY" | base64 --decode)
-    log "SSH key fetched successfully."
+    log "  SSH key fetched successfully."
 
-    log "Creating VirtualMachine..."
-
-    log "Calling create_vm_cr ..."
+    log "  Creating VM CR..."
     create_vm_cr
     check_command "Failed to create VirtualMachine." || return 1
 
-    log "Waiting for VirtualMachineInstance (VMI) to be running..."
+    log "  Waiting for VirtualMachineInstance (VMI) to be running..."
     local timeout=600
     local start_time=$(date +%s)
     while true; do
         vmi_status=$(oc get vmi $VM_NAME -o=jsonpath='{.status.phase}' -n $NAMESPACE)
-        log "Current VMI status: $vmi_status"
+        log "    Current VMI status: $vmi_status"
         if [[ "$vmi_status" == "Running" ]]; then
             break
         fi
@@ -520,9 +525,9 @@ create_virtualmachine_and_fetch_ip() {
         return 1
     fi
 
-    log "VirtualMachine (VM) Name: $vmi_name"
+    log "  VirtualMachine (VM) Name: $vmi_name"
 
-    log "Getting VirtualMachineInstance (VMI) IP address..."
+    log "  Getting VirtualMachineInstance (VMI) IP address..."
     local ip_timeout=600
 
     local ip_start_time=$(date +%s)
@@ -538,7 +543,8 @@ create_virtualmachine_and_fetch_ip() {
         sleep 5
     done
 
-    log "VM IP Address: $vmi_ip"
+    log "  VM IP Address: $vmi_ip"
+    log "Creating VirtualMachine and fetching IP...completed successfully."
     return 0
 }
 
@@ -549,6 +555,8 @@ create_services() {
     create_service_if_not_exists "$VM_NAME-cockpit" "9090" || return 1
     create_service_if_not_exists "$VM_NAME-ssh" "20222" || return 1
     create_service_if_not_exists "$VM_NAME-postgres" "5432" || return 1
+
+    log "Creating services...completed successfully."
     return 0
 }
 
@@ -558,44 +566,49 @@ create_service_if_not_exists() {
 
     if ! resource_exists "svc" "$service_name"; then
 
-        log "Creating service $service_name..."
+        log "  Creating service $service_name..."
         virtctl expose vmi $VM_NAME --port="$service_port" --name="$service_name" -n $NAMESPACE
         if ! check_command "Failed to expose service $service_name."; then
             return 1
         fi
-        log "Service $service_name created successfully."
+        log "  Service $service_name created successfully."
     else
-        log "Service $service_name already exists. Skipping creation."
+        log "  Service $service_name already exists. Skipping creation."
     fi
     return 0
 }
 
 create_routes() {
     log "Creating routes..."
-    log "Cluster host: $CLUSTER_HOST"
+    log "  Cluster host: $CLUSTER_HOST"
 
     if [[ -z "$CLUSTER_HOST" ]]; then
         log_error "CLUSTER_HOST variable is missing. Exiting..."
         return 1
     fi
 
-    log "Creating route for cockpit service..."
-
+    log "  Creating route for cockpit service..."
     create_appliance_cockpit_route
+
+    log "  Creating route for postgres service..."
     create_appliance_postgres_route
+
+    log "  Creating route for https service..."
     create_appliance_route
 
-    log "Routes are created successfully."
+    log "Creating routes...completed successfully."
     return 0
 }
 
 ssh_into_vm() {
+    log "Connecting to VM via SSH and changing password..."
+
     local max_retries=60
     local retry=0
     local ssh_ready=false
 
     while [ $retry -lt $max_retries ]; do
-        log "Checking SSH availability (attempt $((retry+1))/$max_retries)..."
+        log "  Checking SSH availability (attempt $((retry+1))/$max_retries)..."
 
         ssh_test=$(expect -c "
             set timeout 5
@@ -622,7 +635,7 @@ ssh_into_vm() {
         " 2>&1 || true)
 
         if echo "$ssh_test" | grep -qE "Are you sure you want to continue|password:|Permission denied"; then
-            log "SSH service is responding"
+            log "  SSH service is responding"
             ssh_ready=true
             break
         fi
@@ -636,7 +649,7 @@ ssh_into_vm() {
         return 1
     fi
 
-    log "Changing default password on VM $vmi_name..."
+    log "  Changing default password on VM $vmi_name..."
     ssh_output=$(expect <<EOF 2>&1
         set timeout 60
         set password smartvm
@@ -711,7 +724,7 @@ EOF
     echo "$ssh_output" | strip_cr_from_expect_output | tee -a $LOG_FILE
 
     if [ $password_change_status -eq 0 ]; then
-        log "SSH into VM succeeded and password is changed."
+        log "Connecting to VM via SSH and changing password...completed successfully."
     else
         log_error "SSH into VM failed or password change did not complete"
         log_error "Please check the log output above for details"
@@ -721,7 +734,7 @@ EOF
 }
 
 set_hostname() {
-    log "Setting hostname and updating /etc/hosts..."
+    log "  Setting hostname and updating /etc/hosts..."
     local setup_output=$(expect <<EOF 2>&1
         set timeout 60
         spawn virtctl ssh root@vmi/$vmi_name -n $NAMESPACE -c "hostnamectl set-hostname ${vmi_ip}.local && echo '${vmi_ip} ${vmi_ip}.local 192' >> /etc/hosts"
@@ -740,6 +753,7 @@ set_hostname() {
 EOF
     )
     echo "$setup_output" | strip_cr_from_expect_output >> $LOG_FILE
+    log "  Hostname and /etc/hosts updated successfully."
 }
 
 # $1: replication_type (none/primary/standby), $2: cluster_node_number, $3: primary_host_ip, $4: standby_host_ip
@@ -760,10 +774,10 @@ configure_appliance() {
     fi
 
     if [[ "$replication_type" == "primary" ]]; then
-        log "Configuring as PRIMARY node (cluster node: $cluster_node_number)"
+        log "  Configuring as PRIMARY node (cluster node: $cluster_node_number)"
         cli_cmd="$cli_cmd --replication=primary --cluster-node-number=$cluster_node_number"
     elif [[ "$replication_type" == "standby" ]]; then
-        log "Configuring as STANDBY node (cluster node: $cluster_node_number, primary: $primary_host_ip, standby: $standby_host_ip)"
+        log "  Configuring as STANDBY node (cluster node: $cluster_node_number, primary: $primary_host_ip, standby: $standby_host_ip)"
         cli_cmd="$cli_cmd --fetch-key=$primary_host_ip --sshlogin=root --sshpassword=$NEWPASSWORD --replication=standby --cluster-node-number=$cluster_node_number --primary-host=$primary_host_ip --standby-host=$standby_host_ip"
     fi
 
@@ -779,9 +793,9 @@ REMOTE_CMD
 )
     remote_cmd="${remote_cmd//%CLI_CMD%/$cli_cmd}"
 
-    log "Full CLI command to execute:"
-    log "$cli_cmd"
-    log "Running appliance_console_cli..."
+    log "  Full CLI command to execute:"
+    log "  $cli_cmd"
+    log "  Running appliance_console_cli..."
 
     (expect <<EOF
         set timeout 600
@@ -843,7 +857,7 @@ EOF
 
     rm -f "$temp_output"
 
-    log "Checking configuration exit status..."
+    log "  Checking configuration exit status..."
     if [ $configure_status -ne 0 ]; then
         log_error "Appliance Configuration failed - SSH/expect error with exit code: $configure_status"
         return 1
@@ -859,7 +873,7 @@ EOF
         return 1
     fi
 
-    log "Configuration on VM $vmi_name completed successfully."
+    log "Configuring the appliance on VM $vmi_name (replication: $replication_type)...completed successfully."
     return 0
 }
 
