@@ -798,12 +798,10 @@ configure_appliance() {
 
     local cli_cmd="cd /var/www/miq/vmdb && bundle exec appliance_console_cli --region=55 --dbname=vmdb_production --username=root --password=smartvm --dbdisk=auto"
 
-    # Standbys will be initialized as standby dbs, fetch their key from the primary and will not have a messaging server setup
     if [[ "$replication_type" != "standby" ]]; then
         cli_cmd="$cli_cmd --internal --server start --key --message-server-config --message-server-host=${vmi_ip}.local --message-keystore-username=admin --message-keystore-password=smartvm"
     fi
 
-    # Add replication parameters or standalone based on HA being enabled
     if [[ "$replication_type" == "primary" ]]; then
         log "Configuring as PRIMARY node (cluster node: $cluster_node_number)"
         cli_cmd="$cli_cmd --replication=primary --cluster-node-number=$cluster_node_number"
@@ -849,7 +847,6 @@ REMOTE_CMD
                 exp_continue
             }
             eof {
-                # Command completed, check exit status
                 catch wait result
                 set exit_status [lindex \$result 3]
                 exit \$exit_status
@@ -867,7 +864,6 @@ EOF
     local elapsed=0
     local sleep_interval=5
 
-    # Wait for expect process with timeout
     while kill -0 $expect_pid 2>/dev/null; do
         if [ $elapsed -ge $timeout_seconds ]; then
             log_error "Configuration timed out after 10 minutes"
@@ -883,11 +879,9 @@ EOF
         elapsed=$((elapsed + sleep_interval))
     done
 
-    # Get exit status and output
     wait $expect_pid
     configure_status=$?
 
-    # Log all output
     local cleaned_output=$(cat "$temp_output" | strip_cr_from_expect_output)
     echo "$cleaned_output" >> $LOG_FILE
     cat "$temp_stderr" | strip_cr_from_expect_output >> $LOG_FILE
@@ -987,15 +981,12 @@ setup_vm_resources() {
 
 
 
-# Verify prereq and setup variables used in the script
 verify_prereq
 env_setup
 verify_env_prereq
 
-# Execute the appliance_configure (Main Function) and handle its exit status
 log "Starting MIQ Appliance Configuration Script..."
 
-# Deploy first VM (primary if HA, single if not)
 if [[ "$HA" == "true" ]]; then
     log "HA mode enabled - deploying primary VM..."
     set_vm_variables "primary"
@@ -1011,7 +1002,6 @@ if [[ "$HA" == "true" ]]; then
     PRIMARY_VMI_NAME=$vmi_name
     PRIMARY_IP=$vmi_ip
 
-    # Configure primary (uses current vmi_name and vmi_ip globals)
     log "=== Configuring PRIMARY VM ==="
     configure_appliance "primary" "1" "" "" || exit 1
     check_evmserverd || { log_error "check_evmserverd failed"; exit 1; }
@@ -1024,18 +1014,15 @@ if [[ "$HA" == "true" ]]; then
     STANDBY_IP=$vmi_ip
     log "Standby VM setup completed successfully."
 
-    # Configure standby (uses current vmi_name and vmi_ip globals)
     log "=== Configuring STANDBY VM ==="
     configure_appliance "standby" "2" "$PRIMARY_IP" "$STANDBY_IP" || exit 1
-    # ideally, standby shouldn't start evmserverd so we don't need to check it
-    log "Standby VM configuration completed successfully."
+    log "Standby VM configuration completed successfully (evmserverd check skipped for standby)."
 
     log "=== HA Deployment Complete ==="
     log "Full configuration log can be found at $LOG_FILE"
     log "Primary VM login: virtctl ssh root@vmi/$PRIMARY_VMI_NAME -n $NAMESPACE"
     log "Standby VM login: virtctl ssh root@vmi/$STANDBY_VMI_NAME -n $NAMESPACE"
 else
-    # Standard single VM deployment
     configure_appliance "none" "" "" "" || exit 1
     check_evmserverd || { log_error "check_evmserverd failed"; exit 1; }
     log "Standard deployment completed successfully."
