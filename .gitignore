@@ -3,6 +3,7 @@
 /productization
 Gemfile.lock
 config/generated/base*.tdl
+config/kubevirt_vm_overrides.conf
 kickstarts/generated/*.ks
 scripts/Gemfile.dev.rb
 OPTIONS
